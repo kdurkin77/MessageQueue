@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MessageQueue
+namespace KM.MessageQueue
 {
     public interface IMessageQueue<TMessage> : IDisposable
     {

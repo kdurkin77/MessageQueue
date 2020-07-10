@@ -1,7 +1,9 @@
-﻿using MessageQueue;
-using MessageQueue.AzureTopic;
+﻿using KM.MessageQueue;
+using KM.MessageQueue.Azure.Topic;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace TestProject
@@ -12,12 +14,12 @@ namespace TestProject
         {
             try
             {
-                var service =
+                var services =
                     new ServiceCollection()
                     .AddSingleton<Test>()
-                    .AddSingleton(typeof(IMessageFormatter<>), typeof(MyFormatter<>))
+                    .AddSingleton(typeof(IMessageFormatter<>), typeof(JsonFormatter<>))
                     .AddScoped(typeof(IMessageQueue<>), typeof(AzureTopic<>))
-                    .Configure<AzureTopicMessageQueueOptions<string>>(options =>
+                    .Configure<AzureTopicOptions<string>>(options =>
                     {
                         options.Endpoint = "YOUR ENDPOINT HERE";
                         options.EntityPath = "YOUR ENTITY PATH HERE";
@@ -25,13 +27,26 @@ namespace TestProject
                         options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
                     });
 
-                var test = service.BuildServiceProvider().GetRequiredService<Test>();
+                var test = services.BuildServiceProvider().GetRequiredService<Test>();
                 await test.RunAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Exception - {ex.Message}");
-            }            
+                Console.WriteLine($"Exception - {ex}");
+            }
         }
+    }
+
+    public class JsonFormatter<TMessage> : IMessageFormatter<TMessage>
+    {
+        public byte[] Format(TMessage message) => Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
+    }
+
+    public class Test
+    {
+        private readonly IMessageQueue<string> _AzureTopic;
+        public Test(IMessageQueue<string> azureTopic) => this._AzureTopic = azureTopic;
+
+        public async Task RunAsync() => await this._AzureTopic.PostMessageAsync("Test", default);
     }
 }

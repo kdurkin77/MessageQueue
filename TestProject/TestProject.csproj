@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.AzureTopic\MessageQueue.AzureTopic.csproj" />
+    <ProjectReference Include="..\MessageQueue.Azure.Topic\MessageQueue.Azure.Topic.csproj" />
   </ItemGroup>
 
 </Project>

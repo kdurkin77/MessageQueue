@@ -5,3 +5,5 @@
 /MessageQueue.AzureTopic/bin
 /TestProject/obj
 /TestProject/bin
+/MessageQueue.Azure.Topic/bin
+/MessageQueue.Azure.Topic/obj

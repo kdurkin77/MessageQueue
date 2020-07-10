@@ -1,4 +1,4 @@
-﻿namespace MessageQueue
+﻿namespace KM.MessageQueue
 {
     public interface IMessageFormatter<TMessage>
     {

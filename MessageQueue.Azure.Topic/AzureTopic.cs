@@ -4,27 +4,18 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MessageQueue.AzureTopic
+namespace KM.MessageQueue.Azure.Topic
 {
-    public sealed class AzureTopicMessageQueueOptions<TMessage>
-    {
-        public string Endpoint { get; set; }
-        public string EntityPath { get; set; }
-        public string SharedAccessKeyName { get; set; }
-        public string SharedAccessKey { get; set; }
-        public TransportType TransportType { get; set; }
-    }
-
     public sealed class AzureTopic<TMessage> : IMessageQueue<TMessage>
     {
         private bool _Disposed = false;
         private readonly TopicClient _TopicClient;
-        private readonly AzureTopicMessageQueueOptions<TMessage> _Options;
+        private readonly AzureTopicOptions<TMessage> _Options;
         private readonly IMessageFormatter<TMessage> _Formatter;
 
         private static readonly MessageAttributes _EmptyAttributes = new MessageAttributes();
 
-        public AzureTopic(IOptions<AzureTopicMessageQueueOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
+        public AzureTopic(IOptions<AzureTopicOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
         {
             this._Options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this._Formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
@@ -65,11 +56,11 @@ namespace MessageQueue.AzureTopic
 
         public void Dispose()
         {
-            this._Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        private void _Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (this._Disposed)
             {
@@ -84,15 +75,20 @@ namespace MessageQueue.AzureTopic
             this._Disposed = true;
         }
 
-        ~AzureTopic() => this._Dispose(false);
+        ~AzureTopic() => this.Dispose(false);
 
 #if NETSTANDARD2_1
 
         // https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-disposeasync
         public async ValueTask DisposeAsync()
         {
+            if (this._Disposed)
+            {
+                return;
+            }
+
             await _TopicClient.CloseAsync().ConfigureAwait(false);
-            _Dispose(false);
+            this.Dispose(false);
             GC.SuppressFinalize(this);
         }
 
