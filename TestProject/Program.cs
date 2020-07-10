@@ -1,5 +1,4 @@
 ﻿using KM.MessageQueue;
-using KM.MessageQueue.Azure.Topic;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
@@ -8,26 +7,25 @@ using System.Threading.Tasks;
 
 namespace TestProject
 {
-    public class Program
+    public static class Program
     {
         public static async Task Main(string[] _)
         {
             try
             {
-                var services =
-                    new ServiceCollection()
+                var services = new ServiceCollection()
                     .AddSingleton<Test>()
                     .AddSingleton(typeof(IMessageFormatter<>), typeof(JsonFormatter<>))
-                    .AddScoped(typeof(IMessageQueue<>), typeof(AzureTopic<>))
-                    .Configure<AzureTopicOptions<string>>(options =>
+                    .AddAzureTopicMessageQueue<MessageRecord>(options =>
                     {
                         options.Endpoint = "YOUR ENDPOINT HERE";
                         options.EntityPath = "YOUR ENTITY PATH HERE";
                         options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
                         options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
-                    });
+                    })
+                    .BuildServiceProvider();
 
-                var test = services.BuildServiceProvider().GetRequiredService<Test>();
+                var test = services.GetRequiredService<Test>();
                 await test.RunAsync();
             }
             catch (Exception ex)
@@ -37,16 +35,32 @@ namespace TestProject
         }
     }
 
-    public class JsonFormatter<TMessage> : IMessageFormatter<TMessage>
+    public sealed class JsonFormatter<TMessage> : IMessageFormatter<TMessage>
     {
         public byte[] Format(TMessage message) => Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
     }
 
-    public class Test
+    public sealed class MessageRecord
     {
-        private readonly IMessageQueue<string> _AzureTopic;
-        public Test(IMessageQueue<string> azureTopic) => this._AzureTopic = azureTopic;
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
 
-        public async Task RunAsync() => await this._AzureTopic.PostMessageAsync("Test", default);
+    public sealed class Test
+    {
+        private readonly IMessageQueue<MessageRecord> _AzureTopic;
+
+        public Test(IMessageQueue<MessageRecord> azureTopic) => this._AzureTopic = azureTopic;
+
+        public async Task RunAsync()
+        {
+            var msg = new MessageRecord()
+            {
+                Name = "name",
+                Age = 99
+            };
+
+            await this._AzureTopic.PostMessageAsync(msg, default);
+        }
     }
 }
