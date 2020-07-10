@@ -1,0 +1,7 @@
+/.vs
+/MessageQueue/obj
+/MessageQueue/bin
+/MessageQueue.AzureTopic/obj
+/MessageQueue.AzureTopic/bin
+/TestProject/obj
+/TestProject/bin
