@@ -47,11 +47,23 @@ namespace KM.MessageQueue.Azure.Topic
             }
 
             var formattedMessageBytes = this._Formatter.Format(message);
-            await this._TopicClient.SendAsync(new Message()
+
+            var topicMessage = new Message()
             {
+                ContentType = attributes.ContentType,
                 Body = formattedMessageBytes,
                 Label = attributes.Label
-            });
+            };
+
+            if (attributes.UserProperties != null)
+            {
+                foreach (var userProperty in attributes.UserProperties)
+                {
+                    topicMessage.UserProperties.Add(userProperty.Key, userProperty.Value);
+                }
+            }
+
+            await this._TopicClient.SendAsync(topicMessage);
         }
 
         public void Dispose()
