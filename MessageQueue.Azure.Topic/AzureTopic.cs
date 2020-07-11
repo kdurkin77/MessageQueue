@@ -60,10 +60,9 @@ namespace KM.MessageQueue.Azure.Topic
 
             var formattedMessageBytes = _formatter.Format(message);
 
-            var topicMessage = new Message()
+            var topicMessage = new Message(formattedMessageBytes)
             {
                 ContentType = attributes.ContentType,
-                Body = formattedMessageBytes,
                 Label = attributes.Label
             };
 
