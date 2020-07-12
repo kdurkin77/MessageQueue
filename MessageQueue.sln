@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject", "TestProject\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Azure.Topic", "MessageQueue.Azure.Topic\MessageQueue.Azure.Topic.csproj", "{19B7A29B-471F-49E7-9E2B-4D4C4043C3D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.FileSystem.Disk", "MessageQueue.FileSystem.Disk\MessageQueue.FileSystem.Disk.csproj", "{F6F4A331-0EDB-4C69-ABD4-9CBE5B1BFB08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{19B7A29B-471F-49E7-9E2B-4D4C4043C3D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19B7A29B-471F-49E7-9E2B-4D4C4043C3D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19B7A29B-471F-49E7-9E2B-4D4C4043C3D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6F4A331-0EDB-4C69-ABD4-9CBE5B1BFB08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6F4A331-0EDB-4C69-ABD4-9CBE5B1BFB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6F4A331-0EDB-4C69-ABD4-9CBE5B1BFB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6F4A331-0EDB-4C69-ABD4-9CBE5B1BFB08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

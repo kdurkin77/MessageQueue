@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,18 +16,22 @@ namespace TestProject
             try
             {
                 var services = new ServiceCollection()
-                    .AddSingleton<Test>()
+                    .AddSingleton<MyApplication>()
                     .AddSingleton(typeof(IMessageFormatter<>), typeof(JsonFormatter<>))
-                    .AddAzureTopicMessageQueue<MessageRecord>(options =>
+                    .AddDiskMessageQueue<PersonMessage>(options =>
                     {
-                        options.Endpoint = "YOUR ENDPOINT HERE";
-                        options.EntityPath = "YOUR ENTITY PATH HERE";
-                        options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
-                        options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
+                        options.MessageStore = new DirectoryInfo("/my-messages");
                     })
+                    //.AddAzureTopicMessageQueue<PersonMessage>(options =>
+                    //{
+                    //    options.Endpoint = "YOUR ENDPOINT HERE";
+                    //    options.EntityPath = "YOUR ENTITY PATH HERE";
+                    //    options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
+                    //    options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
+                    //})
                     .BuildServiceProvider();
 
-                var test = services.GetRequiredService<Test>();
+                var test = services.GetRequiredService<MyApplication>();
                 await test.RunAsync();
             }
             catch (Exception ex)
@@ -40,27 +46,36 @@ namespace TestProject
         public byte[] Format(TMessage message) => Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
     }
 
-    public sealed class MessageRecord
+    public sealed class PersonMessage
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public int Age { get; set; }
     }
 
-    public sealed class Test
+    public sealed class MyApplication
     {
-        private readonly IMessageQueue<MessageRecord> _AzureTopic;
+        private readonly IMessageQueue<PersonMessage> _AzureTopic;
 
-        public Test(IMessageQueue<MessageRecord> azureTopic) => this._AzureTopic = azureTopic;
+        public MyApplication(IMessageQueue<PersonMessage> azureTopic) => this._AzureTopic = azureTopic;
 
         public async Task RunAsync()
         {
-            var msg = new MessageRecord()
+            var msg = new PersonMessage()
             {
                 Name = "name",
                 Age = 99
             };
 
-            await this._AzureTopic.PostMessageAsync(msg, default);
+            var attributes = new MessageAttributes()
+            {
+                Label = "my-label",
+                UserProperties = new Dictionary<string, object>()
+                {
+                    { "Key", string.Empty }
+                }
+            };
+
+            await this._AzureTopic.PostMessageAsync(msg, attributes, default);
         }
     }
 }

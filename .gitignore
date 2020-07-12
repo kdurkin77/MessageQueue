@@ -7,3 +7,5 @@
 /TestProject/bin
 /MessageQueue.Azure.Topic/bin
 /MessageQueue.Azure.Topic/obj
+/MessageQueue.FileSystem.Disk/bin
+/MessageQueue.FileSystem.Disk/obj

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace KM.MessageQueue
 {
     public interface IMessageQueue<TMessage> : IDisposable
-#if NETSTANDARD2_1
+#if !NETSTANDARD2_0
         , IAsyncDisposable
 #endif
     {

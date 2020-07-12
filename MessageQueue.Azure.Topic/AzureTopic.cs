@@ -108,7 +108,7 @@ namespace KM.MessageQueue.Azure.Topic
 
         ~AzureTopic() => Dispose(false);
 
-#if NETSTANDARD2_1
+#if !NETSTANDARD2_0
 
         // https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-disposeasync
         public async ValueTask DisposeAsync()
