@@ -11,5 +11,7 @@ namespace KM.MessageQueue
     {
         Task PostMessageAsync(TMessage message, CancellationToken cancellationToken);
         Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken);
+
+        Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken);
     }
 }

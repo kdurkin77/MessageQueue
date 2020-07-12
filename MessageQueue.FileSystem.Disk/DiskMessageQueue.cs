@@ -22,7 +22,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         private readonly SemaphoreSlim _sync;
         private readonly DirectoryInfo _messageStore;
         private long _sequenceNumber;
-        private readonly Queue<DiskMessage> _messageQueue;
+        private readonly Queue<(FileInfo File, DiskMessage Message)> _messageQueue;
         private static readonly string _messageExtension = @"msg.json.gzip";
 
         public DiskMessageQueue(IOptions<DiskMessageQueueOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
@@ -45,7 +45,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             }
 
             _messageQueue =
-                new Queue<DiskMessage>(
+                new Queue<(FileInfo, DiskMessage)>(
                     _messageStore
                         .GetFiles($"*.{_messageExtension}")
                         .Select(file =>
@@ -53,13 +53,14 @@ namespace KM.MessageQueue.FileSystem.Disk
                             var compressedBytes = File.ReadAllBytes(file.FullName);
                             var fileBytes = Decompress(compressedBytes);
                             var fileJson = Encoding.UTF8.GetString(fileBytes);
-                            return JsonConvert.DeserializeObject<DiskMessage>(fileJson);
+                            var diskMessage = JsonConvert.DeserializeObject<DiskMessage>(fileJson);
+                            return (file, diskMessage);
                         })
-                        .OrderBy(msg => msg.SequenceNumber)
+                        .OrderBy(item => item.diskMessage.SequenceNumber)
                     );
 
             _sequenceNumber = _messageQueue.Any()
-                ? _messageQueue.Select(msg => msg.SequenceNumber).Max()
+                ? _messageQueue.Select(item => item.Message.SequenceNumber).Max()
                 : 0L;
         }
 
@@ -104,23 +105,30 @@ namespace KM.MessageQueue.FileSystem.Disk
                     Body = messageBytes
                 };
 
-                var fileName = Path.Combine(_messageStore.FullName, $"{diskMessage.Id:N}.{_messageExtension}");
-                var fileJson = JsonConvert.SerializeObject(diskMessage);
-                var fileBytes = Encoding.UTF8.GetBytes(fileJson);
-                var compressedBytes = Compress(fileBytes);
+                var file = await PersistMessageAsync(diskMessage, cancellationToken);
 
-#if NETSTANDARD2_0
-                File.WriteAllBytes(fileName, compressedBytes);
-#else
-                await File.WriteAllBytesAsync(fileName, compressedBytes);
-#endif
-
-                _messageQueue.Enqueue(diskMessage);
+                _messageQueue.Enqueue((file, diskMessage));
             }
             finally
             {
                 _sync.Release();
             }
+        }
+
+        private async Task<FileInfo> PersistMessageAsync(DiskMessage diskMessage, CancellationToken cancellationToken)
+        {
+            var fileName = Path.Combine(_messageStore.FullName, $"{diskMessage.Id:N}.{_messageExtension}");
+            var fileJson = JsonConvert.SerializeObject(diskMessage);
+            var fileBytes = Encoding.UTF8.GetBytes(fileJson);
+            var compressedBytes = Compress(fileBytes);
+
+#if NETSTANDARD2_0
+            File.WriteAllBytes(fileName, compressedBytes);
+            await Task.CompletedTask;
+#else
+            await File.WriteAllBytesAsync(fileName, compressedBytes, cancellationToken);
+#endif
+            return new FileInfo(fileName);
         }
 
         private static byte[] Compress(byte[] data)
@@ -156,6 +164,11 @@ namespace KM.MessageQueue.FileSystem.Disk
             }
 
             return decompressed.ToArray();
+        }
+
+        public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         private void ThrowIfDisposed()

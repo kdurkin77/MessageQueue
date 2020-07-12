@@ -77,6 +77,11 @@ namespace KM.MessageQueue.Azure.Topic
             await _topicClient.SendAsync(topicMessage);
         }
 
+        public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         private void ThrowIfDisposed()
         {
             if (_disposed)
