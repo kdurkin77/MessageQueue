@@ -46,12 +46,12 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 if (_readerState == ReaderState.Running)
                 {
-                    throw new NotSupportedException($"{nameof(DiskMessageReader<TMessage>)} is already started");
+                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already started");
                 }
 
                 if (_readerState == ReaderState.StopRequested)
                 {
-                    throw new NotSupportedException($"{nameof(DiskMessageReader<TMessage>)} is stopping");
+                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is stopping");
                 }
 
                 _readerTokenSource = new CancellationTokenSource();
@@ -118,12 +118,12 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 if (_readerState == ReaderState.Stopped)
                 {
-                    throw new NotSupportedException($"{nameof(DiskMessageReader<TMessage>)} is already stopped");
+                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already stopped");
                 }
 
                 if (_readerState == ReaderState.StopRequested)
                 {
-                    throw new NotSupportedException($"{nameof(DiskMessageReader<TMessage>)} is already stopping");
+                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already stopping");
                 }
 
                 if (_readerTokenSource is null)
