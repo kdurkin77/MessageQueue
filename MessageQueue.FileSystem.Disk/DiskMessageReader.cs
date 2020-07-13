@@ -163,11 +163,7 @@ namespace KM.MessageQueue.FileSystem.Disk
 
             if (disposing)
             {
-                if (_readerTokenSource != null && !_readerTokenSource.IsCancellationRequested)
-                {
-                    _readerTokenSource.Cancel();
-                    _readerTask?.ConfigureAwait(false).GetAwaiter().GetResult();
-                }
+                _readerTokenSource?.Cancel();
             }
 
             _disposed = true;
@@ -183,15 +179,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 return;
             }
 
-            if (_readerTokenSource != null && !_readerTokenSource.IsCancellationRequested)
-            {
-                _readerTokenSource.Cancel();
-                var task = _readerTask;
-                if (task != null)
-                {
-                    await task.ConfigureAwait(false);
-                }
-            }
+            _readerTokenSource?.Cancel();
 
             Dispose(false);
             GC.SuppressFinalize(this);
