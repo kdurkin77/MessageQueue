@@ -95,15 +95,15 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 ThrowIfDisposed();
 
-                var messageBytes = _formatter.Format(message);
+                var messageBytes = _formatter.MessageToBytes(message);
 
-                var diskMessage = new DiskMessage()
-                {
-                    Id = Guid.NewGuid(),
-                    SequenceNumber = ++_sequenceNumber,
-                    Attributes = attributes,
-                    Body = messageBytes
-                };
+                var diskMessage =
+                    new DiskMessage(
+                        id: Guid.NewGuid(),
+                        sequenceNumber: ++_sequenceNumber,
+                        attributes: attributes,
+                        body: messageBytes
+                        );
 
                 var file = await PersistMessageAsync(diskMessage, cancellationToken);
 
@@ -168,7 +168,42 @@ namespace KM.MessageQueue.FileSystem.Disk
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var reader = new DiskMessageReader<TMessage>(this);
+            return Task.FromResult<IMessageReader<TMessage>>(reader);
+        }
+
+        internal async Task<bool> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (!_messageQueue.Any())
+                {
+                    return false;
+                }
+
+                var item = _messageQueue.Peek();
+
+                var message = _formatter.BytesToMessage(item.Message.Body);
+
+                var result = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
+                if (result == CompletionResult.Complete)
+                {
+                    item.File.Delete();
+                    _messageQueue.Dequeue();
+                }
+
+                return true;
+            }
+            finally
+            {
+                _sync.Release();
+            }
         }
 
         private void ThrowIfDisposed()

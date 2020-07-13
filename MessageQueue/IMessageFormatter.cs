@@ -2,6 +2,7 @@
 {
     public interface IMessageFormatter<TMessage>
     {
-        byte[] Format(TMessage message);
+        TMessage BytesToMessage(byte[] bytes);
+        byte[] MessageToBytes(TMessage message);
     }
 }

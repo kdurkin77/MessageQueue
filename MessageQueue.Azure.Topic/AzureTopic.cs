@@ -58,9 +58,9 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var formattedMessageBytes = _formatter.Format(message);
+            var messageBytes = _formatter.MessageToBytes(message);
 
-            var topicMessage = new Message(formattedMessageBytes)
+            var topicMessage = new Message(messageBytes)
             {
                 ContentType = attributes.ContentType,
                 Label = attributes.Label
