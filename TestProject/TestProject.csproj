@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MessageQueue.Azure.Topic\MessageQueue.Azure.Topic.csproj" />
     <ProjectReference Include="..\MessageQueue.FileSystem.Disk\MessageQueue.FileSystem.Disk.csproj" />
+    <ProjectReference Include="..\MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,3 +9,5 @@
 /MessageQueue.Azure.Topic/obj
 /MessageQueue.FileSystem.Disk/bin
 /MessageQueue.FileSystem.Disk/obj
+/MessageQueue.Specialized.Forwarder/bin
+/MessageQueue.Specialized.Forwarder/obj
