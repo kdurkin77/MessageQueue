@@ -77,17 +77,18 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 while (true)
                 {
-                    if (_readerTokenSource is null)
+                    var source = _readerTokenSource;
+                    if (source is null)
                     {
                         throw new SystemException($"{nameof(DiskMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
                     }
 
-                    if (_readerTokenSource.IsCancellationRequested)
+                    if (source.IsCancellationRequested)
                     {
                         break;
                     }
 
-                    var gotMessage = await _queue.TryReadMessageAsync(messageHandler.HandleMessageAsync, userData, _readerTokenSource.Token).ConfigureAwait(false);
+                    var gotMessage = await _queue.TryReadMessageAsync(messageHandler.HandleMessageAsync, userData, source.Token).ConfigureAwait(false);
                     if (!gotMessage)
                     {
                         await Task.Delay(1);
