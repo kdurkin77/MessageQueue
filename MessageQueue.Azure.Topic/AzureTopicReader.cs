@@ -109,6 +109,7 @@ namespace KM.MessageQueue.Azure.Topic
             {
                 if (ReaderTokenSource.IsCancellationRequested)
                 {
+                    // do not stop the reader in the middle of a read
                     return;
                 }
 
@@ -121,9 +122,18 @@ namespace KM.MessageQueue.Azure.Topic
                 };
 
                 var result = await messageHandler.HandleMessageAsync(message, attributes, userData, cancellationToken).ConfigureAwait(false);
-                if (result == CompletionResult.Complete)
+                switch (result)
                 {
-                    await SubscriptionClient.CompleteAsync(topicMessage.SystemProperties.LockToken).ConfigureAwait(false);
+                    case CompletionResult.Complete:
+                        await SubscriptionClient.CompleteAsync(topicMessage.SystemProperties.LockToken).ConfigureAwait(false);
+                        break;
+
+                    case CompletionResult.Abandon:
+                        await SubscriptionClient.AbandonAsync(topicMessage.SystemProperties.LockToken).ConfigureAwait(false);
+                        break;
+
+                    default:
+                        throw new NotSupportedException($"{result}");
                 }
             };
         }
@@ -135,9 +145,10 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(messageHandler));
             }
 
-            return (exceptionReceivedEventArgs) =>
+            return async (exceptionReceivedEventArgs) =>
             {
-                return messageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, userData, ReaderTokenSource.Token);
+                await messageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, userData, ReaderTokenSource.Token).ConfigureAwait(false);
+                await InternalStopAsync().ConfigureAwait(false);
             };
         }
 

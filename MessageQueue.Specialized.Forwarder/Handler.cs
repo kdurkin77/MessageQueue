@@ -32,7 +32,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failure posting to {nameof(Handler<TMessage>)} destination queue");
-                return CompletionResult.Failure;
+                return CompletionResult.Abandon;
             }
         }
     }

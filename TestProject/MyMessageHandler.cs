@@ -18,7 +18,7 @@ namespace TestProject
         {
             if (message is null || attributes is null)
             {
-                return CompletionResult.Failure;
+                return CompletionResult.Abandon;
             }
 
             Console.WriteLine($"reader {userData}: {JsonConvert.SerializeObject(message)}");

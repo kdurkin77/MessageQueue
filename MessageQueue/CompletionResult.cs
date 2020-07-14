@@ -3,6 +3,6 @@
     public enum CompletionResult
     {
         Complete = 0,
-        Failure = 1
+        Abandon = 1
     }
 }
