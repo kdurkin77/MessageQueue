@@ -11,7 +11,7 @@ namespace KM.MessageQueue.Azure.Topic
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly AzureTopicOptions<TMessage> _options;
+        internal readonly AzureTopicOptions<TMessage> _options;
         internal readonly IMessageFormatter<TMessage> _formatter;
         internal readonly TopicClient _topicClient;
 
@@ -84,17 +84,7 @@ namespace KM.MessageQueue.Azure.Topic
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            if (_options.EntityPath is null)
-            {
-                throw new ArgumentNullException(nameof(_options.EntityPath));
-            }
-
-            if (_options.SubscriptionName is null)
-            {
-                throw new ArgumentNullException(nameof(_options.SubscriptionName));
-            }
-
-            var reader = new AzureTopicReader<TMessage>(this, _options.EntityPath, _options.SubscriptionName);
+            var reader = new AzureTopicReader<TMessage>(this);
             return Task.FromResult<IMessageReader<TMessage>>(reader);
         }
 

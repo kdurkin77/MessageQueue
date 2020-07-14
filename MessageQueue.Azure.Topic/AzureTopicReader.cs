@@ -11,6 +11,7 @@ namespace KM.MessageQueue.Azure.Topic
         private readonly AzureTopic<TMessage> _queue;
         private readonly string _topicPath;
         private readonly string _subscriptionName;
+        private readonly int? _prefectCount;
 
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
@@ -30,11 +31,12 @@ namespace KM.MessageQueue.Azure.Topic
             set => _readerTokenSource = value;
         }
 
-        public AzureTopicReader(AzureTopic<TMessage> queue, string topicPath, string subscriptionName)
+        public AzureTopicReader(AzureTopic<TMessage> queue)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
-            _topicPath = topicPath ?? throw new ArgumentNullException(nameof(topicPath));
-            _subscriptionName = subscriptionName ?? throw new ArgumentNullException(nameof(subscriptionName));
+            _topicPath = queue._options.EntityPath ?? throw new ArgumentNullException(nameof(queue._options.EntityPath));
+            _subscriptionName = queue._options.SubscriptionName ?? throw new ArgumentNullException(nameof(queue._options.SubscriptionName));
+            _prefectCount = queue._options.PrefetchCount;
         }
 
         public Task StartAsync(IMessageHandler<TMessage> messageHandler, CancellationToken cancellationToken)
@@ -73,7 +75,12 @@ namespace KM.MessageQueue.Azure.Topic
 
                 ReaderTokenSource = new CancellationTokenSource();
 
-               SubscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, _subscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
+                SubscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, _subscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
+
+                if (_prefectCount.HasValue)
+                {
+                    SubscriptionClient.PrefetchCount = _prefectCount.Value;
+                }
 
                 var handlerOptions = new MessageHandlerOptions(ExceptionHandler(messageHandler, userData))
                 {
