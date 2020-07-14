@@ -15,8 +15,20 @@ namespace KM.MessageQueue.Azure.Topic
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
         public MessageReaderState State { get; private set; } = MessageReaderState.Stopped;
+
         private ISubscriptionClient? _subscriptionClient = null;
+        private ISubscriptionClient SubscriptionClient
+        {
+            get => _subscriptionClient ?? throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_subscriptionClient)} is null");
+            set => _subscriptionClient = value;
+        }
+
         private CancellationTokenSource? _readerTokenSource = null;
+        private CancellationTokenSource ReaderTokenSource
+        {
+            get => _readerTokenSource ?? throw new SystemException($"{nameof(AzureTopic<TMessage>)}.{nameof(_readerTokenSource)} is null");
+            set => _readerTokenSource = value;
+        }
 
         public AzureTopicReader(AzureTopic<TMessage> queue, string topicPath, string subscriptionName)
         {
@@ -59,9 +71,9 @@ namespace KM.MessageQueue.Azure.Topic
                     throw new InvalidOperationException($"{nameof(AzureTopicReader<TMessage>)} is stopping");
                 }
 
-                _readerTokenSource = new CancellationTokenSource();
+                ReaderTokenSource = new CancellationTokenSource();
 
-                _subscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, _subscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
+               SubscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, _subscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
 
                 var handlerOptions = new MessageHandlerOptions(ExceptionHandler(messageHandler, userData))
                 {
@@ -69,7 +81,7 @@ namespace KM.MessageQueue.Azure.Topic
                     MaxConcurrentCalls = 1
                 };
 
-                _subscriptionClient.RegisterMessageHandler(MessageHandler(messageHandler, userData), handlerOptions);
+                SubscriptionClient.RegisterMessageHandler(MessageHandler(messageHandler, userData), handlerOptions);
 
                 State = MessageReaderState.Running;
             }
@@ -88,21 +100,9 @@ namespace KM.MessageQueue.Azure.Topic
 
             return async (topicMessage, cancellationToken) =>
             {
-                var source = _readerTokenSource;
-                if (source is null)
-                {
-                    throw new SystemException($"{nameof(AzureTopic<TMessage>)}.{nameof(_readerTokenSource)} is null");
-                }
-
-                if (source.IsCancellationRequested)
+                if (ReaderTokenSource.IsCancellationRequested)
                 {
                     return;
-                }
-
-                var client = _subscriptionClient;
-                if (client is null)
-                {
-                    throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_subscriptionClient)} is null");
                 }
 
                 var message = _queue._formatter.BytesToMessage(topicMessage.Body);
@@ -116,7 +116,7 @@ namespace KM.MessageQueue.Azure.Topic
                 var result = await messageHandler.HandleMessageAsync(message, attributes, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {
-                    await client.CompleteAsync(topicMessage.SystemProperties.LockToken).ConfigureAwait(false);
+                    await SubscriptionClient.CompleteAsync(topicMessage.SystemProperties.LockToken).ConfigureAwait(false);
                 }
             };
         }
@@ -128,15 +128,9 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(messageHandler));
             }
 
-            return async (exceptionReceivedEventArgs) =>
+            return (exceptionReceivedEventArgs) =>
             {
-                var source = _readerTokenSource;
-                if (source is null)
-                {
-                    throw new SystemException($"{nameof(AzureTopic<TMessage>)}.{nameof(_readerTokenSource)} is null");
-                }
-
-                await messageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, userData, source.Token);
+                return messageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, userData, ReaderTokenSource.Token);
             };
         }
 
@@ -155,17 +149,6 @@ namespace KM.MessageQueue.Azure.Topic
                 if (State == MessageReaderState.StopRequested)
                 {
                     throw new InvalidOperationException($"{nameof(AzureTopicReader<TMessage>)} is already stopping");
-                }
-
-                if (_readerTokenSource is null)
-                {
-                    throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
-                }
-
-                var client = _subscriptionClient;
-                if (client is null)
-                {
-                    throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_subscriptionClient)} is null");
                 }
 
                 await InternalStopAsync().ConfigureAwait(false);
