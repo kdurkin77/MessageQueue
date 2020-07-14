@@ -179,6 +179,7 @@ namespace KM.MessageQueue.Azure.Topic
                 }
             }
 
+            _readerTokenSource?.Dispose();
             State = MessageReaderState.Stopped;
         }
 
