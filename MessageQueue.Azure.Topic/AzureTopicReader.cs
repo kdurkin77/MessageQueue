@@ -168,19 +168,28 @@ namespace KM.MessageQueue.Azure.Topic
                     throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_subscriptionClient)} is null");
                 }
 
-                _readerTokenSource.Cancel();
-
-                if (!client.IsClosedOrClosing)
-                {
-                    await client.CloseAsync().ConfigureAwait(false);
-                }
-
-                State = MessageReaderState.Stopped;
+                await InternalStopAsync().ConfigureAwait(false);
             }
             finally
             {
                 _sync.Release();
             }
+        }
+
+        private async Task InternalStopAsync()
+        {
+            _readerTokenSource?.Cancel();
+
+            var client = _subscriptionClient;
+            if (client != null)
+            {
+                if (!client.IsClosedOrClosing)
+                {
+                    await client.CloseAsync().ConfigureAwait(false);
+                }
+            }
+
+            State = MessageReaderState.Stopped;
         }
 
         private void ThrowIfDisposed()
@@ -206,7 +215,7 @@ namespace KM.MessageQueue.Azure.Topic
 
             if (disposing)
             {
-                _readerTokenSource?.Cancel();
+                InternalStopAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             }
 
             _disposed = true;
@@ -223,10 +232,10 @@ namespace KM.MessageQueue.Azure.Topic
                 return;
             }
 
+            await InternalStopAsync().ConfigureAwait(false);
+
             Dispose(false);
             GC.SuppressFinalize(this);
-
-            await Task.CompletedTask;
         }
 
 #endif
