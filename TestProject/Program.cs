@@ -1,6 +1,7 @@
 ﻿using KM.MessageQueue;
 //using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,6 +15,11 @@ namespace TestProject
             try
             {
                 var services = new ServiceCollection()
+                    .AddLogging(options =>
+                    {
+                        options.AddConsole();
+                        options.SetMinimumLevel(LogLevel.Trace);
+                    })
                     .AddSingleton<MyApplication>()
                     .AddSingleton(typeof(IMessageFormatter<>), typeof(JsonFormatter<>))
                     .AddSingleton<IMessageHandler<MyMessage>, MyMessageHandler>()
