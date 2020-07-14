@@ -8,7 +8,7 @@ namespace TestProject
 {
     public sealed class MyMessageHandler : IMessageHandler<MyMessage>
     {
-        public Task HandleErrorAsync(Exception error, CancellationToken cancellationToken)
+        public Task HandleErrorAsync(Exception error, object? userData, CancellationToken cancellationToken)
         {
             Console.WriteLine($"Message error: {error}");
             return Task.CompletedTask;

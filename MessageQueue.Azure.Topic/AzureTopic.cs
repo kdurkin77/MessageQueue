@@ -12,8 +12,8 @@ namespace KM.MessageQueue.Azure.Topic
         private bool _disposed = false;
         private readonly ILogger _logger;
         private readonly AzureTopicOptions<TMessage> _options;
-        private readonly IMessageFormatter<TMessage> _formatter;
-        private readonly TopicClient _topicClient;
+        internal readonly IMessageFormatter<TMessage> _formatter;
+        internal readonly TopicClient _topicClient;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
@@ -84,7 +84,18 @@ namespace KM.MessageQueue.Azure.Topic
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (_options.EntityPath is null)
+            {
+                throw new ArgumentNullException(nameof(_options.EntityPath));
+            }
+
+            if (_options.SubscriptionName is null)
+            {
+                throw new ArgumentNullException(nameof(_options.SubscriptionName));
+            }
+
+            var reader = new AzureTopicReader<TMessage>(this, _options.EntityPath, _options.SubscriptionName);
+            return Task.FromResult<IMessageReader<TMessage>>(reader);
         }
 
         private void ThrowIfDisposed()

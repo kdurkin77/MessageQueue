@@ -16,7 +16,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
         }
 
-        public Task HandleErrorAsync(Exception error, CancellationToken cancellationToken)
+        public Task HandleErrorAsync(Exception error, object? userData, CancellationToken cancellationToken)
         {
             _logger.LogError(error, $"Error in {nameof(Handler<TMessage>)}");
             return Task.CompletedTask;

@@ -6,19 +6,12 @@ namespace KM.MessageQueue.FileSystem.Disk
 {
     internal sealed class DiskMessageReader<TMessage> : IMessageReader<TMessage>
     {
-        private enum ReaderState
-        {
-            Stopped = 0,
-            StopRequested = 1,
-            Running = 2
-        }
-
         private bool _disposed = false;
         private readonly DiskMessageQueue<TMessage> _queue;
 
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
-        private ReaderState _readerState = ReaderState.Stopped;
+        public MessageReaderState State { get; private set; } = MessageReaderState.Stopped;
         private Task? _readerTask = null;
         private CancellationTokenSource? _readerTokenSource = null;
 
@@ -29,6 +22,13 @@ namespace KM.MessageQueue.FileSystem.Disk
 
         public Task StartAsync(IMessageHandler<TMessage> messageHandler, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
+            if (messageHandler is null)
+            {
+                throw new ArgumentNullException(nameof(messageHandler));
+            }
+
             return StartAsync(messageHandler, null, cancellationToken);
         }
 
@@ -44,12 +44,12 @@ namespace KM.MessageQueue.FileSystem.Disk
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (_readerState == ReaderState.Running)
+                if (State == MessageReaderState.Running)
                 {
                     throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already started");
                 }
 
-                if (_readerState == ReaderState.StopRequested)
+                if (State == MessageReaderState.StopRequested)
                 {
                     throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is stopping");
                 }
@@ -58,7 +58,7 @@ namespace KM.MessageQueue.FileSystem.Disk
 
                 _readerTask = Task.Run(() => ReaderLoop(messageHandler, userData, cancellationToken));
 
-                _readerState = ReaderState.Running;
+                State = MessageReaderState.Running;
             }
             finally
             {
@@ -97,7 +97,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             }
             catch (Exception ex)
             {
-                await messageHandler.HandleErrorAsync(ex, cancellationToken).ConfigureAwait(false);
+                await messageHandler.HandleErrorAsync(ex, userData, cancellationToken).ConfigureAwait(false);
                 throw;
             }
             finally
@@ -105,7 +105,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 _readerTokenSource?.Dispose();
                 _readerTokenSource = null;
                 _readerTask = null;
-                _readerState = ReaderState.Stopped;
+                State = MessageReaderState.Stopped;
             }
         }
 
@@ -116,12 +116,12 @@ namespace KM.MessageQueue.FileSystem.Disk
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (_readerState == ReaderState.Stopped)
+                if (State == MessageReaderState.Stopped)
                 {
                     throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already stopped");
                 }
 
-                if (_readerState == ReaderState.StopRequested)
+                if (State == MessageReaderState.StopRequested)
                 {
                     throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already stopping");
                 }
@@ -132,7 +132,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 }
 
                 _readerTokenSource.Cancel();
-                _readerState = ReaderState.StopRequested;
+                State = MessageReaderState.StopRequested;
             }
             finally
             {
@@ -172,6 +172,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         ~DiskMessageReader() => Dispose(false);
 
 #if !NETSTANDARD2_0
+
         public async ValueTask DisposeAsync()
         {
             if (_disposed)
@@ -186,6 +187,8 @@ namespace KM.MessageQueue.FileSystem.Disk
 
             await Task.CompletedTask;
         }
+
 #endif
+
     }
 }

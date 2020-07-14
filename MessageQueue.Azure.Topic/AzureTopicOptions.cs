@@ -8,6 +8,7 @@ namespace KM.MessageQueue.Azure.Topic
         public string? EntityPath { get; set; }
         public string? SharedAccessKeyName { get; set; }
         public string? SharedAccessKey { get; set; }
+        public string? SubscriptionName { get; set; }
         public TransportType TransportType { get; set; }
     }
 }
