@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
@@ -9,14 +10,16 @@ namespace KM.MessageQueue.Azure.Topic
     public sealed class AzureTopic<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
-        private readonly TopicClient _topicClient;
+        private readonly ILogger _logger;
         private readonly AzureTopicOptions<TMessage> _options;
         private readonly IMessageFormatter<TMessage> _formatter;
+        private readonly TopicClient _topicClient;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
-        public AzureTopic(IOptions<AzureTopicOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
+        public AzureTopic(ILogger<AzureTopic<TMessage>> logger, IOptions<AzureTopicOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
 
@@ -74,7 +77,9 @@ namespace KM.MessageQueue.Azure.Topic
                 }
             }
 
-            await _topicClient.SendAsync(topicMessage);
+            _logger.LogTrace($"posting to {_topicClient.Path}/{topicMessage.Label}");
+
+            await _topicClient.SendAsync(topicMessage).ConfigureAwait(false);
         }
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace KM.MessageQueue.FileSystem.Disk
     public sealed class DiskMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
+        private readonly ILogger _logger;
         private readonly DiskMessageQueueOptions<TMessage> _options;
         private readonly IMessageFormatter<TMessage> _formatter;
 
@@ -25,8 +27,9 @@ namespace KM.MessageQueue.FileSystem.Disk
         private readonly Queue<(FileInfo File, DiskMessage Message)> _messageQueue;
         private static readonly string _messageExtension = @"msg.json.gzip";
 
-        public DiskMessageQueue(IOptions<DiskMessageQueueOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
+        public DiskMessageQueue(ILogger<DiskMessageQueue<TMessage>> logger, IOptions<DiskMessageQueueOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
 
@@ -62,6 +65,8 @@ namespace KM.MessageQueue.FileSystem.Disk
             _sequenceNumber = _messageQueue.Any()
                 ? _messageQueue.Select(item => item.Message.SequenceNumber).Max()
                 : 0L;
+
+            _logger.LogTrace($"initialized with {_messageQueue.Count} stored messages");
         }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
@@ -105,7 +110,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                         body: messageBytes
                         );
 
-                var file = await PersistMessageAsync(diskMessage, cancellationToken);
+                var file = await PersistMessageAsync(diskMessage, cancellationToken).ConfigureAwait(false);
 
                 _messageQueue.Enqueue((file, diskMessage));
             }
@@ -117,7 +122,15 @@ namespace KM.MessageQueue.FileSystem.Disk
 
         private async Task<FileInfo> PersistMessageAsync(DiskMessage diskMessage, CancellationToken cancellationToken)
         {
+            if (diskMessage is null)
+            {
+                throw new ArgumentNullException(nameof(diskMessage));
+            }
+
             var fileName = Path.Combine(_messageStore.FullName, $"{diskMessage.Id:N}.{_messageExtension}");
+
+            _logger.LogTrace($"persisting {diskMessage.Id:N} to {fileName}");
+
             var fileJson = JsonConvert.SerializeObject(diskMessage);
             var fileBytes = Encoding.UTF8.GetBytes(fileJson);
             var compressedBytes = Compress(fileBytes);
@@ -126,8 +139,9 @@ namespace KM.MessageQueue.FileSystem.Disk
             File.WriteAllBytes(fileName, compressedBytes);
             await Task.CompletedTask;
 #else
-            await File.WriteAllBytesAsync(fileName, compressedBytes, cancellationToken);
+            await File.WriteAllBytesAsync(fileName, compressedBytes, cancellationToken).ConfigureAwait(false);
 #endif
+
             return new FileInfo(fileName);
         }
 

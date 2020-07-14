@@ -35,5 +35,17 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Configure(configureOptions)
                 ;
         }
+
+        public static IServiceCollection AddForwarder<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services)
+            where TSourceQueue : IMessageQueue<TMessage>
+            where TDestinationQueue : IMessageQueue<TMessage>
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            return AddForwarder<TMessage, TSourceQueue, TDestinationQueue>(services, _ => { });
+        }
     }
 }
