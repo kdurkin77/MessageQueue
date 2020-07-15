@@ -73,13 +73,13 @@ namespace KM.MessageQueue.Azure.Topic
                     SubscriptionClient.PrefetchCount = _prefetchCount.Value;
                 }
 
-                var handlerOptions = new MessageHandlerOptions(ExceptionHandler(startOptions.MessageHandler, startOptions.UserData))
+                var handlerOptions = new MessageHandlerOptions(ExceptionHandler)
                 {
                     AutoComplete = false,
                     MaxConcurrentCalls = 1
                 };
 
-                SubscriptionClient.RegisterMessageHandler(MessageHandler(startOptions.MessageHandler, startOptions.UserData), handlerOptions);
+                SubscriptionClient.RegisterMessageHandler(MessageHandler, handlerOptions);
 
                 State = MessageReaderState.Running;
             }
@@ -87,16 +87,8 @@ namespace KM.MessageQueue.Azure.Topic
             {
                 _sync.Release();
             }
-        }
 
-        private Func<Message, CancellationToken, Task> MessageHandler(IMessageHandler<TMessage> messageHandler, object? userData)
-        {
-            if (messageHandler is null)
-            {
-                throw new ArgumentNullException(nameof(messageHandler));
-            }
-
-            return async (topicMessage, cancellationToken) =>
+            async Task MessageHandler(Message topicMessage, CancellationToken cancellationToken)
             {
                 if (ReaderTokenSource.IsCancellationRequested)
                 {
@@ -112,7 +104,7 @@ namespace KM.MessageQueue.Azure.Topic
                     UserProperties = topicMessage.UserProperties
                 };
 
-                var result = await messageHandler.HandleMessageAsync(message, attributes, userData, cancellationToken).ConfigureAwait(false);
+                var result = await startOptions.MessageHandler.HandleMessageAsync(message, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
                 switch (result)
                 {
                     case CompletionResult.Complete:
@@ -126,21 +118,13 @@ namespace KM.MessageQueue.Azure.Topic
                     default:
                         throw new NotSupportedException($"{result}");
                 }
-            };
-        }
-
-        private Func<ExceptionReceivedEventArgs, Task> ExceptionHandler(IMessageHandler<TMessage> messageHandler, object? userData)
-        {
-            if (messageHandler is null)
-            {
-                throw new ArgumentNullException(nameof(messageHandler));
             }
 
-            return async (exceptionReceivedEventArgs) =>
+            async Task ExceptionHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
             {
-                await messageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, userData, ReaderTokenSource.Token).ConfigureAwait(false);
+                await startOptions.MessageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, startOptions.UserData, ReaderTokenSource.Token).ConfigureAwait(false);
                 await InternalStopAsync().ConfigureAwait(false);
-            };
+            }
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
