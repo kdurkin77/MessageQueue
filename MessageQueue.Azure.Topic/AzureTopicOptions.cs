@@ -9,7 +9,6 @@ namespace KM.MessageQueue.Azure.Topic
         public int? PrefetchCount { get; set; }
         public string? SharedAccessKeyName { get; set; }
         public string? SharedAccessKey { get; set; }
-        public string? SubscriptionName { get; set; }
         public TransportType TransportType { get; set; }
     }
 }

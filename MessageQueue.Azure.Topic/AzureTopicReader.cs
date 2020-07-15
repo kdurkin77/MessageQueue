@@ -10,7 +10,6 @@ namespace KM.MessageQueue.Azure.Topic
         private bool _disposed = false;
         private readonly AzureTopic<TMessage> _queue;
         private readonly string _topicPath;
-        private readonly string _subscriptionName;
         private readonly int? _prefetchCount;
 
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
@@ -35,29 +34,21 @@ namespace KM.MessageQueue.Azure.Topic
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
             _topicPath = queue._options.EntityPath ?? throw new ArgumentNullException(nameof(queue._options.EntityPath));
-            _subscriptionName = queue._options.SubscriptionName ?? throw new ArgumentNullException(nameof(queue._options.SubscriptionName));
             _prefetchCount = queue._options.PrefetchCount;
         }
 
-        public Task StartAsync(IMessageHandler<TMessage> messageHandler, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            if (messageHandler is null)
+            if (startOptions is null)
             {
-                throw new ArgumentNullException(nameof(messageHandler));
+                throw new ArgumentNullException(nameof(startOptions));
             }
 
-            return StartAsync(messageHandler, null, cancellationToken);
-        }
-
-        public async Task StartAsync(IMessageHandler<TMessage> messageHandler, object? userData, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            if (messageHandler is null)
+            if (startOptions.SubscriptionName is null)
             {
-                throw new ArgumentNullException(nameof(messageHandler));
+                throw new ArgumentNullException(nameof(startOptions.SubscriptionName));
             }
 
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -75,20 +66,20 @@ namespace KM.MessageQueue.Azure.Topic
 
                 ReaderTokenSource = new CancellationTokenSource();
 
-                SubscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, _subscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
+                SubscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, startOptions.SubscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
 
                 if (_prefetchCount.HasValue)
                 {
                     SubscriptionClient.PrefetchCount = _prefetchCount.Value;
                 }
 
-                var handlerOptions = new MessageHandlerOptions(ExceptionHandler(messageHandler, userData))
+                var handlerOptions = new MessageHandlerOptions(ExceptionHandler(startOptions.MessageHandler, startOptions.UserData))
                 {
                     AutoComplete = false,
                     MaxConcurrentCalls = 1
                 };
 
-                SubscriptionClient.RegisterMessageHandler(MessageHandler(messageHandler, userData), handlerOptions);
+                SubscriptionClient.RegisterMessageHandler(MessageHandler(startOptions.MessageHandler, startOptions.UserData), handlerOptions);
 
                 State = MessageReaderState.Running;
             }

@@ -22,9 +22,15 @@ namespace KM.MessageQueue.Specialized.Forwarder
             _sourceQueue = sourceQueue ?? throw new ArgumentNullException(nameof(sourceQueue));
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
 
+            var startOptions = new MessageReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue))
+            {
+                SubscriptionName = _options.SourceSubscriptionName,
+                UserData = _options.SourceUserData
+            };
+
             // feels bad man
             _sourceReader = _sourceQueue.GetReaderAsync(default).ConfigureAwait(false).GetAwaiter().GetResult();
-            _sourceReader.StartAsync(new Handler<TMessage>(_logger, _destinationQueue), default).ConfigureAwait(false).GetAwaiter().GetResult();
+            _sourceReader.StartAsync(startOptions, default).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)

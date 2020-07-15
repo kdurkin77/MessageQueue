@@ -20,25 +20,13 @@ namespace KM.MessageQueue.FileSystem.Disk
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public Task StartAsync(IMessageHandler<TMessage> messageHandler, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            if (messageHandler is null)
+            if (startOptions is null)
             {
-                throw new ArgumentNullException(nameof(messageHandler));
-            }
-
-            return StartAsync(messageHandler, null, cancellationToken);
-        }
-
-        public async Task StartAsync(IMessageHandler<TMessage> messageHandler, object? userData, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            if (messageHandler is null)
-            {
-                throw new ArgumentNullException(nameof(messageHandler));
+                throw new ArgumentNullException(nameof(startOptions));
             }
 
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -56,7 +44,7 @@ namespace KM.MessageQueue.FileSystem.Disk
 
                 _readerTokenSource = new CancellationTokenSource();
 
-                _readerTask = Task.Run(() => ReaderLoop(messageHandler, userData, cancellationToken));
+                _readerTask = Task.Run(() => ReaderLoop(startOptions.MessageHandler, startOptions.UserData, cancellationToken));
 
                 State = MessageReaderState.Running;
             }

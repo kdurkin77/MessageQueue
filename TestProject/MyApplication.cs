@@ -24,8 +24,17 @@ namespace TestProject
             await using var reader_1 = await _messageQueue.GetReaderAsync(token);
             await using var reader_2 = await _messageQueue.GetReaderAsync(token);
 
-            await reader_1.StartAsync(_handler, "1", token);
-            await reader_2.StartAsync(_handler, "2", token);
+            var start_options_1 = new MessageReaderStartOptions<MyMessage>(_handler)
+            {
+                UserData = "1"
+            };
+            await reader_1.StartAsync(start_options_1, token);
+
+            var start_options_2 = new MessageReaderStartOptions<MyMessage>(_handler)
+            {
+                UserData = "2"
+            };
+            await reader_2.StartAsync(start_options_2, token);
 
             await writerTask;
 
