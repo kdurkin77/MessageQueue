@@ -10,6 +10,7 @@ namespace KM.MessageQueue
         }
 
         public IMessageHandler<TMessage> MessageHandler { get; }
+        public int? PrefetchCount { get; set; }
         public string? SubscriptionName { get; set; }
         public object? UserData { get; set; }
     }

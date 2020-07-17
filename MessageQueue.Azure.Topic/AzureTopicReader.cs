@@ -10,7 +10,6 @@ namespace KM.MessageQueue.Azure.Topic
         private bool _disposed = false;
         private readonly AzureTopic<TMessage> _queue;
         private readonly string _topicPath;
-        private readonly int? _prefetchCount;
 
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
@@ -34,7 +33,6 @@ namespace KM.MessageQueue.Azure.Topic
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
             _topicPath = queue._options.EntityPath ?? throw new ArgumentNullException(nameof(queue._options.EntityPath));
-            _prefetchCount = queue._options.PrefetchCount;
         }
 
         public async Task StartAsync(MessageReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
@@ -68,9 +66,9 @@ namespace KM.MessageQueue.Azure.Topic
 
                 SubscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, startOptions.SubscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
 
-                if (_prefetchCount.HasValue)
+                if (startOptions.PrefetchCount.HasValue)
                 {
-                    SubscriptionClient.PrefetchCount = _prefetchCount.Value;
+                    SubscriptionClient.PrefetchCount = startOptions.PrefetchCount.Value;
                 }
 
                 var handlerOptions = new MessageHandlerOptions(ExceptionHandler)
