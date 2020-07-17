@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TestProject
+﻿namespace TestProject
 {
     public sealed class MyMessage
     {
