@@ -50,7 +50,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             _messageQueue =
                 new Queue<(FileInfo, DiskMessage)>(
                     _messageStore
-                        .GetFiles($"*.{_messageExtension}")
+                        .GetFiles($"*.{_messageExtension}", SearchOption.AllDirectories)
                         .Select(file =>
                         {
                             var compressedBytes = File.ReadAllBytes(file.FullName);
@@ -100,6 +100,14 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 ThrowIfDisposed();
 
+                if (_options.MaxQueueSize.HasValue)
+                {
+                    if (_messageQueue.Count >= _options.MaxQueueSize.Value)
+                    {
+                        throw new InvalidOperationException("Maximum queue size exceeded");
+                    }
+                }
+
                 var messageBytes = _formatter.MessageToBytes(message);
 
                 var diskMessage =
@@ -127,7 +135,16 @@ namespace KM.MessageQueue.FileSystem.Disk
                 throw new ArgumentNullException(nameof(diskMessage));
             }
 
-            var fileName = Path.Combine(_messageStore.FullName, $"{diskMessage.Id:N}.{_messageExtension}");
+            var partitionSize = _options.MessagePartitionSize ?? 5_000;
+
+            var partition = diskMessage.SequenceNumber / partitionSize;
+            var targetPath = Path.Combine(_messageStore.FullName, $"{partition}");
+            if (!Directory.Exists(targetPath))
+            {
+                Directory.CreateDirectory(targetPath);
+            }
+
+            var fileName = Path.Combine(targetPath, $"{diskMessage.Id:N}.{_messageExtension}");
 
             _logger.LogTrace($"persisting {diskMessage.Id:N} to {fileName}");
 
