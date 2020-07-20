@@ -42,13 +42,29 @@ namespace KM.MessageQueue.Specialized.Forwarder
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return _sourceQueue.PostMessageAsync(message, cancellationToken);
+            try
+            {
+                return _sourceQueue.PostMessageAsync(message, cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                _options.ExceptionHandler?.Invoke(ex);
+                throw;
+            }
         }
 
         public Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return _sourceQueue.PostMessageAsync(message, attributes, cancellationToken);
+            try
+            {
+                return _sourceQueue.PostMessageAsync(message, attributes, cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                _options.ExceptionHandler?.Invoke(ex);
+                throw;
+            }
         }
 
         private void ThrowIfDisposed()
