@@ -15,6 +15,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
+            _exceptionHandler = exceptionHandler;
         }
 
         public Task HandleErrorAsync(Exception error, object? userData, CancellationToken cancellationToken)

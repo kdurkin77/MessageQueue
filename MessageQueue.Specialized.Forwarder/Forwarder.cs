@@ -22,7 +22,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
             _sourceQueue = sourceQueue ?? throw new ArgumentNullException(nameof(sourceQueue));
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
 
-            var startOptions = new MessageReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue))
+            var startOptions = new MessageReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue, _options.ExceptionHandler))
             {
                 SubscriptionName = _options.SourceSubscriptionName,
                 UserData = _options.SourceUserData
