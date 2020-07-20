@@ -7,6 +7,6 @@ namespace KM.MessageQueue.Specialized.Forwarder
     {
         public string? SourceSubscriptionName { get; set; }
         public object? SourceUserData { get; set; }
-        public Func<Exception, Task<CompletionResult>>? ExceptionHandler { get; set; }
+        public Func<Exception, Task<CompletionResult>>? ForwardingErrorHandler { get; set; }
     }
 }

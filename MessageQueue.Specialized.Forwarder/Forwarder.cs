@@ -22,7 +22,8 @@ namespace KM.MessageQueue.Specialized.Forwarder
             _sourceQueue = sourceQueue ?? throw new ArgumentNullException(nameof(sourceQueue));
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
 
-            var startOptions = new MessageReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue, _options.ExceptionHandler))
+            var forwarderErrorHandler = _options.ForwardingErrorHandler ?? (_ => Task.FromResult(CompletionResult.Abandon));
+            var startOptions = new MessageReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue, forwarderErrorHandler))
             {
                 SubscriptionName = _options.SourceSubscriptionName,
                 UserData = _options.SourceUserData
@@ -42,29 +43,13 @@ namespace KM.MessageQueue.Specialized.Forwarder
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            try
-            {
-                return _sourceQueue.PostMessageAsync(message, cancellationToken);
-            }
-            catch(Exception ex)
-            {
-                _options.ExceptionHandler?.Invoke(ex);
-                throw;
-            }
+            return _sourceQueue.PostMessageAsync(message, cancellationToken);
         }
 
         public Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            try
-            {
-                return _sourceQueue.PostMessageAsync(message, attributes, cancellationToken);
-            }
-            catch(Exception ex)
-            {
-                _options.ExceptionHandler?.Invoke(ex);
-                throw;
-            }
+            return _sourceQueue.PostMessageAsync(message, attributes, cancellationToken);
         }
 
         private void ThrowIfDisposed()
