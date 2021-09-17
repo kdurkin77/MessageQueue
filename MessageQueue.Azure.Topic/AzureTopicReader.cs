@@ -25,7 +25,7 @@ namespace KM.MessageQueue.Azure.Topic
         private CancellationTokenSource? _readerTokenSource = null;
         private CancellationTokenSource ReaderTokenSource
         {
-            get => _readerTokenSource ?? throw new SystemException($"{nameof(AzureTopic<TMessage>)}.{nameof(_readerTokenSource)} is null");
+            get => _readerTokenSource ?? throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
             set => _readerTokenSource = value;
         }
 
@@ -94,7 +94,6 @@ namespace KM.MessageQueue.Azure.Topic
                     return;
                 }
 
-                var message = _queue._formatter.BytesToMessage(topicMessage.Body);
                 var attributes = new MessageAttributes()
                 {
                     ContentType = topicMessage.ContentType,
@@ -102,7 +101,7 @@ namespace KM.MessageQueue.Azure.Topic
                     UserProperties = topicMessage.UserProperties
                 };
 
-                var result = await startOptions.MessageHandler.HandleMessageAsync(message, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
+                var result = await startOptions.MessageHandler.HandleMessageAsync(_queue._formatter, topicMessage.Body, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
                 switch (result)
                 {
                     case CompletionResult.Complete:

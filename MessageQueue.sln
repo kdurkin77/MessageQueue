@@ -9,9 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject", "TestProject\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Azure.Topic", "MessageQueue.Azure.Topic\MessageQueue.Azure.Topic.csproj", "{19B7A29B-471F-49E7-9E2B-4D4C4043C3D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.FileSystem.Disk", "MessageQueue.FileSystem.Disk\MessageQueue.FileSystem.Disk.csproj", "{F6F4A331-0EDB-4C69-ABD4-9CBE5B1BFB08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.FileSystem.Disk", "MessageQueue.FileSystem.Disk\MessageQueue.FileSystem.Disk.csproj", "{F6F4A331-0EDB-4C69-ABD4-9CBE5B1BFB08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Specialized.Forwarder", "MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj", "{F7CE1984-ABF4-42DB-9FFF-D85CE3E637EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Specialized.Forwarder", "MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj", "{F7CE1984-ABF4-42DB-9FFF-D85CE3E637EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.Json", "MessageQueue.Formatters.Json\MessageQueue.Formatters.Json.csproj", "{461090A9-6DD5-4CAF-BB71-9E3969EFD775}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.DoubleJsonGZip", "MessageQueue.Formatters.DoubleJsonGZip\MessageQueue.Formatters.DoubleJsonGZip.csproj", "{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{F7CE1984-ABF4-42DB-9FFF-D85CE3E637EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7CE1984-ABF4-42DB-9FFF-D85CE3E637EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7CE1984-ABF4-42DB-9FFF-D85CE3E637EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{461090A9-6DD5-4CAF-BB71-9E3969EFD775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{461090A9-6DD5-4CAF-BB71-9E3969EFD775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{461090A9-6DD5-4CAF-BB71-9E3969EFD775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{461090A9-6DD5-4CAF-BB71-9E3969EFD775}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

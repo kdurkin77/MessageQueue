@@ -6,7 +6,7 @@ namespace KM.MessageQueue
 {
     public interface IMessageHandler<TMessage>
     {
-        Task<CompletionResult> HandleMessageAsync(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken);
+        Task<CompletionResult> HandleMessageAsync(IMessageFormatter<TMessage> formatter, byte[] messageBytes, MessageAttributes attributes, object? userData, CancellationToken cancellationToken);
         Task HandleErrorAsync(Exception error, object? userData, CancellationToken cancellationToken);
     }
 }

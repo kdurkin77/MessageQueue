@@ -1,13 +1,4 @@
-/.vs
-/MessageQueue/obj
-/MessageQueue/bin
-/MessageQueue.AzureTopic/obj
-/MessageQueue.AzureTopic/bin
-/TestProject/obj
-/TestProject/bin
-/MessageQueue.Azure.Topic/bin
-/MessageQueue.Azure.Topic/obj
-/MessageQueue.FileSystem.Disk/bin
-/MessageQueue.FileSystem.Disk/obj
-/MessageQueue.Specialized.Forwarder/bin
-/MessageQueue.Specialized.Forwarder/obj
+bin
+obj
+.vs
+*.user

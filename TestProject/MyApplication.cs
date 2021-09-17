@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace TestProject
 {
+    public sealed class MyMessage
+    {
+        public Guid? Id { get; set; }
+        public string? Test { get; set; }
+    }
+
     public sealed class MyApplication
     {
         private readonly IMessageQueue<MyMessage> _messageQueue;
@@ -22,19 +28,21 @@ namespace TestProject
             var writerTask = Task.Run(() => WriteMessages(_messageQueue, token), token);
 
             await using var reader_1 = await _messageQueue.GetReaderAsync(token);
-            await using var reader_2 = await _messageQueue.GetReaderAsync(token);
+            //await using var reader_2 = await _messageQueue.GetReaderAsync(token);
 
             var start_options_1 = new MessageReaderStartOptions<MyMessage>(_handler)
             {
-                UserData = "1"
+                //UserData = "1",
+                SubscriptionName = "comcast"
             };
             await reader_1.StartAsync(start_options_1, token);
 
-            var start_options_2 = new MessageReaderStartOptions<MyMessage>(_handler)
-            {
-                UserData = "2"
-            };
-            await reader_2.StartAsync(start_options_2, token);
+            //var start_options_2 = new MessageReaderStartOptions<MyMessage>(_handler)
+            //{
+            //    UserData = "2",
+            //    SubscriptionName = ",comcast,"
+            //};
+            //await reader_2.StartAsync(start_options_2, token);
 
             await writerTask;
 
@@ -42,28 +50,24 @@ namespace TestProject
             Console.ReadKey();
 
             await reader_1.StopAsync(token);
-            await reader_2.StopAsync(token);
+            //await reader_2.StopAsync(token);
         }
 
         private static async Task WriteMessages(IMessageQueue<MyMessage> queue, CancellationToken token)
         {
-            for (int i = 0; i < 20; i++)
+            for (var i = 0; i < 10; i++)
             {
-                Console.WriteLine($"writing message: {i}");
+                Console.WriteLine($"writing message {i}");
 
                 var msg = new MyMessage()
                 {
-                    Name = $"name-{i}",
-                    Age = i
+                    Id = Guid.NewGuid(),
+                    Test = "TEST"
                 };
 
                 var attributes = new MessageAttributes()
                 {
-                    Label = $"my-label-{i}",
-                    UserProperties = new Dictionary<string, object>()
-                    {
-                        { "Key", string.Empty }
-                    }
+                    Label = ""
                 };
 
                 await queue.PostMessageAsync(msg, attributes, token);

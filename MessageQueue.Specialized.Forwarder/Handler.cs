@@ -25,10 +25,11 @@ namespace KM.MessageQueue.Specialized.Forwarder
             return Task.CompletedTask;
         }
 
-        public async Task<CompletionResult> HandleMessageAsync(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
+        public async Task<CompletionResult> HandleMessageAsync(IMessageFormatter<TMessage> formatter, byte[] messageBytes, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
         {
             try
             {
+                var message = formatter.BytesToMessage(messageBytes);
                 await _destinationQueue.PostMessageAsync(message, attributes, cancellationToken).ConfigureAwait(false);
                 return CompletionResult.Complete;
             }

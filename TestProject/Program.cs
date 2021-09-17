@@ -1,5 +1,7 @@
 ﻿using KM.MessageQueue;
-//using Microsoft.Azure.ServiceBus;
+using KM.MessageQueue.Azure.Topic;
+using KM.MessageQueue.FileSystem.Disk;
+using MessageQueue.Formatters.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -27,13 +29,14 @@ namespace TestProject
                     {
                         options.MessageStore = new DirectoryInfo("/my-messages");
                     })
-                    //.AddAzureTopicMessageQueue<PersonMessage>(options =>
-                    //{
-                    //    options.Endpoint = "YOUR ENDPOINT HERE";
-                    //    options.EntityPath = "YOUR ENTITY PATH HERE";
-                    //    options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
-                    //    options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
-                    //})
+                    .AddAzureTopicMessageQueue<MyMessage>(options =>
+                    {
+                        options.Endpoint = "YOUR ENDPOINT HERE";
+                        options.EntityPath = "YOUR ENTITY PATH HERE";
+                        options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
+                        options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
+                    })
+                    .AddForwarder<MyMessage, DiskMessageQueue<MyMessage>, AzureTopic<MyMessage>>()
                     .BuildServiceProvider();
 
                 var test = services.GetRequiredService<MyApplication>();

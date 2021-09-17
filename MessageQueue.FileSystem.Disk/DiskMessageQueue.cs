@@ -57,6 +57,11 @@ namespace KM.MessageQueue.FileSystem.Disk
                             var fileBytes = Decompress(compressedBytes);
                             var fileJson = Encoding.UTF8.GetString(fileBytes);
                             var diskMessage = JsonConvert.DeserializeObject<DiskMessage>(fileJson);
+                            if(diskMessage is null)
+                            {
+                                throw new Exception($"Improperly formatted disk message queue file: {file.FullName}");
+                            }
+
                             return (file, diskMessage);
                         })
                         .OrderBy(item => item.diskMessage.SequenceNumber)
@@ -203,7 +208,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             return Task.FromResult<IMessageReader<TMessage>>(reader);
         }
 
-        internal async Task<bool> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage>, byte[], MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {
@@ -219,10 +224,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 }
 
                 var item = _messageQueue.Peek();
-
-                var message = _formatter.BytesToMessage(item.Message.Body);
-
-                var result = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
+                var result = await action(_formatter, item.Message.Body, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {
                     item.File.Delete();
