@@ -33,14 +33,14 @@ namespace TestProject
             var start_options_1 = new MessageReaderStartOptions<MyMessage>(_handler)
             {
                 //UserData = "1",
-                SubscriptionName = "comcast"
+                SubscriptionName = "YOUR SUBSCRIPTION NAME HERE"
             };
             await reader_1.StartAsync(start_options_1, token);
 
             //var start_options_2 = new MessageReaderStartOptions<MyMessage>(_handler)
             //{
             //    UserData = "2",
-            //    SubscriptionName = ",comcast,"
+            //    SubscriptionName = "YOUR SUBSCRIPTION NAME HERE"
             //};
             //await reader_2.StartAsync(start_options_2, token);
 
