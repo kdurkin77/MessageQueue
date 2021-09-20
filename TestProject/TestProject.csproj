@@ -11,17 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="1.0.2" />
+    <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="1.0.2" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Json" Version="1.0.1" />
+    <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.Azure.Topic\MessageQueue.Azure.Topic.csproj" />
-    <ProjectReference Include="..\MessageQueue.FileSystem.Disk\MessageQueue.FileSystem.Disk.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.Json\MessageQueue.Formatters.Json.csproj" />
-    <ProjectReference Include="..\MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj" />
   </ItemGroup>
 
 </Project>
