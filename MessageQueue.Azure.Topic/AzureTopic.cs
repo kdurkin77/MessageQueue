@@ -11,13 +11,13 @@ namespace KM.MessageQueue.Azure.Topic
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        internal readonly AzureTopicOptions<TMessage> _options;
+        internal readonly AzureTopicOptions _options;
         internal readonly IMessageFormatter<TMessage> _formatter;
         internal readonly TopicClient _topicClient;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
-        public AzureTopic(ILogger<AzureTopic<TMessage>> logger, IOptions<AzureTopicOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
+        public AzureTopic(ILogger<AzureTopic<TMessage>> logger, IOptions<AzureTopicOptions> options, IMessageFormatter<TMessage> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));

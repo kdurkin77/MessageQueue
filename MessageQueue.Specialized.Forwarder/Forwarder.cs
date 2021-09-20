@@ -10,12 +10,12 @@ namespace KM.MessageQueue.Specialized.Forwarder
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly ForwarderOptions<TMessage> _options;
+        private readonly ForwarderOptions _options;
         private readonly IMessageQueue<TMessage> _sourceQueue;
         private readonly IMessageQueue<TMessage> _destinationQueue;
         private readonly IMessageReader<TMessage> _sourceReader;
 
-        public Forwarder(ILogger<Forwarder<TMessage>> logger, IOptions<ForwarderOptions<TMessage>> options, IMessageQueue<TMessage> sourceQueue, IMessageQueue<TMessage> destinationQueue)
+        public Forwarder(ILogger<Forwarder<TMessage>> logger, IOptions<ForwarderOptions> options, IMessageQueue<TMessage> sourceQueue, IMessageQueue<TMessage> destinationQueue)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));

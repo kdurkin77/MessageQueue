@@ -2,7 +2,7 @@
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    public sealed class AzureTopicOptions<TMessage>
+    public sealed class AzureTopicOptions
     {
         public string? Endpoint { get; set; }
         public string? EntityPath { get; set; }

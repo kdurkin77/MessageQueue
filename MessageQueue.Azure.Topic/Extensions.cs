@@ -7,12 +7,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class AzureTopicExtensions
     {
-        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<AzureTopicOptions<TMessage>> configureOptions)
+        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<AzureTopicOptions> configureOptions)
         {
             return services.AddAzureTopicMessageQueue<TMessage>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, AzureTopicOptions<TMessage>> configureOptions)
+        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, AzureTopicOptions> configureOptions)
         {
             if (services is null)
             {
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services
                 .AddMessageQueue<AzureTopic<TMessage>, TMessage>(services =>
                 {
-                    var options = new AzureTopicOptions<TMessage>();
+                    var options = new AzureTopicOptions();
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<AzureTopic<TMessage>>>();

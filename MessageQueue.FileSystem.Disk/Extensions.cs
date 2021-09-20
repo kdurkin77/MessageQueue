@@ -7,12 +7,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class DiskMessageQueueExtensions
     {
-        public static IServiceCollection AddDiskMessageQueue<TMessage>(this IServiceCollection services, Action<DiskMessageQueueOptions<TMessage>> configureOptions)
+        public static IServiceCollection AddDiskMessageQueue<TMessage>(this IServiceCollection services, Action<DiskMessageQueueOptions> configureOptions)
         {
             return services.AddDiskMessageQueue<TMessage>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddDiskMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, DiskMessageQueueOptions<TMessage>> configureOptions)
+        public static IServiceCollection AddDiskMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, DiskMessageQueueOptions> configureOptions)
         {
             if (services is null)
             {
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services
                 .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage>(services =>
                 {
-                    var options = new DiskMessageQueueOptions<TMessage>();
+                    var options = new DiskMessageQueueOptions();
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<DiskMessageQueue<TMessage>>>();

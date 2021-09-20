@@ -16,7 +16,7 @@ namespace KM.MessageQueue.FileSystem.Disk
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly DiskMessageQueueOptions<TMessage> _options;
+        private readonly DiskMessageQueueOptions _options;
         private readonly IMessageFormatter<TMessage> _formatter;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
@@ -27,7 +27,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         private readonly Queue<(FileInfo File, DiskMessage Message)> _messageQueue;
         private static readonly string _messageExtension = @"msg.json.gzip";
 
-        public DiskMessageQueue(ILogger<DiskMessageQueue<TMessage>> logger, IOptions<DiskMessageQueueOptions<TMessage>> options, IMessageFormatter<TMessage> formatter)
+        public DiskMessageQueue(ILogger<DiskMessageQueue<TMessage>> logger, IOptions<DiskMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));

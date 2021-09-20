@@ -12,8 +12,11 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Forwarder;</PackageTags>
     <Product>KM.MessageQueue..Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
-    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
-    <Version>1.0.0</Version>
+    <PackageReleaseNotes>
+      Updated the add forwarder extentions to take a function to configure the options
+      Removed the generic type from the options since they are no longer required to be registered
+    </PackageReleaseNotes>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>

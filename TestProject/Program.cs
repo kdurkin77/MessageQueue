@@ -1,7 +1,8 @@
 ﻿using KM.MessageQueue;
 using KM.MessageQueue.Azure.Topic;
 using KM.MessageQueue.FileSystem.Disk;
-using MessageQueue.Formatters.Json;
+using KM.MessageQueue.Formatters.Json;
+using KM.MessageQueue.Specialized.Forwarder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -36,7 +37,16 @@ namespace TestProject
                         options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
                         options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
                     })
-                    .AddForwarder<MyMessage, DiskMessageQueue<MyMessage>, AzureTopic<MyMessage>>()
+                    .AddForwarder<MyMessage, DiskMessageQueue<MyMessage>, AzureTopic<MyMessage>>((services, options) =>
+                    {
+                        var logger = services.GetRequiredService<ILogger<Forwarder<MyMessage>>>();
+                        options.SourceSubscriptionName = "YOUR SUBSCRIPTION NAME HERE";
+                        options.ForwardingErrorHandler = ex =>
+                        {
+                            logger.LogError(ex, string.Empty);
+                            return Task.FromResult(CompletionResult.Abandon);
+                        };
+                    })
                     .BuildServiceProvider();
 
                 var test = services.GetRequiredService<MyApplication>();

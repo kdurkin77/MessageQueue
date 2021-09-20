@@ -3,7 +3,7 @@ using System.IO;
 
 namespace KM.MessageQueue.FileSystem.Disk
 {
-    public sealed class DiskMessageQueueOptions<TMessage>
+    public sealed class DiskMessageQueueOptions
     {
         public int? MaxQueueSize { get; set; }
         public int? MessagePartitionSize { get; set; }
