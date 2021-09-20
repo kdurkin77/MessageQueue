@@ -1,11 +1,10 @@
-﻿using KM.MessageQueue;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-namespace MessageQueue.Formatters.DoubleJsonGZip
+namespace KM.MessageQueue.Formatters.DoubleJsonGZip
 {
     public sealed class DoubleJsonGZipFormatter<TMessage> : IMessageFormatter<TMessage>
     {

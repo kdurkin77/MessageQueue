@@ -13,9 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.FileSystem.Dis
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Specialized.Forwarder", "MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj", "{F7CE1984-ABF4-42DB-9FFF-D85CE3E637EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.Json", "MessageQueue.Formatters.Json\MessageQueue.Formatters.Json.csproj", "{461090A9-6DD5-4CAF-BB71-9E3969EFD775}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.Json", "MessageQueue.Formatters.Json\MessageQueue.Formatters.Json.csproj", "{461090A9-6DD5-4CAF-BB71-9E3969EFD775}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.DoubleJsonGZip", "MessageQueue.Formatters.DoubleJsonGZip\MessageQueue.Formatters.DoubleJsonGZip.csproj", "{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.DoubleJsonGZip", "MessageQueue.Formatters.DoubleJsonGZip\MessageQueue.Formatters.DoubleJsonGZip.csproj", "{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

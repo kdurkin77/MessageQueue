@@ -1,9 +1,8 @@
-﻿using KM.MessageQueue;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Text;
 
-namespace MessageQueue.Formatters.Json
+namespace KM.MessageQueue.Formatters.Json
 {
     public sealed class JsonFormatter<TMessage> : IMessageFormatter<TMessage>
     {
