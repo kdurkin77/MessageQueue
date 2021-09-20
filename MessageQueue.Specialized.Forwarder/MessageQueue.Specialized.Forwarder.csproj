@@ -4,6 +4,16 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <Authors>kdurkin77;reed-adams;</Authors>
+    <PackageId>KM.MessageQueue.Specialized.Forwarder</PackageId>
+    <PackageProjectUrl>https://www.nuget.org/</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
+    <PackageTags>MessageQueue;Queue;MessageReader;Reader;Forwarder;</PackageTags>
+    <Product>KM.MessageQueue..Specialized.Forwarder</Product>
+    <Description>A forwarder to handle forwarding messages from one queue to another</Description>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,12 +23,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="KM.MessageQueue" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

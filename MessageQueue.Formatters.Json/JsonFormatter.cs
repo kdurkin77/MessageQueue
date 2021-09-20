@@ -1,5 +1,6 @@
 ﻿using KM.MessageQueue;
 using Newtonsoft.Json;
+using System;
 using System.Text;
 
 namespace MessageQueue.Formatters.Json
@@ -10,6 +11,7 @@ namespace MessageQueue.Formatters.Json
             Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
         public TMessage BytesToMessage(byte[] bytes) =>
-            JsonConvert.DeserializeObject<TMessage>(Encoding.UTF8.GetString(bytes));
+            JsonConvert.DeserializeObject<TMessage>(Encoding.UTF8.GetString(bytes)) 
+                ?? throw new Exception($"Unable to convert bytes to type {typeof(TMessage)}");
     }
 }

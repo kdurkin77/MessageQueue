@@ -1,5 +1,6 @@
 ﻿using KM.MessageQueue;
 using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -38,8 +39,11 @@ namespace MessageQueue.Formatters.DoubleJsonGZip
                     }
 
                     var outString = Encoding.UTF8.GetString(outputStream.ToArray());
-                    var firstDeserialize = JsonConvert.DeserializeObject<string>(outString);
-                    return JsonConvert.DeserializeObject<TMessage>(firstDeserialize);
+                    var firstDeserialize = JsonConvert.DeserializeObject<string>(outString) 
+                        ?? throw new Exception($"Unable to convert bytes to type {typeof(TMessage)}");
+
+                    return JsonConvert.DeserializeObject<TMessage>(firstDeserialize) 
+                        ?? throw new Exception($"Unable to convert bytes to type {typeof(TMessage)}");
                 }
             }
         }
