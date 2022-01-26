@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30225.117
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue", "MessageQueue\MessageQueue.csproj", "{7839B6DE-01D5-4701-81A1-B2262647A0F7}"
 EndProject
@@ -18,6 +18,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.DoubleJsonGZip", "MessageQueue.Formatters.DoubleJsonGZip\MessageQueue.Formatters.DoubleJsonGZip.csproj", "{DF5FAFB1-FF0D-48AF-9640-095B7F1D8125}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyTestProject", "LegacyTestProject\LegacyTestProject.csproj", "{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Mqtt.Tcp", "MessageQueue.Mqtt.Tcp\MessageQueue.Mqtt.Tcp.csproj", "{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.PlainText", "MessageQueue.Formatters.PlainText\MessageQueue.Formatters.PlainText.csproj", "{FDC13C3D-98EF-40CE-BBC7-93632C3F2FF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +61,14 @@ Global
 		{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDC13C3D-98EF-40CE-BBC7-93632C3F2FF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDC13C3D-98EF-40CE-BBC7-93632C3F2FF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDC13C3D-98EF-40CE-BBC7-93632C3F2FF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDC13C3D-98EF-40CE-BBC7-93632C3F2FF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

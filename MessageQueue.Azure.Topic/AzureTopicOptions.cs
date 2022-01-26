@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 
 namespace KM.MessageQueue.Azure.Topic
 {
@@ -8,6 +8,6 @@ namespace KM.MessageQueue.Azure.Topic
         public string? EntityPath { get; set; }
         public string? SharedAccessKeyName { get; set; }
         public string? SharedAccessKey { get; set; }
-        public TransportType TransportType { get; set; }
+        public ServiceBusTransportType? TransportType { get; set; }
     }
 }

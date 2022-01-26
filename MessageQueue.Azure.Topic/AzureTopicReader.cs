@@ -1,5 +1,6 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,17 +10,16 @@ namespace KM.MessageQueue.Azure.Topic
     {
         private bool _disposed = false;
         private readonly AzureTopic<TMessage> _queue;
-        private readonly string _topicPath;
 
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
         public MessageReaderState State { get; private set; } = MessageReaderState.Stopped;
 
-        private ISubscriptionClient? _subscriptionClient = null;
-        private ISubscriptionClient SubscriptionClient
+        private ServiceBusProcessor? _serviceBusProcessor = null;
+        private ServiceBusProcessor ServiceBusProcessor
         {
-            get => _subscriptionClient ?? throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_subscriptionClient)} is null");
-            set => _subscriptionClient = value;
+            get => _serviceBusProcessor ?? throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_serviceBusProcessor)} is null");
+            set => _serviceBusProcessor = value;
         }
 
         private CancellationTokenSource? _readerTokenSource = null;
@@ -32,7 +32,6 @@ namespace KM.MessageQueue.Azure.Topic
         public AzureTopicReader(AzureTopic<TMessage> queue)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
-            _topicPath = queue._options.EntityPath ?? throw new ArgumentNullException(nameof(queue._options.EntityPath));
         }
 
         public async Task StartAsync(MessageReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
@@ -64,20 +63,22 @@ namespace KM.MessageQueue.Azure.Topic
 
                 ReaderTokenSource = new CancellationTokenSource();
 
-                SubscriptionClient = new SubscriptionClient(_queue._topicClient.ServiceBusConnection, _topicPath, startOptions.SubscriptionName, ReceiveMode.PeekLock, RetryPolicy.Default);
-
-                if (startOptions.PrefetchCount.HasValue)
+                var opts = new ServiceBusProcessorOptions()
                 {
-                    SubscriptionClient.PrefetchCount = startOptions.PrefetchCount.Value;
-                }
-
-                var handlerOptions = new MessageHandlerOptions(ExceptionHandler)
-                {
-                    AutoComplete = false,
+                    ReceiveMode = ServiceBusReceiveMode.PeekLock,
+                    AutoCompleteMessages = false,
                     MaxConcurrentCalls = 1
                 };
 
-                SubscriptionClient.RegisterMessageHandler(MessageHandler, handlerOptions);
+                if (startOptions.PrefetchCount.HasValue)
+                {
+                    opts.PrefetchCount = startOptions.PrefetchCount.Value;
+                }
+
+                ServiceBusProcessor = _queue._serviceBusClient.CreateProcessor(_queue._options.EntityPath, startOptions.SubscriptionName, opts);
+                ServiceBusProcessor.ProcessMessageAsync += MessageHandler;
+                ServiceBusProcessor.ProcessErrorAsync += ErrorHandler;
+                await ServiceBusProcessor.StartProcessingAsync();
 
                 State = MessageReaderState.Running;
             }
@@ -86,7 +87,7 @@ namespace KM.MessageQueue.Azure.Topic
                 _sync.Release();
             }
 
-            async Task MessageHandler(Message topicMessage, CancellationToken cancellationToken)
+            async Task MessageHandler(ProcessMessageEventArgs args)
             {
                 if (ReaderTokenSource.IsCancellationRequested)
                 {
@@ -96,20 +97,20 @@ namespace KM.MessageQueue.Azure.Topic
 
                 var attributes = new MessageAttributes()
                 {
-                    ContentType = topicMessage.ContentType,
-                    Label = topicMessage.Label,
-                    UserProperties = topicMessage.UserProperties
+                    ContentType = args.Message.ContentType,
+                    Label = startOptions.SubscriptionName,
+                    UserProperties = args.Message.ApplicationProperties.ToDictionary(a => a.Key, a => a.Value)
                 };
 
-                var result = await startOptions.MessageHandler.HandleMessageAsync(_queue._formatter, topicMessage.Body, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
+                var result = await startOptions.MessageHandler.HandleMessageAsync(_queue._formatter, args.Message.Body.ToArray(), attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
                 switch (result)
                 {
                     case CompletionResult.Complete:
-                        await SubscriptionClient.CompleteAsync(topicMessage.SystemProperties.LockToken).ConfigureAwait(false);
+                        await args.CompleteMessageAsync(args.Message, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case CompletionResult.Abandon:
-                        await SubscriptionClient.AbandonAsync(topicMessage.SystemProperties.LockToken).ConfigureAwait(false);
+                        await args.AbandonMessageAsync(args.Message, null, cancellationToken).ConfigureAwait(false);
                         break;
 
                     default:
@@ -117,7 +118,7 @@ namespace KM.MessageQueue.Azure.Topic
                 }
             }
 
-            async Task ExceptionHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
+            async Task ErrorHandler(ProcessErrorEventArgs exceptionReceivedEventArgs)
             {
                 await startOptions.MessageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, startOptions.UserData, ReaderTokenSource.Token).ConfigureAwait(false);
                 await InternalStopAsync().ConfigureAwait(false);
@@ -153,12 +154,12 @@ namespace KM.MessageQueue.Azure.Topic
         {
             _readerTokenSource?.Cancel();
 
-            var client = _subscriptionClient;
-            if (client != null)
+            var processor = _serviceBusProcessor;
+            if (processor != null)
             {
-                if (!client.IsClosedOrClosing)
+                if (!processor.IsClosed)
                 {
-                    await client.CloseAsync().ConfigureAwait(false);
+                    await processor.CloseAsync().ConfigureAwait(false);
                 }
             }
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -13,7 +13,7 @@ namespace KM.MessageQueue.Azure.Topic
         private readonly ILogger _logger;
         internal readonly AzureTopicOptions _options;
         internal readonly IMessageFormatter<TMessage> _formatter;
-        internal readonly TopicClient _topicClient;
+        internal readonly ServiceBusClient _serviceBusClient;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
@@ -23,16 +23,13 @@ namespace KM.MessageQueue.Azure.Topic
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
 
-            var builder = new ServiceBusConnectionStringBuilder()
+            var connectionString = $"Endpoint={_options.Endpoint};SharedAccessKeyName={_options.SharedAccessKeyName};SharedAccessKey={_options.SharedAccessKey};EntityPath={_options.EntityPath}";
+            var clientOpts = new ServiceBusClientOptions();
+            if (_options.TransportType.HasValue)
             {
-                Endpoint = _options.Endpoint,
-                EntityPath = _options.EntityPath,
-                SasKey = _options.SharedAccessKey,
-                SasKeyName = _options.SharedAccessKeyName,
-                TransportType = _options.TransportType
-            };
-
-            _topicClient = new TopicClient(builder);
+                clientOpts.TransportType = _options.TransportType.Value;
+            }
+            _serviceBusClient = new ServiceBusClient(connectionString, clientOpts);
         }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
@@ -63,23 +60,25 @@ namespace KM.MessageQueue.Azure.Topic
 
             var messageBytes = _formatter.MessageToBytes(message);
 
-            var topicMessage = new Message(messageBytes)
+            var sender = _serviceBusClient.CreateSender(_options.EntityPath);
+            var sbMessage = new ServiceBusMessage(messageBytes)
             {
                 ContentType = attributes.ContentType,
-                Label = attributes.Label
+                Subject = attributes.Label
             };
 
             if (attributes.UserProperties != null)
             {
                 foreach (var userProperty in attributes.UserProperties)
                 {
-                    topicMessage.UserProperties.Add(userProperty.Key, userProperty.Value);
+                    sbMessage.ApplicationProperties.Add(userProperty.Key, userProperty.Value);
                 }
             }
 
-            _logger.LogTrace($"posting to {_topicClient.Path}/{topicMessage.Label}");
+            _logger.LogTrace($"posting to {_serviceBusClient.FullyQualifiedNamespace}/{_options.EntityPath}/{attributes.Label}");
 
-            await _topicClient.SendAsync(topicMessage).ConfigureAwait(false);
+            await sender.SendMessageAsync(sbMessage).ConfigureAwait(false);
+            await sender.DisposeAsync().ConfigureAwait(false);
         }
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
@@ -111,7 +110,7 @@ namespace KM.MessageQueue.Azure.Topic
 
             if (disposing)
             {
-                _topicClient.CloseAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                _serviceBusClient.DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             }
 
             _disposed = true;
@@ -129,7 +128,7 @@ namespace KM.MessageQueue.Azure.Topic
                 return;
             }
 
-            await _topicClient.CloseAsync().ConfigureAwait(false);
+            await _serviceBusClient.DisposeAsync().ConfigureAwait(false);
             Dispose(false);
             GC.SuppressFinalize(this);
         }
