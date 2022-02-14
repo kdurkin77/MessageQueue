@@ -171,7 +171,7 @@ namespace KM.MessageQueue.Sqlite
             GC.SuppressFinalize(this);
         }
 
-#if !NETSTANDARD2_0
+#if NETSTANDARD2_1_OR_GREATER || NET
 
         public async ValueTask DisposeAsync()
         {
