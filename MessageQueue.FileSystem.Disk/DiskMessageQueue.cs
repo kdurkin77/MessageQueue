@@ -204,7 +204,7 @@ namespace KM.MessageQueue.FileSystem.Disk
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            var reader = new DiskMessageReader<TMessage>(this);
+            var reader = new DiskMessageQueueReader<TMessage>(this);
             return Task.FromResult<IMessageReader<TMessage>>(reader);
         }
 

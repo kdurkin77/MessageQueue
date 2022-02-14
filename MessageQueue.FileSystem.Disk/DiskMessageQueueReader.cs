@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.FileSystem.Disk
 {
-    internal sealed class DiskMessageReader<TMessage> : IMessageReader<TMessage>
+    internal sealed class DiskMessageQueueReader<TMessage> : IMessageReader<TMessage>
     {
         private bool _disposed = false;
         private readonly DiskMessageQueue<TMessage> _queue;
@@ -15,7 +15,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         private Task? _readerTask = null;
         private CancellationTokenSource? _readerTokenSource = null;
 
-        public DiskMessageReader(DiskMessageQueue<TMessage> queue)
+        public DiskMessageQueueReader(DiskMessageQueue<TMessage> queue)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
@@ -34,12 +34,12 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 if (State == MessageReaderState.Running)
                 {
-                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already started");
+                    throw new InvalidOperationException($"{nameof(DiskMessageQueueReader<TMessage>)} is already started");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is stopping");
+                    throw new InvalidOperationException($"{nameof(DiskMessageQueueReader<TMessage>)} is stopping");
                 }
 
                 _readerTokenSource = new CancellationTokenSource();
@@ -68,7 +68,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                     var source = _readerTokenSource;
                     if (source is null)
                     {
-                        throw new SystemException($"{nameof(DiskMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
+                        throw new SystemException($"{nameof(DiskMessageQueueReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
                     }
 
                     if (source.IsCancellationRequested)
@@ -106,17 +106,17 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 if (State == MessageReaderState.Stopped)
                 {
-                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already stopped");
+                    throw new InvalidOperationException($"{nameof(DiskMessageQueueReader<TMessage>)} is already stopped");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(DiskMessageReader<TMessage>)} is already stopping");
+                    throw new InvalidOperationException($"{nameof(DiskMessageQueueReader<TMessage>)} is already stopping");
                 }
 
                 if (_readerTokenSource is null)
                 {
-                    throw new SystemException($"{nameof(DiskMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
+                    throw new SystemException($"{nameof(DiskMessageQueueReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
                 }
 
                 _readerTokenSource.Cancel();
@@ -132,7 +132,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(DiskMessageReader<TMessage>));
+                throw new ObjectDisposedException(nameof(DiskMessageQueueReader<TMessage>));
             }
         }
 

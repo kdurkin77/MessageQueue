@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Mqtt.Tcp", "Me
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.PlainText", "MessageQueue.Formatters.PlainText\MessageQueue.Formatters.PlainText.csproj", "{FDC13C3D-98EF-40CE-BBC7-93632C3F2FF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.SQLite", "MessageQueue.SQLite\MessageQueue.SQLite.csproj", "{0182A7EE-0AF0-448A-B0DD-33C2B25BD56E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Sqlite", "MessageQueue.Sqlite\MessageQueue.Sqlite.csproj", "{0182A7EE-0AF0-448A-B0DD-33C2B25BD56E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,14 +7,14 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ForwarderExtensions
     {
-        public static IServiceCollection AddForwarder<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<ForwarderOptions> configureOptions)
+        public static IServiceCollection AddForwarderMessageQueue<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<ForwarderMessageQueueOptions> configureOptions)
             where TSourceQueue : IMessageQueue<TMessage>
             where TDestinationQueue : IMessageQueue<TMessage>
         {
-            return services.AddForwarder<TMessage, TSourceQueue, TDestinationQueue>((_, options) => configureOptions(options));
+            return services.AddForwarderMessageQueue<TMessage, TSourceQueue, TDestinationQueue>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddForwarder<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<IServiceProvider, ForwarderOptions> configureOptions)
+        public static IServiceCollection AddForwarderMessageQueue<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<IServiceProvider, ForwarderMessageQueueOptions> configureOptions)
             where TSourceQueue : IMessageQueue<TMessage>
             where TDestinationQueue : IMessageQueue<TMessage>
         {
@@ -31,13 +31,13 @@ namespace Microsoft.Extensions.DependencyInjection
             return services
                 .AddSingleton<IMessageQueue<TMessage>>(services =>
                 {
-                    var logger = services.GetRequiredService<ILogger<Forwarder<TMessage>>>();
+                    var logger = services.GetRequiredService<ILogger<ForwarderMessageQueue<TMessage>>>();
                     var source = services.GetRequiredService<TSourceQueue>();
                     var destination = services.GetRequiredService<TDestinationQueue>();
 
-                    var options = new ForwarderOptions();
+                    var options = new ForwarderMessageQueueOptions();
                     configureOptions(services, options);
-                    return new Forwarder<TMessage>(logger, Options.Options.Create(options), source, destination);
+                    return new ForwarderMessageQueue<TMessage>(logger, Options.Options.Create(options), source, destination);
                 });
         }
     }

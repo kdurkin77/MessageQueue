@@ -2,9 +2,9 @@
 
 namespace KM.MessageQueue
 {
-    public sealed class MessageReaderStartOptions<TMessage>
+    public sealed class MessageQueueReaderStartOptions<TMessage>
     {
-        public MessageReaderStartOptions(IMessageHandler<TMessage> messageHandler)
+        public MessageQueueReaderStartOptions(IMessageHandler<TMessage> messageHandler)
         {
             MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
         }

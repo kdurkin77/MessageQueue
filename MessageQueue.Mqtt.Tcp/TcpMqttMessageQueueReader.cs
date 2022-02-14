@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    internal sealed class TcpMqttReader<TMessage> : IMessageReader<TMessage>
+    internal sealed class TcpMqttMessageQueueReader<TMessage> : IMessageReader<TMessage>
     {
         private bool _disposed = false;
         private string _subscriptionName = string.Empty;
 
-        private readonly TcpMqtt<TMessage> _queue;
+        private readonly TcpMqttMessageQueue<TMessage> _queue;
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
         public MessageReaderState State { get; private set; } = MessageReaderState.Stopped;
@@ -20,11 +20,11 @@ namespace KM.MessageQueue.Mqtt.Tcp
         private CancellationTokenSource? _readerTokenSource = null;
         private CancellationTokenSource ReaderTokenSource
         {
-            get => _readerTokenSource ?? throw new SystemException($"{nameof(TcpMqttReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
+            get => _readerTokenSource ?? throw new SystemException($"{nameof(TcpMqttMessageQueueReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
             set => _readerTokenSource = value;
         }
 
-        public TcpMqttReader(TcpMqtt<TMessage> queue)
+        public TcpMqttMessageQueueReader(TcpMqttMessageQueue<TMessage> queue)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
@@ -48,12 +48,12 @@ namespace KM.MessageQueue.Mqtt.Tcp
             {
                 if (State == MessageReaderState.Running)
                 {
-                    throw new InvalidOperationException($"{nameof(TcpMqttReader<TMessage>)} is already started");
+                    throw new InvalidOperationException($"{nameof(TcpMqttMessageQueueReader<TMessage>)} is already started");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(TcpMqttReader<TMessage>)} is stopping");
+                    throw new InvalidOperationException($"{nameof(TcpMqttMessageQueueReader<TMessage>)} is stopping");
                 }
 
                 ReaderTokenSource = new CancellationTokenSource();
@@ -95,12 +95,12 @@ namespace KM.MessageQueue.Mqtt.Tcp
             {
                 if (State == MessageReaderState.Stopped)
                 {
-                    throw new InvalidOperationException($"{nameof(TcpMqttReader<TMessage>)} is already stopped");
+                    throw new InvalidOperationException($"{nameof(TcpMqttMessageQueueReader<TMessage>)} is already stopped");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(TcpMqttReader<TMessage>)} is already stopping");
+                    throw new InvalidOperationException($"{nameof(TcpMqttMessageQueueReader<TMessage>)} is already stopping");
                 }
 
                 await InternalStopAsync().ConfigureAwait(false);
@@ -125,7 +125,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(TcpMqttReader<TMessage>));
+                throw new ObjectDisposedException(nameof(TcpMqttMessageQueueReader<TMessage>));
             }
         }
 

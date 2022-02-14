@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Specialized.Forwarder
 {
-    public sealed class Forwarder<TMessage> : IMessageQueue<TMessage>
+    public sealed class ForwarderMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly ForwarderOptions _options;
+        private readonly ForwarderMessageQueueOptions _options;
         private readonly IMessageQueue<TMessage> _sourceQueue;
         private readonly IMessageQueue<TMessage> _destinationQueue;
         private readonly IMessageReader<TMessage> _sourceReader;
 
-        public Forwarder(ILogger<Forwarder<TMessage>> logger, IOptions<ForwarderOptions> options, IMessageQueue<TMessage> sourceQueue, IMessageQueue<TMessage> destinationQueue)
+        public ForwarderMessageQueue(ILogger<ForwarderMessageQueue<TMessage>> logger, IOptions<ForwarderMessageQueueOptions> options, IMessageQueue<TMessage> sourceQueue, IMessageQueue<TMessage> destinationQueue)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -56,7 +56,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(Forwarder<TMessage>));
+                throw new ObjectDisposedException(nameof(ForwarderMessageQueue<TMessage>));
             }
         }
 

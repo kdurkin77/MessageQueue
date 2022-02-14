@@ -1,6 +1,6 @@
 ﻿namespace KM.MessageQueue
 {
-    public enum MessageReaderState
+    public enum MessageQueueReaderState
     {
         Stopped = 0,
         StopRequested = 1,

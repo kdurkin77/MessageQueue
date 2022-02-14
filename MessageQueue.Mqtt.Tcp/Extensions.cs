@@ -7,12 +7,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class TcpMqttExtensions
     {
-        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<TcpMqttOptions> configureOptions)
+        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<TcpMqttMessageQueueOptions> configureOptions)
         {
             return services.AddTcpMqttMessageQueue<TMessage>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, TcpMqttOptions> configureOptions)
+        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, TcpMqttMessageQueueOptions> configureOptions)
         {
             if (services is null)
             {
@@ -25,14 +25,14 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<TcpMqtt<TMessage>, TMessage>(services =>
+                .AddMessageQueue<TcpMqttMessageQueue<TMessage>, TMessage>(services =>
                 {
-                    var options = new TcpMqttOptions();
+                    var options = new TcpMqttMessageQueueOptions();
                     configureOptions(services, options);
 
-                    var logger = services.GetRequiredService<ILogger<TcpMqtt<TMessage>>>();
+                    var logger = services.GetRequiredService<ILogger<TcpMqttMessageQueue<TMessage>>>();
                     var formatter = services.GetRequiredService<IMessageFormatter<TMessage>>();
-                    return new TcpMqtt<TMessage>(logger, Options.Options.Create(options), formatter);
+                    return new TcpMqttMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }
     }

@@ -10,17 +10,17 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    public sealed class TcpMqtt<TMessage> : IMessageQueue<TMessage>
+    public sealed class TcpMqttMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false; 
         private readonly ILogger _logger;
-        internal readonly TcpMqttOptions _options;
+        internal readonly TcpMqttMessageQueueOptions _options;
         internal readonly IMessageFormatter<TMessage> _formatter;
         internal readonly IManagedMqttClient _managedMqttClient;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
-        public TcpMqtt(ILogger<TcpMqtt<TMessage>> logger, IOptions<TcpMqttOptions> options, IMessageFormatter<TMessage> formatter)
+        public TcpMqttMessageQueue(ILogger<TcpMqttMessageQueue<TMessage>> logger, IOptions<TcpMqttMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -47,7 +47,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(TcpMqtt<TMessage>));
+                throw new ObjectDisposedException(nameof(TcpMqttMessageQueue<TMessage>));
             }
         }
 
@@ -93,7 +93,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            var reader = new TcpMqttReader<TMessage>(this);
+            var reader = new TcpMqttMessageQueueReader<TMessage>(this);
             return Task.FromResult<IMessageReader<TMessage>>(reader);
         }
 

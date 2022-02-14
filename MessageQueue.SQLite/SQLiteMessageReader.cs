@@ -7,14 +7,14 @@ namespace KM.MessageQueue.SQLite
     internal sealed class SQLiteMessageReader<TMessage> : IMessageReader<TMessage>
     {
         private bool _disposed = false;
-        private readonly SQLiteQueue<TMessage> _queue;
+        private readonly SQLiteMessageQueue<TMessage> _queue;
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
         public MessageReaderState State { get; private set; } = MessageReaderState.Stopped;
         private Task? _readerTask = null;
         private CancellationTokenSource? _readerTokenSource = null;
 
-        public SQLiteMessageReader(SQLiteQueue<TMessage> queue)
+        public SQLiteMessageReader(SQLiteMessageQueue<TMessage> queue)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }

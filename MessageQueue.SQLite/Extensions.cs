@@ -7,12 +7,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SQLiteQueueExtensions
     {
-        public static IServiceCollection AddSQLiteQueue<TMessage>(this IServiceCollection services, Action<SQLiteQueueOptions> configureOptions)
+        public static IServiceCollection AddSQLiteMessageQueue<TMessage>(this IServiceCollection services, Action<SQLiteMessageQueueOptions> configureOptions)
         {
-            return services.AddSQLiteQueue<TMessage>((_, options) => configureOptions(options));
+            return services.AddSQLiteMessageQueue<TMessage>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddSQLiteQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, SQLiteQueueOptions> configureOptions)
+        public static IServiceCollection AddSQLiteMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, SQLiteMessageQueueOptions> configureOptions)
         {
             if (services is null)
             {
@@ -25,14 +25,14 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<SQLiteQueue<TMessage>, TMessage>(services =>
+                .AddMessageQueue<SQLiteMessageQueue<TMessage>, TMessage>(services =>
                 {
-                    var options = new SQLiteQueueOptions();
+                    var options = new SQLiteMessageQueueOptions();
                     configureOptions(services, options);
 
-                    var logger = services.GetRequiredService<ILogger<SQLiteQueue<TMessage>>>();
+                    var logger = services.GetRequiredService<ILogger<SQLiteMessageQueue<TMessage>>>();
                     var formatter = services.GetRequiredService<IMessageFormatter<TMessage>>();
-                    return new SQLiteQueue<TMessage>(logger, Options.Options.Create(options), formatter);
+                    return new SQLiteMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }
     }

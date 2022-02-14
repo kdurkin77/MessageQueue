@@ -21,8 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
             return services
                 .AddSingleton(create)
                 .AddSingleton<IMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
-                .AddSingleton<IReadOnlyQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
-                .AddSingleton<IWriteOnlyQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
+                .AddSingleton<IReadOnlyMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
+                .AddSingleton<IWriteOnlyMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
                 ;
         }
     }

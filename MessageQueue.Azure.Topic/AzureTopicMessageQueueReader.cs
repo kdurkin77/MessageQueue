@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    internal sealed class AzureTopicReader<TMessage> : IMessageReader<TMessage>
+    internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageReader<TMessage>
     {
         private bool _disposed = false;
-        private readonly AzureTopic<TMessage> _queue;
+        private readonly AzureTopicMessageQueue<TMessage> _queue;
 
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
@@ -18,18 +18,18 @@ namespace KM.MessageQueue.Azure.Topic
         private ServiceBusProcessor? _serviceBusProcessor = null;
         private ServiceBusProcessor ServiceBusProcessor
         {
-            get => _serviceBusProcessor ?? throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_serviceBusProcessor)} is null");
+            get => _serviceBusProcessor ?? throw new SystemException($"{nameof(AzureTopicMessageQueueReader<TMessage>)}.{nameof(_serviceBusProcessor)} is null");
             set => _serviceBusProcessor = value;
         }
 
         private CancellationTokenSource? _readerTokenSource = null;
         private CancellationTokenSource ReaderTokenSource
         {
-            get => _readerTokenSource ?? throw new SystemException($"{nameof(AzureTopicReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
+            get => _readerTokenSource ?? throw new SystemException($"{nameof(AzureTopicMessageQueueReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
             set => _readerTokenSource = value;
         }
 
-        public AzureTopicReader(AzureTopic<TMessage> queue)
+        public AzureTopicMessageQueueReader(AzureTopicMessageQueue<TMessage> queue)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
@@ -53,12 +53,12 @@ namespace KM.MessageQueue.Azure.Topic
             {
                 if (State == MessageReaderState.Running)
                 {
-                    throw new InvalidOperationException($"{nameof(AzureTopicReader<TMessage>)} is already started");
+                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already started");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(AzureTopicReader<TMessage>)} is stopping");
+                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is stopping");
                 }
 
                 ReaderTokenSource = new CancellationTokenSource();
@@ -134,12 +134,12 @@ namespace KM.MessageQueue.Azure.Topic
             {
                 if (State == MessageReaderState.Stopped)
                 {
-                    throw new InvalidOperationException($"{nameof(AzureTopicReader<TMessage>)} is already stopped");
+                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already stopped");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(AzureTopicReader<TMessage>)} is already stopping");
+                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already stopping");
                 }
 
                 await InternalStopAsync().ConfigureAwait(false);
@@ -171,7 +171,7 @@ namespace KM.MessageQueue.Azure.Topic
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(AzureTopicReader<TMessage>));
+                throw new ObjectDisposedException(nameof(AzureTopicMessageQueueReader<TMessage>));
             }
         }
 

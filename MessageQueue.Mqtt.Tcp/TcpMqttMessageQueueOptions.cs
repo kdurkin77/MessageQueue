@@ -3,7 +3,7 @@ using System;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    public sealed class TcpMqttOptions
+    public sealed class TcpMqttMessageQueueOptions
     {
         public string? Url { get; set; }
         public string? Username { get; set; }

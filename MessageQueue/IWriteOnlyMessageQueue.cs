@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue
 {
-    public interface IWriteOnlyQueue<TMessage> : IDisposable
+    public interface IWriteOnlyMessageQueue<TMessage> : IDisposable
 #if !NETSTANDARD2_0
         , IAsyncDisposable
 #endif

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.SQLite
 {
-    public sealed class SQLiteQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class SQLiteMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private long _sequenceNumber;
@@ -19,13 +19,13 @@ namespace KM.MessageQueue.SQLite
         private readonly Queue<SQLiteQueueMessage> _messageQueue;
         private readonly SemaphoreSlim _sync;
 
-        internal readonly SQLiteQueueOptions _options;
+        internal readonly SQLiteMessageQueueOptions _options;
         internal readonly IMessageFormatter<TMessage> _formatter;
         internal readonly SQLiteDatabaseContext _dbContext;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
-        public SQLiteQueue(ILogger<SQLiteQueue<TMessage>> logger, IOptions<SQLiteQueueOptions> options, IMessageFormatter<TMessage> formatter)
+        public SQLiteMessageQueue(ILogger<SQLiteMessageQueue<TMessage>> logger, IOptions<SQLiteMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -49,7 +49,7 @@ namespace KM.MessageQueue.SQLite
             _sequenceNumber = _messageQueue.Any() 
                 ? _messageQueue.Select(item => item.SequenceNumber).Max() : 0L;
 
-            _logger.LogTrace($"{nameof(SQLiteQueue<TMessage>)} initialized with {_messageQueue.Count} stored messages");
+            _logger.LogTrace($"{nameof(SQLiteMessageQueue<TMessage>)} initialized with {_messageQueue.Count} stored messages");
         }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
@@ -154,7 +154,7 @@ namespace KM.MessageQueue.SQLite
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(SQLiteQueue<TMessage>));
+                throw new ObjectDisposedException(nameof(SQLiteMessageQueue<TMessage>));
             }
         }
 

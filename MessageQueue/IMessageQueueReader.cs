@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue
 {
-    public interface IMessageReader<TMessage> : IDisposable
+    public interface IMessageQueueReader<TMessage> : IDisposable
 #if !NETSTANDARD2_0
         , IAsyncDisposable
 #endif
     {
-        MessageReaderState State { get; }
+        MessageQueueReaderState State { get; }
 
-        Task StartAsync(MessageReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken);
+        Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken);
         Task StopAsync(CancellationToken cancellationToken);
     }
 }

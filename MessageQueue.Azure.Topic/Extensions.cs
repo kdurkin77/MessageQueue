@@ -7,12 +7,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class AzureTopicExtensions
     {
-        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<AzureTopicOptions> configureOptions)
+        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<AzureTopicMessageQueueOptions> configureOptions)
         {
             return services.AddAzureTopicMessageQueue<TMessage>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, AzureTopicOptions> configureOptions)
+        public static IServiceCollection AddAzureTopicMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, AzureTopicMessageQueueOptions> configureOptions)
         {
             if (services is null)
             {
@@ -25,14 +25,14 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<AzureTopic<TMessage>, TMessage>(services =>
+                .AddMessageQueue<AzureTopicMessageQueue<TMessage>, TMessage>(services =>
                 {
-                    var options = new AzureTopicOptions();
+                    var options = new AzureTopicMessageQueueOptions();
                     configureOptions(services, options);
 
-                    var logger = services.GetRequiredService<ILogger<AzureTopic<TMessage>>>();
+                    var logger = services.GetRequiredService<ILogger<AzureTopicMessageQueue<TMessage>>>();
                     var formatter = services.GetRequiredService<IMessageFormatter<TMessage>>();
-                    return new AzureTopic<TMessage>(logger, Options.Options.Create(options), formatter);
+                    return new AzureTopicMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }
     }

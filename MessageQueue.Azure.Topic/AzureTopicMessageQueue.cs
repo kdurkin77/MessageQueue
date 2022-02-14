@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    public sealed class AzureTopic<TMessage> : IMessageQueue<TMessage>
+    public sealed class AzureTopicMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        internal readonly AzureTopicOptions _options;
+        internal readonly AzureTopicMessageQueueOptions _options;
         internal readonly IMessageFormatter<TMessage> _formatter;
         internal readonly ServiceBusClient _serviceBusClient;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
-        public AzureTopic(ILogger<AzureTopic<TMessage>> logger, IOptions<AzureTopicOptions> options, IMessageFormatter<TMessage> formatter)
+        public AzureTopicMessageQueue(ILogger<AzureTopicMessageQueue<TMessage>> logger, IOptions<AzureTopicMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -83,7 +83,7 @@ namespace KM.MessageQueue.Azure.Topic
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            var reader = new AzureTopicReader<TMessage>(this);
+            var reader = new AzureTopicMessageQueueReader<TMessage>(this);
             return Task.FromResult<IMessageReader<TMessage>>(reader);
         }
 
@@ -91,7 +91,7 @@ namespace KM.MessageQueue.Azure.Topic
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(AzureTopic<TMessage>));
+                throw new ObjectDisposedException(nameof(AzureTopicMessageQueue<TMessage>));
             }
         }
 
