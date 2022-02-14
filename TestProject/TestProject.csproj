@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.SQLite\MessageQueue.Sqlite.csproj" />
+    <ProjectReference Include="..\MessageQueue.Sqlite\MessageQueue.Sqlite.csproj" />
   </ItemGroup>
 
 </Project>

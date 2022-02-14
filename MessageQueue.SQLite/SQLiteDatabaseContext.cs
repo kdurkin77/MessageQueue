@@ -2,15 +2,15 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace KM.MessageQueue.SQLite
+namespace KM.MessageQueue.Sqlite
 {
-    internal class SQLiteDatabaseContext : DbContext
+    internal class SqliteDatabaseContext : DbContext
     {
-        public DbSet<SQLiteQueueMessage> SQLiteQueueMessages => Set<SQLiteQueueMessage>();
+        public DbSet<SqliteQueueMessage> SqliteQueueMessages => Set<SqliteQueueMessage>();
 
         private readonly string _ConnectionString;
 
-        public SQLiteDatabaseContext(string connectionString)
+        public SqliteDatabaseContext(string connectionString)
         {
             _ConnectionString = connectionString;
             Database.EnsureCreated();
@@ -21,12 +21,12 @@ namespace KM.MessageQueue.SQLite
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SQLiteQueueMessage>().HasIndex(b => b.SequenceNumber);
+            modelBuilder.Entity<SqliteQueueMessage>().HasIndex(b => b.SequenceNumber);
             base.OnModelCreating(modelBuilder);
         }
     }
 
-    internal sealed class SQLiteQueueMessage
+    internal sealed class SqliteQueueMessage
     {
         [Required]
         public Guid Id { get; set; }

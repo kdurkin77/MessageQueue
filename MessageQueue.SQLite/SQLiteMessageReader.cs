@@ -2,19 +2,19 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KM.MessageQueue.SQLite
+namespace KM.MessageQueue.Sqlite
 {
-    internal sealed class SQLiteMessageReader<TMessage> : IMessageReader<TMessage>
+    internal sealed class SqliteMessageReader<TMessage> : IMessageReader<TMessage>
     {
         private bool _disposed = false;
-        private readonly SQLiteMessageQueue<TMessage> _queue;
+        private readonly SqliteMessageQueue<TMessage> _queue;
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
         public MessageReaderState State { get; private set; } = MessageReaderState.Stopped;
         private Task? _readerTask = null;
         private CancellationTokenSource? _readerTokenSource = null;
 
-        public SQLiteMessageReader(SQLiteMessageQueue<TMessage> queue)
+        public SqliteMessageReader(SqliteMessageQueue<TMessage> queue)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
@@ -33,12 +33,12 @@ namespace KM.MessageQueue.SQLite
             {
                 if (State == MessageReaderState.Running)
                 {
-                    throw new InvalidOperationException($"{nameof(SQLiteMessageReader<TMessage>)} is already started");
+                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is already started");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(SQLiteMessageReader<TMessage>)} is stopping");
+                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is stopping");
                 }
 
                 _readerTokenSource = new CancellationTokenSource();
@@ -67,7 +67,7 @@ namespace KM.MessageQueue.SQLite
                     var source = _readerTokenSource;
                     if (source is null)
                     {
-                        throw new SystemException($"{nameof(SQLiteMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
+                        throw new SystemException($"{nameof(SqliteMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
                     }
 
                     if (source.IsCancellationRequested)
@@ -105,17 +105,17 @@ namespace KM.MessageQueue.SQLite
             {
                 if (State == MessageReaderState.Stopped)
                 {
-                    throw new InvalidOperationException($"{nameof(SQLiteMessageReader<TMessage>)} is already stopped");
+                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is already stopped");
                 }
 
                 if (State == MessageReaderState.StopRequested)
                 {
-                    throw new InvalidOperationException($"{nameof(SQLiteMessageReader<TMessage>)} is already stopping");
+                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is already stopping");
                 }
 
                 if (_readerTokenSource is null)
                 {
-                    throw new SystemException($"{nameof(SQLiteMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
+                    throw new SystemException($"{nameof(SqliteMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
                 }
 
                 _readerTokenSource.Cancel();
@@ -131,7 +131,7 @@ namespace KM.MessageQueue.SQLite
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(SQLiteMessageReader<TMessage>));
+                throw new ObjectDisposedException(nameof(SqliteMessageReader<TMessage>));
             }
         }
 

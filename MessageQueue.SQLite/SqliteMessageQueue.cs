@@ -8,24 +8,24 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KM.MessageQueue.SQLite
+namespace KM.MessageQueue.Sqlite
 {
-    public sealed class SQLiteMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private long _sequenceNumber;
 
         private readonly ILogger _logger;
-        private readonly Queue<SQLiteQueueMessage> _messageQueue;
+        private readonly Queue<SqliteQueueMessage> _messageQueue;
         private readonly SemaphoreSlim _sync;
 
-        internal readonly SQLiteMessageQueueOptions _options;
+        internal readonly SqliteMessageQueueOptions _options;
         internal readonly IMessageFormatter<TMessage> _formatter;
-        internal readonly SQLiteDatabaseContext _dbContext;
+        internal readonly SqliteDatabaseContext _dbContext;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
-        public SQLiteMessageQueue(ILogger<SQLiteMessageQueue<TMessage>> logger, IOptions<SQLiteMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
+        public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -37,19 +37,19 @@ namespace KM.MessageQueue.SQLite
             }
 
             //! to appease netstandard2.0 compiler, it doesn't realize that IsNullOrWhiteSpace is null checking
-            _dbContext = new SQLiteDatabaseContext(_options.ConnectionString!);
+            _dbContext = new SqliteDatabaseContext(_options.ConnectionString!);
 
             _sync = new SemaphoreSlim(1, 1);
 
-            _messageQueue = new Queue<SQLiteQueueMessage>(
-                _dbContext.SQLiteQueueMessages
+            _messageQueue = new Queue<SqliteQueueMessage>(
+                _dbContext.SqliteQueueMessages
                 .OrderBy(item => item.SequenceNumber)
                 );
 
             _sequenceNumber = _messageQueue.Any() 
                 ? _messageQueue.Select(item => item.SequenceNumber).Max() : 0L;
 
-            _logger.LogTrace($"{nameof(SQLiteMessageQueue<TMessage>)} initialized with {_messageQueue.Count} stored messages");
+            _logger.LogTrace($"{nameof(SqliteMessageQueue<TMessage>)} initialized with {_messageQueue.Count} stored messages");
         }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
@@ -92,7 +92,7 @@ namespace KM.MessageQueue.SQLite
                 var messageBytes = _formatter.MessageToBytes(message);
 
                 var sqlMessage =
-                    new SQLiteQueueMessage()
+                    new SqliteQueueMessage()
                     {
                         Id = Guid.NewGuid(),
                         Attributes = JsonConvert.SerializeObject(attributes),
@@ -100,7 +100,7 @@ namespace KM.MessageQueue.SQLite
                         Body = messageBytes
                     };
 
-                _dbContext.SQLiteQueueMessages.Add(sqlMessage);
+                _dbContext.SqliteQueueMessages.Add(sqlMessage);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
                 _messageQueue.Enqueue(sqlMessage);
@@ -113,7 +113,7 @@ namespace KM.MessageQueue.SQLite
 
         public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            var reader = new SQLiteMessageReader<TMessage>(this);
+            var reader = new SqliteMessageReader<TMessage>(this);
             return Task.FromResult<IMessageReader<TMessage>>(reader);
         }
 
@@ -154,7 +154,7 @@ namespace KM.MessageQueue.SQLite
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(SQLiteMessageQueue<TMessage>));
+                throw new ObjectDisposedException(nameof(SqliteMessageQueue<TMessage>));
             }
         }
 

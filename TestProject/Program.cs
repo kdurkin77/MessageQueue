@@ -3,7 +3,7 @@ using KM.MessageQueue.Azure.Topic;
 using KM.MessageQueue.FileSystem.Disk;
 using KM.MessageQueue.Formatters.Json;
 using KM.MessageQueue.Specialized.Forwarder;
-//using KM.MessageQueue.SQLite;
+//using KM.MessageQueue.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -32,7 +32,7 @@ namespace TestProject
                     {
                         options.MessageStore = new DirectoryInfo("/my-messages");
                     })
-                    //.AddSQLiteQueue<MyMessage>(options =>
+                    //.AddSqliteQueue<MyMessage>(options =>
                     //{
                     //    var path = Path.Combine(AppContext.BaseDirectory, "Queue.db");
                     //    options.ConnectionString = $"Data Source = {path}";

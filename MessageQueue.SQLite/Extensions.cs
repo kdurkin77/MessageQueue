@@ -1,18 +1,18 @@
 ﻿using KM.MessageQueue;
-using KM.MessageQueue.SQLite;
+using KM.MessageQueue.Sqlite;
 using Microsoft.Extensions.Logging;
 using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class SQLiteQueueExtensions
+    public static class SqliteQueueExtensions
     {
-        public static IServiceCollection AddSQLiteMessageQueue<TMessage>(this IServiceCollection services, Action<SQLiteMessageQueueOptions> configureOptions)
+        public static IServiceCollection AddSqliteMessageQueue<TMessage>(this IServiceCollection services, Action<SqliteMessageQueueOptions> configureOptions)
         {
-            return services.AddSQLiteMessageQueue<TMessage>((_, options) => configureOptions(options));
+            return services.AddSqliteMessageQueue<TMessage>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddSQLiteMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, SQLiteMessageQueueOptions> configureOptions)
+        public static IServiceCollection AddSqliteMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, SqliteMessageQueueOptions> configureOptions)
         {
             if (services is null)
             {
@@ -25,14 +25,14 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<SQLiteMessageQueue<TMessage>, TMessage>(services =>
+                .AddMessageQueue<SqliteMessageQueue<TMessage>, TMessage>(services =>
                 {
-                    var options = new SQLiteMessageQueueOptions();
+                    var options = new SqliteMessageQueueOptions();
                     configureOptions(services, options);
 
-                    var logger = services.GetRequiredService<ILogger<SQLiteMessageQueue<TMessage>>>();
+                    var logger = services.GetRequiredService<ILogger<SqliteMessageQueue<TMessage>>>();
                     var formatter = services.GetRequiredService<IMessageFormatter<TMessage>>();
-                    return new SQLiteMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
+                    return new SqliteMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }
     }
