@@ -91,10 +91,10 @@ namespace KM.MessageQueue.Mqtt.Tcp
             await _managedMqttClient.PublishAsync(mqttMessage);
         }
 
-        public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new TcpMqttMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageReader<TMessage>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
         public void Dispose()

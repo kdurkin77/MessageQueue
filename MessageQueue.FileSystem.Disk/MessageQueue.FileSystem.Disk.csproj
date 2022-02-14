@@ -12,8 +12,12 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;FileSystem;Disk;</PackageTags>
     <Product>KM.MessageQueue.FileSystem.Disk</Product>
     <Description>A queue implementation to write to the disk from the interfaces in KM.MessageQueue</Description>
-    <PackageReleaseNotes>Added net6 support</PackageReleaseNotes>
-    <Version>1.0.3</Version>
+    <PackageReleaseNotes>
+	    ** POSSIBLE BREAKING CHANGES **
+		Renamed DiskMessageReader to DiskMessageQueueReader
+		Updated KM.MessageQueue
+	</PackageReleaseNotes>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="1.0.1" />
+    <PackageReference Include="KM.MessageQueue" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

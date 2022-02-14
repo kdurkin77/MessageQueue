@@ -32,7 +32,7 @@ namespace TestProject
                     {
                         options.MessageStore = new DirectoryInfo("/my-messages");
                     })
-                    //.AddSqliteQueue<MyMessage>(options =>
+                    //.AddSqliteMessageQueue<MyMessage>(options =>
                     //{
                     //    var path = Path.Combine(AppContext.BaseDirectory, "Queue.db");
                     //    options.ConnectionString = $"Data Source = {path}";
@@ -44,9 +44,9 @@ namespace TestProject
                         options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
                         options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
                     })
-                    .AddForwarder<MyMessage, DiskMessageQueue<MyMessage>, AzureTopic<MyMessage>>((services, options) =>
+                    .AddForwarderMessageQueue<MyMessage, DiskMessageQueue<MyMessage>, AzureTopicMessageQueue<MyMessage>>((services, options) =>
                     {
-                        var logger = services.GetRequiredService<ILogger<Forwarder<MyMessage>>>();
+                        var logger = services.GetRequiredService<ILogger<ForwarderMessageQueue<MyMessage>>>();
                         options.SourceSubscriptionName = "YOUR SUBSCRIPTION NAME HERE";
                         options.ForwardingErrorHandler = ex =>
                         {

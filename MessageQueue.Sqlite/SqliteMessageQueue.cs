@@ -111,10 +111,10 @@ namespace KM.MessageQueue.Sqlite
             }
         }
 
-        public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new SqliteMessageReader<TMessage>(this);
-            return Task.FromResult<IMessageReader<TMessage>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
         internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage>, byte[], MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)

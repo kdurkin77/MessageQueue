@@ -13,9 +13,13 @@
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
     <PackageReleaseNotes>
-		Added net6 support
+		** POSSIBLE BREAKING CHANGES **
+		Renamed extension from AddForwarder to AddForwarderMessageQueue
+		Renamed Forwarder to ForwarderMessageQueue
+		Renamed ForwarderOptions to ForwarderMessageQueueOptions
+		Updated KM.MessageQueue
 	</PackageReleaseNotes>
-    <Version>1.0.3</Version>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="1.0.1" />
+    <PackageReference Include="KM.MessageQueue" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
   </ItemGroup>

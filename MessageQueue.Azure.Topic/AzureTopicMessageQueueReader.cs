@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageReader<TMessage>
+    internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
     {
         private bool _disposed = false;
         private readonly AzureTopicMessageQueue<TMessage> _queue;
 
         private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
 
-        public MessageReaderState State { get; private set; } = MessageReaderState.Stopped;
+        public MessageQueueReaderState State { get; private set; } = MessageQueueReaderState.Stopped;
 
         private ServiceBusProcessor? _serviceBusProcessor = null;
         private ServiceBusProcessor ServiceBusProcessor
@@ -34,7 +34,7 @@ namespace KM.MessageQueue.Azure.Topic
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -51,12 +51,12 @@ namespace KM.MessageQueue.Azure.Topic
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (State == MessageReaderState.Running)
+                if (State == MessageQueueReaderState.Running)
                 {
                     throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already started");
                 }
 
-                if (State == MessageReaderState.StopRequested)
+                if (State == MessageQueueReaderState.StopRequested)
                 {
                     throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is stopping");
                 }
@@ -80,7 +80,7 @@ namespace KM.MessageQueue.Azure.Topic
                 ServiceBusProcessor.ProcessErrorAsync += ErrorHandler;
                 await ServiceBusProcessor.StartProcessingAsync();
 
-                State = MessageReaderState.Running;
+                State = MessageQueueReaderState.Running;
             }
             finally
             {
@@ -132,12 +132,12 @@ namespace KM.MessageQueue.Azure.Topic
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (State == MessageReaderState.Stopped)
+                if (State == MessageQueueReaderState.Stopped)
                 {
                     throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already stopped");
                 }
 
-                if (State == MessageReaderState.StopRequested)
+                if (State == MessageQueueReaderState.StopRequested)
                 {
                     throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already stopping");
                 }
@@ -164,7 +164,7 @@ namespace KM.MessageQueue.Azure.Topic
             }
 
             _readerTokenSource?.Dispose();
-            State = MessageReaderState.Stopped;
+            State = MessageQueueReaderState.Stopped;
         }
 
         private void ThrowIfDisposed()

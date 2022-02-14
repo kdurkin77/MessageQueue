@@ -3,6 +3,7 @@ using KM.MessageQueue.Azure.Topic;
 using KM.MessageQueue.FileSystem.Disk;
 using KM.MessageQueue.Formatters.Json;
 using KM.MessageQueue.Specialized.Forwarder;
+//using KM.MessageQueue.Sqlite;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -23,17 +24,24 @@ namespace LegacyTestProject
             };
             var diskQueue = new DiskMessageQueue<MyMessage>(new Logger<DiskMessageQueue<MyMessage>>(), Options.Create(diskOptions), formatter);
 
-            var azureTopicOptions = new AzureTopicOptions()
+            //sqlite queue could be used in place of disk queue also
+            //var sqliteOptions = new SqliteMessageQueueOptions()
+            //{
+            //    ConnectionString = $"Data Source = {Path.Combine(AppContext.BaseDirectory, "Queue.db")}"
+            //};
+            //var sqliteQueue = new SqliteMessageQueue<MyMessage>(new Logger<SqliteMessageQueue<MyMessage>>, Options.Create(sqliteOptions), formatter);
+
+            var azureTopicOptions = new AzureTopicMessageQueueOptions()
             {
                 Endpoint = "YOUR ENDPOINT HERE",
                 EntityPath = "YOUR ENTITY PATH HERE",
                 SharedAccessKey = "YOUR SHARED ACCESS KEY HERE",
                 SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE"
             };
-            var azureTopic = new AzureTopic<MyMessage>(new Logger<AzureTopic<MyMessage>>(), Options.Create(azureTopicOptions), formatter);
+            var azureTopic = new AzureTopicMessageQueue<MyMessage>(new Logger<AzureTopicMessageQueue<MyMessage>>(), Options.Create(azureTopicOptions), formatter);
 
-            var forwarderLogger = new Logger<Forwarder<MyMessage>>();
-            var forwarderOptions = new ForwarderOptions()
+            var forwarderLogger = new Logger<ForwarderMessageQueue<MyMessage>>();
+            var forwarderOptions = new ForwarderMessageQueueOptions()
             {
                 SourceSubscriptionName = "YOUR SUBSCRIPTION NAME HERE",
                 ForwardingErrorHandler = (ex) =>
@@ -42,7 +50,7 @@ namespace LegacyTestProject
                     return Task.FromResult(CompletionResult.Abandon);
                 }
             };
-            var forwarder = new Forwarder<MyMessage>(forwarderLogger, Options.Create(forwarderOptions), diskQueue, azureTopic);
+            var forwarder = new ForwarderMessageQueue<MyMessage>(forwarderLogger, Options.Create(forwarderOptions), diskQueue, azureTopic);
 
             var msg = new MyMessage()
             {

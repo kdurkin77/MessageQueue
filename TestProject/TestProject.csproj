@@ -11,18 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="1.1.0" />
-    <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="1.0.3" />
+    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="2.0.0" />
+    <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="2.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Json" Version="1.0.2" />
-    <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="1.0.3" />
+    <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="2.0.0" />
+    <PackageReference Include="KM.MessageQueue.Sqlite" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.Sqlite\MessageQueue.Sqlite.csproj" />
   </ItemGroup>
 
 </Project>

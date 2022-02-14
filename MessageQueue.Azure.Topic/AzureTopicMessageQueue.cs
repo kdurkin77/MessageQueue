@@ -81,10 +81,10 @@ namespace KM.MessageQueue.Azure.Topic
             await sender.DisposeAsync().ConfigureAwait(false);
         }
 
-        public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new AzureTopicMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageReader<TMessage>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
         private void ThrowIfDisposed()

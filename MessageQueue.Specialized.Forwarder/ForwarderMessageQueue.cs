@@ -13,7 +13,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
         private readonly ForwarderMessageQueueOptions _options;
         private readonly IMessageQueue<TMessage> _sourceQueue;
         private readonly IMessageQueue<TMessage> _destinationQueue;
-        private readonly IMessageReader<TMessage> _sourceReader;
+        private readonly IMessageQueueReader<TMessage> _sourceReader;
 
         public ForwarderMessageQueue(ILogger<ForwarderMessageQueue<TMessage>> logger, IOptions<ForwarderMessageQueueOptions> options, IMessageQueue<TMessage> sourceQueue, IMessageQueue<TMessage> destinationQueue)
         {
@@ -23,7 +23,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
 
             var forwarderErrorHandler = _options.ForwardingErrorHandler ?? (_ => Task.FromResult(CompletionResult.Abandon));
-            var startOptions = new MessageReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue, forwarderErrorHandler))
+            var startOptions = new MessageQueueReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue, forwarderErrorHandler))
             {
                 SubscriptionName = _options.SourceSubscriptionName,
                 UserData = _options.SourceUserData
@@ -34,7 +34,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
             _sourceReader.StartAsync(startOptions, default).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public Task<IMessageReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return _destinationQueue.GetReaderAsync(cancellationToken);

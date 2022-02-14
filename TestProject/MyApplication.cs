@@ -30,7 +30,7 @@ namespace TestProject
             await using var reader_1 = await _messageQueue.GetReaderAsync(token);
             //await using var reader_2 = await _messageQueue.GetReaderAsync(token);
 
-            var start_options_1 = new MessageReaderStartOptions<MyMessage>(_handler)
+            var start_options_1 = new MessageQueueReaderStartOptions<MyMessage>(_handler)
             {
                 //UserData = "1",
                 SubscriptionName = "YOUR SUBSCRIPTION NAME HERE"
