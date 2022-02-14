@@ -97,26 +97,16 @@ namespace KM.MessageQueue.Azure.Topic
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                _serviceBusClient.DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            }
+            _serviceBusClient.DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
-
-        ~AzureTopic() => Dispose(false);
 
 #if !NETSTANDARD2_0
 
@@ -129,11 +119,11 @@ namespace KM.MessageQueue.Azure.Topic
             }
 
             await _serviceBusClient.DisposeAsync().ConfigureAwait(false);
-            Dispose(false);
+
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 
 #endif
-
     }
 }

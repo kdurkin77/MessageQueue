@@ -35,12 +35,12 @@ namespace KM.MessageQueue.FileSystem.Disk
 
             if (_options.MessageStore is null)
             {
-                throw new ArgumentNullException(nameof(_options.MessageStore));
+                throw new ArgumentException($"{nameof(_options)}.{nameof(_options.MessageStore)} cannot be null");
             }
 
             _sync = new SemaphoreSlim(1, 1);
 
-            _messageStore = _options.MessageStore ?? throw new ArgumentNullException(nameof(_options.MessageStore));
+            _messageStore = _options.MessageStore ?? throw new ArgumentException($"{nameof(_options)}.{nameof(_options.MessageStore)} cannot be null");
 
             if (!_messageStore.Exists)
             {
@@ -249,26 +249,16 @@ namespace KM.MessageQueue.FileSystem.Disk
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                // not needed for this queue?
-            }
+            // not needed for this queue?
 
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
-
-        ~DiskMessageQueue() => Dispose(false);
 
 #if !NETSTANDARD2_0
 
@@ -279,7 +269,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 return;
             }
 
-            Dispose(false);
+            _disposed = true;
             GC.SuppressFinalize(this);
 
             // compiler appeasement
@@ -287,6 +277,5 @@ namespace KM.MessageQueue.FileSystem.Disk
         }
 
 #endif
-
     }
 }

@@ -14,7 +14,7 @@ namespace LegacyTestProject
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static async Task Main(string[] _)
         {
             var formatter = new JsonFormatter<MyMessage>();
             var diskOptions = new DiskMessageQueueOptions()

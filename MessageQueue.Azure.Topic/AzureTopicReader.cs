@@ -45,7 +45,7 @@ namespace KM.MessageQueue.Azure.Topic
 
             if (startOptions.SubscriptionName is null)
             {
-                throw new ArgumentNullException(nameof(startOptions.SubscriptionName));
+                throw new ArgumentException($"{nameof(startOptions)}.{nameof(startOptions.SubscriptionName)} cannot be null");
             }
 
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -177,26 +177,16 @@ namespace KM.MessageQueue.Azure.Topic
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                InternalStopAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            }
+            InternalStopAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
-
-        ~AzureTopicReader() => Dispose(false);
 
 #if !NETSTANDARD2_0
 
@@ -209,11 +199,10 @@ namespace KM.MessageQueue.Azure.Topic
 
             await InternalStopAsync().ConfigureAwait(false);
 
-            Dispose(false);
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
 
 #endif
-
     }
 }

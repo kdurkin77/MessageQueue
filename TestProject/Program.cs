@@ -3,6 +3,7 @@ using KM.MessageQueue.Azure.Topic;
 using KM.MessageQueue.FileSystem.Disk;
 using KM.MessageQueue.Formatters.Json;
 using KM.MessageQueue.Specialized.Forwarder;
+//using KM.MessageQueue.SQLite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -26,10 +27,16 @@ namespace TestProject
                     .AddSingleton<MyApplication>()
                     .AddSingleton(typeof(IMessageFormatter<>), typeof(JsonFormatter<>))
                     .AddSingleton<IMessageHandler<MyMessage>, MyMessageHandler>()
+                    //now we can write to either disk directly or sqlite
                     .AddDiskMessageQueue<MyMessage>(options =>
                     {
                         options.MessageStore = new DirectoryInfo("/my-messages");
                     })
+                    //.AddSQLiteQueue<MyMessage>(options =>
+                    //{
+                    //    var path = Path.Combine(AppContext.BaseDirectory, "Queue.db");
+                    //    options.ConnectionString = $"Data Source = {path}";
+                    //})
                     .AddAzureTopicMessageQueue<MyMessage>(options =>
                     {
                         options.Endpoint = "YOUR ENDPOINT HERE";

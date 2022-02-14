@@ -62,26 +62,16 @@ namespace KM.MessageQueue.Specialized.Forwarder
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                _sourceReader.StopAsync(default).ConfigureAwait(false).GetAwaiter().GetResult();
-            }
+            _sourceReader.StopAsync(default).ConfigureAwait(false).GetAwaiter().GetResult();
 
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
-
-        ~Forwarder() => Dispose(false);
 
 #if !NETSTANDARD2_0
 
@@ -94,7 +84,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
 
             await _sourceReader.StopAsync(default).ConfigureAwait(false);
 
-            Dispose(false);
+            _disposed = true;
             GC.SuppressFinalize(this);
 
             // compiler appeasement
@@ -102,6 +92,5 @@ namespace KM.MessageQueue.Specialized.Forwarder
         }
 
 #endif
-
     }
 }
