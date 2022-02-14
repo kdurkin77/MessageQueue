@@ -1,5 +1,5 @@
 ﻿using KM.MessageQueue;
-using KM.MessageQueue.Sqlite;
+using KM.MessageQueue.Database.Sqlite;
 using Microsoft.Extensions.Logging;
 using System;
 

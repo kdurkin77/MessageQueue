@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KM.MessageQueue.Sqlite
+namespace KM.MessageQueue.Database.Sqlite
 {
     internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>
     {

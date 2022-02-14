@@ -1,4 +1,4 @@
-﻿namespace KM.MessageQueue.Sqlite
+﻿namespace KM.MessageQueue.Database.Sqlite
 {
     public sealed class SqliteMessageQueueOptions
     {

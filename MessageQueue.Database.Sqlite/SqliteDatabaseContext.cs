@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace KM.MessageQueue.Sqlite
+namespace KM.MessageQueue.Database.Sqlite
 {
     internal class SqliteDatabaseContext : DbContext
     {
