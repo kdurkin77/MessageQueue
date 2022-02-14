@@ -12,8 +12,15 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;</PackageTags>
     <Product>KM.MessageQueue</Product>
     <Description>A library to help with using different types of messsage queues. This package includes the interfaces required for the real queues</Description>
-    <PackageReleaseNotes>Added net6 support</PackageReleaseNotes>
-    <Version>1.0.1</Version>
+    <PackageReleaseNotes>
+		** POSSIBLE BREAKING CHANGES **
+		Renamed IReadOnlyQueue to IReadOnlyMessageQueue
+		Renamed IWriteOnlyQueue to IWriteOnlyMessageQueue
+		Renamed MessageReaderStartOptions to MessageQueueReaderStartOptions
+		Renamed MessageReaderState to MessageQueueReaderState
+		Updated the IDisposable conditional to be if it's standard 2.1 or great or net so that future versions are set
+	</PackageReleaseNotes>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
