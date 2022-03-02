@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
+    internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageQueueReader<TMessage, byte[]>
     {
         private bool _disposed = false;
         private readonly AzureTopicMessageQueue<TMessage> _queue;
 
-        private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _sync = new(1, 1);
 
         public MessageQueueReaderState State { get; private set; } = MessageQueueReaderState.Stopped;
 
@@ -34,7 +34,7 @@ namespace KM.MessageQueue.Azure.Topic
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage, byte[]> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 

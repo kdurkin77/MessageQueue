@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -10,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
-    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage, byte[]>
     {
         private bool _disposed = false;
         private long _sequenceNumber;
@@ -20,12 +19,12 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly SemaphoreSlim _sync;
 
         internal readonly SqliteMessageQueueOptions _options;
-        internal readonly IMessageFormatter<TMessage> _formatter;
+        internal readonly IMessageFormatter<TMessage, byte[]> _formatter;
         internal readonly SqliteDatabaseContext _dbContext;
 
         private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
 
-        public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
+        public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions> options, IMessageFormatter<TMessage, byte[]> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -89,7 +88,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
-                var messageBytes = _formatter.MessageToBytes(message);
+                var messageBytes = _formatter.FormatMessage(message);
 
                 var sqlMessage =
                     new SqliteQueueMessage()
@@ -111,13 +110,13 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage, byte[]>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new SqliteMessageReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage, byte[]>>(reader);
         }
 
-        internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage>, byte[], MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage, byte[]>, byte[], MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {

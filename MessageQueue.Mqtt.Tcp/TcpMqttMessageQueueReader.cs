@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    internal sealed class TcpMqttMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
+    internal sealed class TcpMqttMessageQueueReader<TMessage> : IMessageQueueReader<TMessage, byte[]>
     {
         private bool _disposed = false;
         private string _subscriptionName = string.Empty;
 
         private readonly TcpMqttMessageQueue<TMessage> _queue;
-        private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _sync = new(1, 1);
 
         public MessageQueueReaderState State { get; private set; } = MessageQueueReaderState.Stopped;
 
@@ -29,7 +29,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage, byte[]> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 

@@ -1,8 +1,8 @@
 ﻿namespace KM.MessageQueue
 {
-    public interface IMessageFormatter<TMessage>
+    public interface IMessageFormatter<TMessageIn, TMessageOut>
     {
-        TMessage BytesToMessage(byte[] bytes);
-        byte[] MessageToBytes(TMessage message);
+        TMessageIn RevertMessage(TMessageOut bytes);
+        TMessageOut FormatMessage(TMessageIn message);
     }
 }

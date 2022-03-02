@@ -10,17 +10,17 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    public sealed class TcpMqttMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class TcpMqttMessageQueue<TMessage> : IMessageQueue<TMessage, byte[]>
     {
         private bool _disposed = false; 
         private readonly ILogger _logger;
         internal readonly TcpMqttMessageQueueOptions _options;
-        internal readonly IMessageFormatter<TMessage> _formatter;
+        internal readonly IMessageFormatter<TMessage, byte[]> _formatter;
         internal readonly IManagedMqttClient _managedMqttClient;
 
-        private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
+        private static readonly MessageAttributes _emptyAttributes = new();
 
-        public TcpMqttMessageQueue(ILogger<TcpMqttMessageQueue<TMessage>> logger, IOptions<TcpMqttMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
+        public TcpMqttMessageQueue(ILogger<TcpMqttMessageQueue<TMessage>> logger, IOptions<TcpMqttMessageQueueOptions> options, IMessageFormatter<TMessage, byte[]> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -77,7 +77,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _formatter.MessageToBytes(message);
+            var messageBytes = _formatter.FormatMessage(message);
 
             _logger.LogTrace($"posting to {_options.Url}/{attributes.Label}");
 
@@ -91,10 +91,10 @@ namespace KM.MessageQueue.Mqtt.Tcp
             await _managedMqttClient.PublishAsync(mqttMessage);
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage, byte[]>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new TcpMqttMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage, byte[]>>(reader);
         }
 
         public void Dispose()

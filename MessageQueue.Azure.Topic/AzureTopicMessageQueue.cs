@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    public sealed class AzureTopicMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class AzureTopicMessageQueue<TMessage> : IMessageQueue<TMessage, byte[]>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
         internal readonly AzureTopicMessageQueueOptions _options;
-        internal readonly IMessageFormatter<TMessage> _formatter;
+        internal readonly IMessageFormatter<TMessage, byte[]> _formatter;
         internal readonly ServiceBusClient _serviceBusClient;
 
-        private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
+        private static readonly MessageAttributes _emptyAttributes = new();
 
-        public AzureTopicMessageQueue(ILogger<AzureTopicMessageQueue<TMessage>> logger, IOptions<AzureTopicMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
+        public AzureTopicMessageQueue(ILogger<AzureTopicMessageQueue<TMessage>> logger, IOptions<AzureTopicMessageQueueOptions> options, IMessageFormatter<TMessage, byte[]> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -58,7 +58,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _formatter.MessageToBytes(message);
+            var messageBytes = _formatter.FormatMessage(message);
 
             var sender = _serviceBusClient.CreateSender(_options.EntityPath);
             var sbMessage = new ServiceBusMessage(messageBytes)
@@ -81,10 +81,10 @@ namespace KM.MessageQueue.Azure.Topic
             await sender.DisposeAsync().ConfigureAwait(false);
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage, byte[]>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new AzureTopicMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage, byte[]>>(reader);
         }
 
         private void ThrowIfDisposed()

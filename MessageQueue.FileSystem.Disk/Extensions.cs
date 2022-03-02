@@ -1,6 +1,8 @@
 ﻿using KM.MessageQueue;
 using KM.MessageQueue.FileSystem.Disk;
+using KM.MessageQueue.Formatters.ToJObject;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -25,13 +27,44 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage>(services =>
+                .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage, JObject>(services =>
                 {
                     var options = new DiskMessageQueueOptions();
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<DiskMessageQueue<TMessage>>>();
-                    var formatter = services.GetRequiredService<IMessageFormatter<TMessage>>();
+                    var formatter = new JObjectFormatter<TMessage>();
+                    return new DiskMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
+                });
+        }
+
+        public static IServiceCollection AddDiskMessageQueue<TMessage, TFormatter>(this IServiceCollection services, Action<DiskMessageQueueOptions> configureOptions)
+            where TFormatter : class, IMessageFormatter<TMessage, JObject>
+        {
+            return services.AddDiskMessageQueue<TMessage, TFormatter>((_, options) => configureOptions(options));
+        }
+
+        public static IServiceCollection AddDiskMessageQueue<TMessage, TFormatter>(this IServiceCollection services, Action<IServiceProvider, DiskMessageQueueOptions> configureOptions)
+            where TFormatter : class, IMessageFormatter<TMessage, JObject>
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (configureOptions is null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            return services
+                .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage, JObject>(services =>
+                {
+                    var options = new DiskMessageQueueOptions();
+                    configureOptions(services, options);
+
+                    var logger = services.GetRequiredService<ILogger<DiskMessageQueue<TMessage>>>();
+                    var formatter = services.GetRequiredService<TFormatter>();
                     return new DiskMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }

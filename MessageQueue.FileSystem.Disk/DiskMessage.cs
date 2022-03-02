@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace KM.MessageQueue.FileSystem.Disk
@@ -6,7 +7,7 @@ namespace KM.MessageQueue.FileSystem.Disk
     internal sealed class DiskMessage
     {
         [JsonConstructor]
-        public DiskMessage(Guid id, long sequenceNumber, MessageAttributes attributes, byte[] body)
+        public DiskMessage(Guid id, long sequenceNumber, MessageAttributes attributes, JObject body)
         {
             if (id == Guid.Empty)
             {
@@ -27,6 +28,6 @@ namespace KM.MessageQueue.FileSystem.Disk
         public Guid Id { get; }
         public long SequenceNumber { get; }
         public MessageAttributes Attributes { get; }
-        public byte[] Body { get; set; }
+        public JObject Body { get; set; }
     }
 }

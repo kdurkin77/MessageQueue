@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue
 {
-    public interface IReadOnlyMessageQueue<TMessage> : IDisposable
+    public interface IReadOnlyMessageQueue<TMessageIn, TMessageOut> : IDisposable
 #if NETSTANDARD2_1_OR_GREATER || NET
         , IAsyncDisposable
 #endif
     {
-        Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken);
+        Task<IMessageQueueReader<TMessageIn, TMessageOut>> GetReaderAsync(CancellationToken cancellationToken);
     }
 }

@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KM.MessageQueue.FileSystem.Disk
 {
-    internal sealed class DiskMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
+    internal sealed class DiskMessageQueueReader<TMessage> : IMessageQueueReader<TMessage, JObject>
     {
         private bool _disposed = false;
         private readonly DiskMessageQueue<TMessage> _queue;
 
-        private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _sync = new(1, 1);
 
         public MessageQueueReaderState State { get; private set; } = MessageQueueReaderState.Stopped;
         private Task? _readerTask = null;
@@ -20,7 +21,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage, JObject> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -54,7 +55,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             }
         }
 
-        private async Task ReaderLoop(IMessageHandler<TMessage> messageHandler, object? userData, CancellationToken cancellationToken)
+        private async Task ReaderLoop(IMessageHandler<TMessage, JObject> messageHandler, object? userData, CancellationToken cancellationToken)
         {
             if (messageHandler is null)
             {

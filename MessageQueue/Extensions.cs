@@ -5,8 +5,8 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MessageQueueExtensions
     {
-        public static IServiceCollection AddMessageQueue<TQueue, TMessage>(this IServiceCollection services, Func<IServiceProvider, TQueue> create)
-            where TQueue : class, IMessageQueue<TMessage>
+        public static IServiceCollection AddMessageQueue<TQueue, TMessageIn, TMessageOut>(this IServiceCollection services, Func<IServiceProvider, TQueue> create)
+            where TQueue : class, IMessageQueue<TMessageIn, TMessageOut>
         {
             if (services is null)
             {
@@ -20,9 +20,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return services
                 .AddSingleton(create)
-                .AddSingleton<IMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
-                .AddSingleton<IReadOnlyMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
-                .AddSingleton<IWriteOnlyMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
+                .AddSingleton<IMessageQueue<TMessageIn, TMessageOut>, TQueue>(services => services.GetRequiredService<TQueue>())
+                .AddSingleton<IReadOnlyMessageQueue<TMessageIn, TMessageOut>, TQueue>(services => services.GetRequiredService<TQueue>())
+                .AddSingleton<IWriteOnlyMessageQueue<TMessageIn>, TQueue>(services => services.GetRequiredService<TQueue>())
                 ;
         }
     }

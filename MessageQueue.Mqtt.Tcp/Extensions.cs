@@ -25,13 +25,13 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<TcpMqttMessageQueue<TMessage>, TMessage>(services =>
+                .AddMessageQueue<TcpMqttMessageQueue<TMessage>, TMessage, byte[]>(services =>
                 {
                     var options = new TcpMqttMessageQueueOptions();
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<TcpMqttMessageQueue<TMessage>>>();
-                    var formatter = services.GetRequiredService<IMessageFormatter<TMessage>>();
+                    var formatter = services.GetRequiredService<IMessageFormatter<TMessage, byte[]>>();
                     return new TcpMqttMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }

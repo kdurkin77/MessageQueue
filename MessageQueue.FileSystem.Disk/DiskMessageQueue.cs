@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,14 +13,14 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.FileSystem.Disk
 {
-    public sealed class DiskMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class DiskMessageQueue<TMessage> : IMessageQueue<TMessage, JObject>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
         private readonly DiskMessageQueueOptions _options;
-        private readonly IMessageFormatter<TMessage> _formatter;
+        private readonly IMessageFormatter<TMessage, JObject> _formatter;
 
-        private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
+        private static readonly MessageAttributes _emptyAttributes = new();
 
         private readonly SemaphoreSlim _sync;
         private readonly DirectoryInfo _messageStore;
@@ -27,7 +28,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         private readonly Queue<(FileInfo File, DiskMessage Message)> _messageQueue;
         private static readonly string _messageExtension = @"msg.json.gzip";
 
-        public DiskMessageQueue(ILogger<DiskMessageQueue<TMessage>> logger, IOptions<DiskMessageQueueOptions> options, IMessageFormatter<TMessage> formatter)
+        public DiskMessageQueue(ILogger<DiskMessageQueue<TMessage>> logger, IOptions<DiskMessageQueueOptions> options, IMessageFormatter<TMessage, JObject> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -113,14 +114,14 @@ namespace KM.MessageQueue.FileSystem.Disk
                     }
                 }
 
-                var messageBytes = _formatter.MessageToBytes(message);
+                var formattedMessage = _formatter.FormatMessage(message);
 
                 var diskMessage =
                     new DiskMessage(
                         id: Guid.NewGuid(),
                         sequenceNumber: ++_sequenceNumber,
                         attributes: attributes,
-                        body: messageBytes
+                        body: formattedMessage
                         );
 
                 var file = await PersistMessageAsync(diskMessage, cancellationToken).ConfigureAwait(false);
@@ -202,13 +203,13 @@ namespace KM.MessageQueue.FileSystem.Disk
             return decompressed.ToArray();
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage, JObject>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new DiskMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage, JObject>>(reader);
         }
 
-        internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage>, byte[], MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage, JObject>, JObject, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {

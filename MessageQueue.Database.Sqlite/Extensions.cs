@@ -25,13 +25,13 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<SqliteMessageQueue<TMessage>, TMessage>(services =>
+                .AddMessageQueue<SqliteMessageQueue<TMessage>, TMessage, byte[]>(services =>
                 {
                     var options = new SqliteMessageQueueOptions();
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<SqliteMessageQueue<TMessage>>>();
-                    var formatter = services.GetRequiredService<IMessageFormatter<TMessage>>();
+                    var formatter = services.GetRequiredService<IMessageFormatter<TMessage, byte[]>>();
                     return new SqliteMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }
