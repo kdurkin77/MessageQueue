@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    public sealed class AzureTopicMessageQueue<TMessage> : IMessageQueue<TMessage, byte[]>
+    public sealed class AzureTopicMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
@@ -81,10 +81,10 @@ namespace KM.MessageQueue.Azure.Topic
             await sender.DisposeAsync().ConfigureAwait(false);
         }
 
-        public Task<IMessageQueueReader<TMessage, byte[]>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new AzureTopicMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage, byte[]>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
         private void ThrowIfDisposed()

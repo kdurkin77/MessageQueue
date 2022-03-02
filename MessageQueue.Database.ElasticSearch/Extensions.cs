@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<ElasticSearchMessageQueue<TMessage>, TMessage, JObject>(services =>
+                .AddMessageQueue<ElasticSearchMessageQueue<TMessage>, TMessage>(services =>
                 {
                     var options = new ElasticSearchMessageQueueOptions();
                     configureOptions(services, options);

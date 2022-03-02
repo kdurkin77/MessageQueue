@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage, JObject>(services =>
+                .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage>(services =>
                 {
                     var options = new DiskMessageQueueOptions();
                     configureOptions(services, options);
@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage, JObject>(services =>
+                .AddMessageQueue<DiskMessageQueue<TMessage>, TMessage>(services =>
                 {
                     var options = new DiskMessageQueueOptions();
                     configureOptions(services, options);

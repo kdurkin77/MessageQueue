@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Azure.Topic
 {
-    internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageQueueReader<TMessage, byte[]>
+    internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
     {
         private bool _disposed = false;
         private readonly AzureTopicMessageQueue<TMessage> _queue;
@@ -34,7 +34,7 @@ namespace KM.MessageQueue.Azure.Topic
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage, byte[]> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -102,7 +102,8 @@ namespace KM.MessageQueue.Azure.Topic
                     UserProperties = args.Message.ApplicationProperties.ToDictionary(a => a.Key, a => a.Value)
                 };
 
-                var result = await startOptions.MessageHandler.HandleMessageAsync(_queue._formatter, args.Message.Body.ToArray(), attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
+                var message = _queue._formatter.RevertMessage(args.Message.Body.ToArray());
+                var result = await startOptions.MessageHandler.HandleMessageAsync(message, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
                 switch (result)
                 {
                     case CompletionResult.Complete:

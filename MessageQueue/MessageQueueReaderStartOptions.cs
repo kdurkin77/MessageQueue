@@ -2,14 +2,14 @@
 
 namespace KM.MessageQueue
 {
-    public sealed class MessageQueueReaderStartOptions<TMessageIn, TMessageOut>
+    public sealed class MessageQueueReaderStartOptions<TMessage>
     {
-        public MessageQueueReaderStartOptions(IMessageHandler<TMessageIn, TMessageOut> messageHandler)
+        public MessageQueueReaderStartOptions(IMessageHandler<TMessage> messageHandler)
         {
             MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
         }
 
-        public IMessageHandler<TMessageIn, TMessageOut> MessageHandler { get; }
+        public IMessageHandler<TMessage> MessageHandler { get; }
         public int? PrefetchCount { get; set; }
         public string? SubscriptionName { get; set; }
         public object? UserData { get; set; }

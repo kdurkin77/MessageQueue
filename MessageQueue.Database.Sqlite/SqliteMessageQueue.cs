@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
-    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage, byte[]>
+    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private long _sequenceNumber;
@@ -22,7 +22,7 @@ namespace KM.MessageQueue.Database.Sqlite
         internal readonly IMessageFormatter<TMessage, byte[]> _formatter;
         internal readonly SqliteDatabaseContext _dbContext;
 
-        private static readonly MessageAttributes _emptyAttributes = new MessageAttributes();
+        private static readonly MessageAttributes _emptyAttributes = new();
 
         public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions> options, IMessageFormatter<TMessage, byte[]> formatter)
         {
@@ -110,13 +110,13 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        public Task<IMessageQueueReader<TMessage, byte[]>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new SqliteMessageReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage, byte[]>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
-        internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage, byte[]>, byte[], MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<bool> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {
@@ -133,7 +133,8 @@ namespace KM.MessageQueue.Database.Sqlite
 
                 var item = _messageQueue.Peek();
                 var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes) ?? throw new Exception("Attributes formatted incorrectly");
-                var result = await action(_formatter, item.Body, atts, userData, cancellationToken).ConfigureAwait(false);
+                var message = _formatter.RevertMessage(item.Body);
+                var result = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {
                     _dbContext.Remove(item);

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.ElasticSearch
 {
-    public sealed class ElasticSearchMessageQueue<TMessageIn> : IMessageQueue<TMessageIn, JObject>
+    public sealed class ElasticSearchMessageQueue<TMessageIn> : IMessageQueue<TMessageIn>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
@@ -84,7 +84,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
             }
         }
 
-        public Task<IMessageQueueReader<TMessageIn, JObject>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessageIn>> GetReaderAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    public sealed class TcpMqttMessageQueue<TMessage> : IMessageQueue<TMessage, byte[]>
+    public sealed class TcpMqttMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false; 
         private readonly ILogger _logger;
@@ -91,10 +91,10 @@ namespace KM.MessageQueue.Mqtt.Tcp
             await _managedMqttClient.PublishAsync(mqttMessage);
         }
 
-        public Task<IMessageQueueReader<TMessage, byte[]>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new TcpMqttMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage, byte[]>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
         public void Dispose()

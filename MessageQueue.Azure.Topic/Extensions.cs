@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<AzureTopicMessageQueue<TMessage>, TMessage, byte[]>(services =>
+                .AddMessageQueue<AzureTopicMessageQueue<TMessage>, TMessage>(services =>
                 {
                     var options = new AzureTopicMessageQueueOptions();
                     configureOptions(services, options);
@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<AzureTopicMessageQueue<TMessage>, TMessage, byte[]>(services =>
+                .AddMessageQueue<AzureTopicMessageQueue<TMessage>, TMessage>(services =>
                 {
                     var options = new AzureTopicMessageQueueOptions();
                     configureOptions(services, options);

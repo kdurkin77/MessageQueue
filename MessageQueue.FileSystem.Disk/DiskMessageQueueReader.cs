@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.FileSystem.Disk
 {
-    internal sealed class DiskMessageQueueReader<TMessage> : IMessageQueueReader<TMessage, JObject>
+    internal sealed class DiskMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
     {
         private bool _disposed = false;
         private readonly DiskMessageQueue<TMessage> _queue;
@@ -21,7 +21,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage, JObject> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -55,7 +55,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             }
         }
 
-        private async Task ReaderLoop(IMessageHandler<TMessage, JObject> messageHandler, object? userData, CancellationToken cancellationToken)
+        private async Task ReaderLoop(IMessageHandler<TMessage> messageHandler, object? userData, CancellationToken cancellationToken)
         {
             if (messageHandler is null)
             {

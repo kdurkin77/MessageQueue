@@ -1,4 +1,4 @@
 ﻿namespace KM.MessageQueue
 {
-    public interface IMessageQueue<TMessageIn, TMessageOut> : IReadOnlyMessageQueue<TMessageIn, TMessageOut>, IWriteOnlyMessageQueue<TMessageIn> { }
+    public interface IMessageQueue<TMessage> : IReadOnlyMessageQueue<TMessage>, IWriteOnlyMessageQueue<TMessage> { }
 }

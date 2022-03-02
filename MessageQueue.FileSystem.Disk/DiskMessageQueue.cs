@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.FileSystem.Disk
 {
-    public sealed class DiskMessageQueue<TMessage> : IMessageQueue<TMessage, JObject>
+    public sealed class DiskMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
@@ -203,13 +203,13 @@ namespace KM.MessageQueue.FileSystem.Disk
             return decompressed.ToArray();
         }
 
-        public Task<IMessageQueueReader<TMessage, JObject>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             var reader = new DiskMessageQueueReader<TMessage>(this);
-            return Task.FromResult<IMessageQueueReader<TMessage, JObject>>(reader);
+            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
-        internal async Task<bool> TryReadMessageAsync(Func<IMessageFormatter<TMessage, JObject>, JObject, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<bool> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {
@@ -225,7 +225,8 @@ namespace KM.MessageQueue.FileSystem.Disk
                 }
 
                 var item = _messageQueue.Peek();
-                var result = await action(_formatter, item.Message.Body, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
+                var message = _formatter.RevertMessage(item.Message.Body);
+                var result = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {
                     item.File.Delete();

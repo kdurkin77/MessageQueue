@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
-    internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage, byte[]>
+    internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>
     {
         private bool _disposed = false;
         private readonly SqliteMessageQueue<TMessage> _queue;
@@ -19,7 +19,7 @@ namespace KM.MessageQueue.Database.Sqlite
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage, byte[]> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -53,7 +53,7 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        private async Task ReaderLoop(IMessageHandler<TMessage, byte[]> messageHandler, object? userData, CancellationToken cancellationToken)
+        private async Task ReaderLoop(IMessageHandler<TMessage> messageHandler, object? userData, CancellationToken cancellationToken)
         {
             if (messageHandler is null)
             {

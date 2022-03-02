@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    internal sealed class TcpMqttMessageQueueReader<TMessage> : IMessageQueueReader<TMessage, byte[]>
+    internal sealed class TcpMqttMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
     {
         private bool _disposed = false;
         private string _subscriptionName = string.Empty;
@@ -29,7 +29,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage, byte[]> startOptions, CancellationToken cancellationToken)
+        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -82,7 +82,9 @@ namespace KM.MessageQueue.Mqtt.Tcp
                     Label = e.ApplicationMessage.Topic,
                     UserProperties = e.ApplicationMessage.UserProperties?.ToDictionary(p => p.Name, p => (object)p.Value)
                 };
-                await startOptions.MessageHandler.HandleMessageAsync(_queue._formatter, e.ApplicationMessage.Payload, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
+
+                var message = _queue._formatter.RevertMessage(e.ApplicationMessage.Payload);
+                await startOptions.MessageHandler.HandleMessageAsync(message, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
             }
         }
 

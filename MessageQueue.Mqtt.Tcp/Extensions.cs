@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<TcpMqttMessageQueue<TMessage>, TMessage, byte[]>(services =>
+                .AddMessageQueue<TcpMqttMessageQueue<TMessage>, TMessage>(services =>
                 {
                     var options = new TcpMqttMessageQueueOptions();
                     configureOptions(services, options);

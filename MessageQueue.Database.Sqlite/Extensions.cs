@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddMessageQueue<SqliteMessageQueue<TMessage>, TMessage, byte[]>(services =>
+                .AddMessageQueue<SqliteMessageQueue<TMessage>, TMessage>(services =>
                 {
                     var options = new SqliteMessageQueueOptions();
                     configureOptions(services, options);
