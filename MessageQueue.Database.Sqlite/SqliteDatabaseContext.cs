@@ -35,6 +35,6 @@ namespace KM.MessageQueue.Database.Sqlite
         [Required]
         public string Attributes { get; set; } = null!;
         [Required]
-        public byte[] Body { get; set; } = null!;
+        public string Body { get; set; } = null!;
     }
 }

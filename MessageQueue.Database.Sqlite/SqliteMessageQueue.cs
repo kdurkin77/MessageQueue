@@ -19,12 +19,12 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly SemaphoreSlim _sync;
 
         internal readonly SqliteMessageQueueOptions _options;
-        internal readonly IMessageFormatter<TMessage, byte[]> _formatter;
+        internal readonly IMessageFormatter<TMessage, string> _formatter;
         internal readonly SqliteDatabaseContext _dbContext;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
-        public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions> options, IMessageFormatter<TMessage, byte[]> formatter)
+        public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions> options, IMessageFormatter<TMessage, string> formatter)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));

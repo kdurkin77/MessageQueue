@@ -5,7 +5,6 @@ using Nest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,7 +65,8 @@ namespace KM.MessageQueue.Database.ElasticSearch
             ThrowIfDisposed();
 
             var messageObject = _formatter.FormatMessage(message);
-            var elasticSearchMessage = new ElasticSearchMessage(attributes, messageObject);
+            var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
+            elasticSearchMessage.Merge(messageObject);
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
 
             if (string.IsNullOrWhiteSpace(attributes.Label))

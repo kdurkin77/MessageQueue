@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 
 namespace KM.MessageQueue.Database.ElasticSearch
@@ -7,13 +6,11 @@ namespace KM.MessageQueue.Database.ElasticSearch
     internal sealed class ElasticSearchMessage
     {
         [JsonConstructor]
-        public ElasticSearchMessage(MessageAttributes attributes, JObject? body)
+        public ElasticSearchMessage(MessageAttributes attributes)
         {
-            Attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
-            Body = body ?? throw new ArgumentNullException(nameof(body));
+            MessageAttributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
         }
 
-        public MessageAttributes Attributes { get; }
-        public JObject Body { get; set; }
+        public MessageAttributes MessageAttributes { get; }
     }
 }

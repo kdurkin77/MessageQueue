@@ -1,5 +1,6 @@
 ﻿using KM.MessageQueue;
 using KM.MessageQueue.Database.ElasticSearch;
+using KM.MessageQueue.Formatters.ToJObject;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
@@ -32,7 +33,38 @@ namespace Microsoft.Extensions.DependencyInjection
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<ElasticSearchMessageQueue<TMessage>>>();
-                    var formatter = services.GetRequiredService<IMessageFormatter<TMessage, JObject>>();
+                    var formatter = new JObjectFormatter<TMessage>();
+                    return new ElasticSearchMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
+                });
+        }
+
+        public static IServiceCollection AddElasticSearchMessageQueue<TMessage, TFormatter>(this IServiceCollection services, Action<ElasticSearchMessageQueueOptions> configureOptions)
+            where TFormatter : class, IMessageFormatter<TMessage, JObject>
+        {
+            return services.AddElasticSearchMessageQueue<TMessage, TFormatter>((_, options) => configureOptions(options));
+        }
+
+        public static IServiceCollection AddElasticSearchMessageQueue<TMessage, TFormatter>(this IServiceCollection services, Action<IServiceProvider, ElasticSearchMessageQueueOptions> configureOptions)
+            where TFormatter : class, IMessageFormatter<TMessage, JObject>
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (configureOptions is null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            return services
+                .AddMessageQueue<ElasticSearchMessageQueue<TMessage>, TMessage>(services =>
+                {
+                    var options = new ElasticSearchMessageQueueOptions();
+                    configureOptions(services, options);
+
+                    var logger = services.GetRequiredService<ILogger<ElasticSearchMessageQueue<TMessage>>>();
+                    var formatter = services.GetRequiredService<TFormatter>();
                     return new ElasticSearchMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }

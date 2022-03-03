@@ -55,6 +55,7 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.ToJsonString\MessageQueue.Formatters.ToJsonString.csproj" />
     <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 
