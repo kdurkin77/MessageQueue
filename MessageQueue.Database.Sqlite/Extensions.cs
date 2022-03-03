@@ -1,6 +1,6 @@
 ﻿using KM.MessageQueue;
 using KM.MessageQueue.Database.Sqlite;
-using KM.MessageQueue.Formatters.ToJsonString;
+using KM.MessageQueue.Formatters.ObjectToJsonString;
 using Microsoft.Extensions.Logging;
 using System;
 

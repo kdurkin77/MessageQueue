@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace KM.MessageQueue.Formatters.ToJsonString
+namespace KM.MessageQueue.Formatters.ObjectToJsonString
 {
     public sealed class JsonStringFormatter<TMessage> : IMessageFormatter<TMessage, string>
     {
