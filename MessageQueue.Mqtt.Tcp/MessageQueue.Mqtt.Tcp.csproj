@@ -39,7 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj" />
     <ProjectReference Include="..\MessageQueue.Formatters.StringToBytes\MessageQueue.Formatters.StringToBytes.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.ToJsonString\MessageQueue.Formatters.ToJsonString.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
     <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 

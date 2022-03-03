@@ -1,6 +1,6 @@
 ﻿using KM.MessageQueue;
 using KM.MessageQueue.FileSystem.Disk;
-using KM.MessageQueue.Formatters.ToJObject;
+using KM.MessageQueue.Formatters.ObjectToJsonObject;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<DiskMessageQueue<TMessage>>>();
-                    var formatter = new JObjectFormatter<TMessage>();
+                    var formatter = new JsonObjectFormatter<TMessage>();
                     return new DiskMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
                 });
         }

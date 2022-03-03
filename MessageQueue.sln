@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.FileSystem.Dis
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Specialized.Forwarder", "MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj", "{F7CE1984-ABF4-42DB-9FFF-D85CE3E637EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.ToJsonString", "MessageQueue.Formatters.ToJsonString\MessageQueue.Formatters.ToJsonString.csproj", "{461090A9-6DD5-4CAF-BB71-9E3969EFD775}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.ObjectToJsonString", "MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj", "{461090A9-6DD5-4CAF-BB71-9E3969EFD775}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyTestProject", "LegacyTestProject\LegacyTestProject.csproj", "{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}"
 EndProject
@@ -25,9 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Database.Elast
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.Specialized.Composition", "MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj", "{6A36BABD-46B0-436C-A243-57F61BF52795}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.StringToBytes", "MessageQueue.Formatters.StringToBytes\MessageQueue.Formatters.StringToBytes.csproj", "{1F9BBC3C-F9F8-4431-8D72-336261079D63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.StringToBytes", "MessageQueue.Formatters.StringToBytes\MessageQueue.Formatters.StringToBytes.csproj", "{1F9BBC3C-F9F8-4431-8D72-336261079D63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.ToJObject", "MessageQueue.Formatters.Json.JObject\MessageQueue.Formatters.ToJObject.csproj", "{92949914-F116-4EB3-BE5B-FB227ED2E947}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.ObjectToJsonObject", "MessageQueue.Formatters.ObjectToJsonObject\MessageQueue.Formatters.ObjectToJsonObject.csproj", "{92949914-F116-4EB3-BE5B-FB227ED2E947}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

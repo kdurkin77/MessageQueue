@@ -1,5 +1,5 @@
 ﻿using KM.MessageQueue;
-using KM.MessageQueue.Formatters.ToJsonString;
+using KM.MessageQueue.Formatters.ObjectToJsonString;
 using KM.MessageQueue.Formatters.StringToBytes;
 using KM.MessageQueue.Mqtt.Tcp;
 using Microsoft.Extensions.Logging;

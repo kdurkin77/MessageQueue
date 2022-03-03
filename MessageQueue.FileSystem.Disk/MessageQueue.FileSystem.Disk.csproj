@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.Formatters.Json.JObject\MessageQueue.Formatters.ToJObject.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonObject\MessageQueue.Formatters.ObjectToJsonObject.csproj" />
     <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 

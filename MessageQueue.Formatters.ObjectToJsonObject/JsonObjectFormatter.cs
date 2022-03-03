@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 
-namespace KM.MessageQueue.Formatters.ToJObject
+namespace KM.MessageQueue.Formatters.ObjectToJsonObject
 {
-    public sealed class JObjectFormatter<TMessage> : IMessageFormatter<TMessage, JObject>
+    public sealed class JsonObjectFormatter<TMessage> : IMessageFormatter<TMessage, JObject>
     {
         public JObject FormatMessage(TMessage message)
         {
