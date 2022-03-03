@@ -58,7 +58,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
 
                 ReaderTokenSource = new CancellationTokenSource();
                 _subscriptionName = startOptions.SubscriptionName;
-                await _queue._managedMqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build());
+                await _queue._managedMqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build()).ConfigureAwait(false);
                 _queue._managedMqttClient.UseApplicationMessageReceivedHandler(MessageHandler);
 
                 State = MessageQueueReaderState.Running;
@@ -117,7 +117,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
         {
             _readerTokenSource?.Cancel();
 
-            await _queue._managedMqttClient.UnsubscribeAsync(_subscriptionName);
+            await _queue._managedMqttClient.UnsubscribeAsync(_subscriptionName).ConfigureAwait(false);
 
             _readerTokenSource?.Dispose();
             State = MessageQueueReaderState.Stopped;

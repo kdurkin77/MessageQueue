@@ -77,7 +77,7 @@ namespace KM.MessageQueue.Azure.Topic
 
             _logger.LogTrace($"posting to {_serviceBusClient.FullyQualifiedNamespace}/{_options.EntityPath}/{attributes.Label}");
 
-            await sender.SendMessageAsync(sbMessage).ConfigureAwait(false);
+            await sender.SendMessageAsync(sbMessage, cancellationToken).ConfigureAwait(false);
             await sender.DisposeAsync().ConfigureAwait(false);
         }
 

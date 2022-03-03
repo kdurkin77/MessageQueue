@@ -88,7 +88,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
                 .WithRetainFlag()
                 .Build();
 
-            await _managedMqttClient.PublishAsync(mqttMessage);
+            await _managedMqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)

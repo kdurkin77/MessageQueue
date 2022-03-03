@@ -138,7 +138,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 if (result == CompletionResult.Complete)
                 {
                     _dbContext.Remove(item);
-                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                     _messageQueue.Dequeue();
                 }
 

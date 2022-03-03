@@ -45,7 +45,7 @@ namespace KM.MessageQueue.FileSystem.Disk
 
                 _readerTokenSource = new CancellationTokenSource();
 
-                _readerTask = Task.Run(() => ReaderLoop(startOptions.MessageHandler, startOptions.UserData, cancellationToken));
+                _readerTask = Task.Run(() => ReaderLoop(startOptions.MessageHandler, startOptions.UserData, cancellationToken), _readerTokenSource.Token);
 
                 State = MessageQueueReaderState.Running;
             }
@@ -80,7 +80,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                     var gotMessage = await _queue.TryReadMessageAsync(messageHandler.HandleMessageAsync, userData, source.Token).ConfigureAwait(false);
                     if (!gotMessage)
                     {
-                        await Task.Delay(1);
+                        await Task.Delay(1, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }

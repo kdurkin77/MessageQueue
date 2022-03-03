@@ -78,7 +78,7 @@ namespace KM.MessageQueue.Azure.Topic
                 ServiceBusProcessor = _queue._serviceBusClient.CreateProcessor(_queue._options.EntityPath, startOptions.SubscriptionName, opts);
                 ServiceBusProcessor.ProcessMessageAsync += MessageHandler;
                 ServiceBusProcessor.ProcessErrorAsync += ErrorHandler;
-                await ServiceBusProcessor.StartProcessingAsync();
+                await ServiceBusProcessor.StartProcessingAsync(CancellationToken.None).ConfigureAwait(false);
 
                 State = MessageQueueReaderState.Running;
             }

@@ -101,7 +101,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            await _sync.WaitAsync().ConfigureAwait(false);
+            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 ThrowIfDisposed();

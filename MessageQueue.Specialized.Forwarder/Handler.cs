@@ -35,7 +35,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failure posting to {nameof(Handler<TMessage>)} destination queue");
-                return await _forwarderErrorHandler(ex);
+                return await _forwarderErrorHandler(ex).ConfigureAwait(false);
             }
         }
     }
