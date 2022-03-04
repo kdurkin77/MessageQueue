@@ -1,4 +1,6 @@
 ﻿using KM.MessageQueue.Azure.Topic;
+using KM.MessageQueue.Formatters.ObjectToJsonString;
+using KM.MessageQueue.Formatters.StringToBytes;
 using Microsoft.Extensions.Logging;
 using System;
 
