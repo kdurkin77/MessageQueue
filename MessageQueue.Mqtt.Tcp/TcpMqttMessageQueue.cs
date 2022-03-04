@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
-using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
-using MQTTnet.Formatter;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,32 +12,18 @@ namespace KM.MessageQueue.Mqtt.Tcp
     {
         private bool _disposed = false; 
         private readonly ILogger _logger;
-        internal readonly TcpMqttMessageQueueOptions _options;
-        internal readonly IMessageFormatter<TMessage, byte[]> _formatter;
+        internal readonly TcpMqttMessageQueueOptions<TMessage> _options;
         internal readonly IManagedMqttClient _managedMqttClient;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
-        public TcpMqttMessageQueue(ILogger<TcpMqttMessageQueue<TMessage>> logger, IOptions<TcpMqttMessageQueueOptions> options, IMessageFormatter<TMessage, byte[]> formatter)
+        public TcpMqttMessageQueue(ILogger<TcpMqttMessageQueue<TMessage>> logger, IOptions<TcpMqttMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
             
             _managedMqttClient = new MqttFactory().CreateManagedMqttClient();
-
-            var clientOpts = new ManagedMqttClientOptionsBuilder()
-                .WithAutoReconnectDelay(_options.AutoReconnectDelay ?? TimeSpan.FromSeconds(5.0))
-                .WithMaxPendingMessages(_options.MaxPendingMessages ?? int.MaxValue)
-                .WithClientOptions(new MqttClientOptionsBuilder()
-                    .WithTcpServer(_options.Url)
-                    .WithCredentials(_options.Username, _options.Password)
-                    .WithCleanSession(_options.WithCleanSession ?? true)
-                    .WithCommunicationTimeout(_options.CommunicationTimeout ?? TimeSpan.FromSeconds(10.0))
-                    .WithProtocolVersion(_options.ProtocolVersion ?? MqttProtocolVersion.V311)
-                    .Build())
-                .Build();
-
+            var clientOpts = _options.ManagedMqttClientOptions ?? throw new ArgumentException($"{nameof(options)}.{nameof(_options.ManagedMqttClientOptions)} cannot be null");
             _managedMqttClient.StartAsync(clientOpts).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
@@ -77,10 +61,11 @@ namespace KM.MessageQueue.Mqtt.Tcp
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _formatter.FormatMessage(message);
+            var messageBytes = _options.MessageFormatter.FormatMessage(message);
 
-            _logger.LogTrace($"posting to {_options.Url}/{attributes.Label}");
+            _logger.LogTrace($"posting to {nameof(TcpMqttMessageQueue<TMessage>)} - {attributes.Label}");
 
+            //To Do: find a way to make these optional
             var mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(attributes.Label)
                 .WithPayload(messageBytes)

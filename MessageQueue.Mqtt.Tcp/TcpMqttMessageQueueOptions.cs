@@ -1,17 +1,24 @@
-﻿using MQTTnet.Formatter;
-using System;
+﻿using KM.MessageQueue.Formatters.ObjectToJsonString;
+using KM.MessageQueue.Formatters.StringToBytes;
+using MQTTnet.Extensions.ManagedClient;
 
 namespace KM.MessageQueue.Mqtt.Tcp
 {
-    public sealed class TcpMqttMessageQueueOptions
+    /// <summary>
+    /// Options for <see cref="TcpMqttMessageQueue{TMessage}"/>
+    /// </summary>
+    /// <typeparam name="TMessage"></typeparam>
+    public sealed class TcpMqttMessageQueueOptions<TMessage>
     {
-        public string? Url { get; set; }
-        public string? Username { get; set; }
-        public string? Password { get; set; }
-        public bool? WithCleanSession { get; set; }
-        public int? MaxPendingMessages { get; set; }
-        public TimeSpan? AutoReconnectDelay { get; set; }
-        public TimeSpan? CommunicationTimeout { get; set; }
-        public MqttProtocolVersion? ProtocolVersion { get; set; }
+        /// <summary>
+        /// Options to create the <see cref="ManagedMqttClient"/>, use <see cref="ManagedMqttClientOptionsBuilder"/>
+        /// </summary>
+        public ManagedMqttClientOptions? ManagedMqttClientOptions { get; set; }
+
+        /// <summary>
+        /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
+        /// formatter which serializes the message to JSON and then converts it to bytes
+        /// </summary>
+        public IMessageFormatter<TMessage, byte[]> MessageFormatter { get; set; } = new JsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
     }
 }

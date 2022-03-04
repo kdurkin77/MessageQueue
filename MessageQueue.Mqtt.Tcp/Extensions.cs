@@ -1,7 +1,4 @@
-﻿using KM.MessageQueue;
-using KM.MessageQueue.Formatters.ObjectToJsonString;
-using KM.MessageQueue.Formatters.StringToBytes;
-using KM.MessageQueue.Mqtt.Tcp;
+﻿using KM.MessageQueue.Mqtt.Tcp;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -9,12 +6,27 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class TcpMqttExtensions
     {
-        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<TcpMqttMessageQueueOptions> configureOptions)
+        /// <summary>
+        /// Add a <see cref="TcpMqttMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"/>
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="configureOptions"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<TcpMqttMessageQueueOptions<TMessage>> configureOptions)
         {
             return services.AddTcpMqttMessageQueue<TMessage>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, TcpMqttMessageQueueOptions> configureOptions)
+        /// <summary>
+        /// Add a <see cref="TcpMqttMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"/>
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="configureOptions"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IServiceCollection AddTcpMqttMessageQueue<TMessage>(this IServiceCollection services, Action<IServiceProvider, TcpMqttMessageQueueOptions<TMessage>> configureOptions)
         {
             if (services is null)
             {
@@ -29,43 +41,11 @@ namespace Microsoft.Extensions.DependencyInjection
             return services
                 .AddMessageQueue<TcpMqttMessageQueue<TMessage>, TMessage>(services =>
                 {
-                    var options = new TcpMqttMessageQueueOptions();
+                    var options = new TcpMqttMessageQueueOptions<TMessage>();
                     configureOptions(services, options);
 
                     var logger = services.GetRequiredService<ILogger<TcpMqttMessageQueue<TMessage>>>();
-                    var formatter = new JsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
-                    return new TcpMqttMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
-                });
-        }
-
-        public static IServiceCollection AddTcpMqttMessageQueue<TMessage, TFormatter>(this IServiceCollection services, Action<TcpMqttMessageQueueOptions> configureOptions)
-            where TFormatter : class, IMessageFormatter<TMessage, byte[]>
-        {
-            return services.AddTcpMqttMessageQueue<TMessage>((_, options) => configureOptions(options));
-        }
-
-        public static IServiceCollection AddTcpMqttMessageQueue<TMessage, TFormatter>(this IServiceCollection services, Action<IServiceProvider, TcpMqttMessageQueueOptions> configureOptions)
-            where TFormatter : class, IMessageFormatter<TMessage, byte[]>
-        {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (configureOptions is null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            return services
-                .AddMessageQueue<TcpMqttMessageQueue<TMessage>, TMessage>(services =>
-                {
-                    var options = new TcpMqttMessageQueueOptions();
-                    configureOptions(services, options);
-
-                    var logger = services.GetRequiredService<ILogger<TcpMqttMessageQueue<TMessage>>>();
-                    var formatter = services.GetRequiredService<TFormatter>();
-                    return new TcpMqttMessageQueue<TMessage>(logger, Options.Options.Create(options), formatter);
+                    return new TcpMqttMessageQueue<TMessage>(logger, Options.Options.Create(options));
                 });
         }
     }

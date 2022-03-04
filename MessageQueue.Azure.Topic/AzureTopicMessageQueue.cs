@@ -11,25 +11,16 @@ namespace KM.MessageQueue.Azure.Topic
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        internal readonly AzureTopicMessageQueueOptions _options;
-        internal readonly IMessageFormatter<TMessage, byte[]> _formatter;
+        internal readonly AzureTopicMessageQueueOptions<TMessage> _options;
         internal readonly ServiceBusClient _serviceBusClient;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
-        public AzureTopicMessageQueue(ILogger<AzureTopicMessageQueue<TMessage>> logger, IOptions<AzureTopicMessageQueueOptions> options, IMessageFormatter<TMessage, byte[]> formatter)
+        public AzureTopicMessageQueue(ILogger<AzureTopicMessageQueue<TMessage>> logger, IOptions<AzureTopicMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
-
-            var connectionString = $"Endpoint={_options.Endpoint};SharedAccessKeyName={_options.SharedAccessKeyName};SharedAccessKey={_options.SharedAccessKey};EntityPath={_options.EntityPath}";
-            var clientOpts = new ServiceBusClientOptions();
-            if (_options.TransportType.HasValue)
-            {
-                clientOpts.TransportType = _options.TransportType.Value;
-            }
-            _serviceBusClient = new ServiceBusClient(connectionString, clientOpts);
+            _serviceBusClient = new ServiceBusClient(_options.ConnectionString, _options.ServiceBusClientOptions);
         }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
@@ -58,8 +49,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _formatter.FormatMessage(message);
-
+            var messageBytes = _options.MessageFormatter.FormatMessage(message);
             var sender = _serviceBusClient.CreateSender(_options.EntityPath);
             var sbMessage = new ServiceBusMessage(messageBytes)
             {

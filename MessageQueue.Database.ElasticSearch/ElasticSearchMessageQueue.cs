@@ -10,21 +10,19 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.ElasticSearch
 {
-    public sealed class ElasticSearchMessageQueue<TMessageIn> : IMessageQueue<TMessageIn>
+    public sealed class ElasticSearchMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly ElasticSearchMessageQueueOptions _options;
-        private readonly IMessageFormatter<TMessageIn, JObject> _formatter;
+        private readonly ElasticSearchMessageQueueOptions<TMessage> _options;
         private readonly ElasticClient _client;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
-        public ElasticSearchMessageQueue(ILogger<ElasticSearchMessageQueue<TMessageIn>> logger, IOptions<ElasticSearchMessageQueueOptions> options, IMessageFormatter<TMessageIn, JObject> formatter)
+        public ElasticSearchMessageQueue(ILogger<ElasticSearchMessageQueue<TMessage>> logger, IOptions<ElasticSearchMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
 
             if(_options.ConnectionSettings is null)
             {
@@ -33,10 +31,10 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
             _client = new ElasticClient(_options.ConnectionSettings);
 
-            _logger.LogTrace($"{nameof(ElasticSearchMessageQueue<TMessageIn>)} initialized");
+            _logger.LogTrace($"{nameof(ElasticSearchMessageQueue<TMessage>)} initialized");
         }
 
-        public Task PostMessageAsync(TMessageIn message, CancellationToken cancellationToken)
+        public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -48,7 +46,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
             return PostMessageAsync(message, _emptyAttributes, cancellationToken);
         }
 
-        public async Task PostMessageAsync(TMessageIn message, MessageAttributes attributes, CancellationToken cancellationToken)
+        public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -64,10 +62,12 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
             ThrowIfDisposed();
 
-            var messageObject = _formatter.FormatMessage(message);
+            var messageObject = _options.MessageFormatter.FormatMessage(message);
             var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
             elasticSearchMessage.Merge(messageObject);
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
+
+            _logger.LogTrace($"posting to {nameof(ElasticSearchMessageQueue<TMessage>)} - {attributes.Label}");
 
             if (string.IsNullOrWhiteSpace(attributes.Label))
             {
@@ -84,7 +84,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
             }
         }
 
-        public Task<IMessageQueueReader<TMessageIn>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -93,7 +93,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(ElasticSearchMessageQueue<TMessageIn>));
+                throw new ObjectDisposedException(nameof(ElasticSearchMessageQueue<TMessage>));
             }
         }
 

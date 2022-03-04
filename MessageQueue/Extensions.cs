@@ -5,6 +5,15 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MessageQueueExtensions
     {
+        /// <summary>
+        /// Adds a queue implentation of type <see cref="IMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"/> 
+        /// </summary>
+        /// <typeparam name="TQueue"></typeparam>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="create"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public static IServiceCollection AddMessageQueue<TQueue, TMessage>(this IServiceCollection services, Func<IServiceProvider, TQueue> create)
             where TQueue : class, IMessageQueue<TMessage>
         {

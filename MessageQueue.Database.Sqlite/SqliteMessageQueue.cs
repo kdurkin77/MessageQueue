@@ -18,17 +18,15 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly Queue<SqliteQueueMessage> _messageQueue;
         private readonly SemaphoreSlim _sync;
 
-        internal readonly SqliteMessageQueueOptions _options;
-        internal readonly IMessageFormatter<TMessage, string> _formatter;
+        internal readonly SqliteMessageQueueOptions<TMessage> _options;
         internal readonly SqliteDatabaseContext _dbContext;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
-        public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions> options, IMessageFormatter<TMessage, string> formatter)
+        public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
 
             if (string.IsNullOrWhiteSpace(_options.ConnectionString))
             {
@@ -88,7 +86,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
-                var messageBytes = _formatter.FormatMessage(message);
+                var messageBytes = _options.MessageFormatter.FormatMessage(message);
 
                 var sqlMessage =
                     new SqliteQueueMessage()
@@ -98,6 +96,8 @@ namespace KM.MessageQueue.Database.Sqlite
                         SequenceNumber = ++_sequenceNumber,
                         Body = messageBytes
                     };
+
+                _logger.LogTrace($"posting to {nameof(SqliteMessageQueue<TMessage>)}- {attributes.Label}");
 
                 _dbContext.SqliteQueueMessages.Add(sqlMessage);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -133,7 +133,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
                 var item = _messageQueue.Peek();
                 var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes) ?? throw new Exception("Attributes formatted incorrectly");
-                var message = _formatter.RevertMessage(item.Body);
+                var message = _options.MessageFormatter.RevertMessage(item.Body);
                 var result = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {
