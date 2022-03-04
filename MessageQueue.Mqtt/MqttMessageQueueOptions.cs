@@ -2,13 +2,13 @@
 using KM.MessageQueue.Formatters.StringToBytes;
 using MQTTnet.Extensions.ManagedClient;
 
-namespace KM.MessageQueue.Mqtt.Tcp
+namespace KM.MessageQueue.Mqtt
 {
     /// <summary>
-    /// Options for <see cref="TcpMqttMessageQueue{TMessage}"/>
+    /// Options for <see cref="MqttMessageQueue{TMessage}"/>
     /// </summary>
     /// <typeparam name="TMessage"></typeparam>
-    public sealed class TcpMqttMessageQueueOptions<TMessage>
+    public sealed class MqttMessageQueueOptions<TMessage>
     {
         /// <summary>
         /// Options to create the <see cref="ManagedMqttClient"/>, use <see cref="ManagedMqttClientOptionsBuilder"/>

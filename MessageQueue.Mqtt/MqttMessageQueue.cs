@@ -6,18 +6,18 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KM.MessageQueue.Mqtt.Tcp
+namespace KM.MessageQueue.Mqtt
 {
-    public sealed class TcpMqttMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class MqttMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false; 
         private readonly ILogger _logger;
-        internal readonly TcpMqttMessageQueueOptions<TMessage> _options;
+        internal readonly MqttMessageQueueOptions<TMessage> _options;
         internal readonly IManagedMqttClient _managedMqttClient;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
-        public TcpMqttMessageQueue(ILogger<TcpMqttMessageQueue<TMessage>> logger, IOptions<TcpMqttMessageQueueOptions<TMessage>> options)
+        public MqttMessageQueue(ILogger<MqttMessageQueue<TMessage>> logger, IOptions<MqttMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -31,7 +31,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(TcpMqttMessageQueue<TMessage>));
+                throw new ObjectDisposedException(nameof(MqttMessageQueue<TMessage>));
             }
         }
 
@@ -63,7 +63,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
 
             var messageBytes = _options.MessageFormatter.FormatMessage(message);
 
-            _logger.LogTrace($"posting to {nameof(TcpMqttMessageQueue<TMessage>)} - {attributes.Label}");
+            _logger.LogTrace($"posting to {nameof(MqttMessageQueue<TMessage>)} - {attributes.Label}");
 
             //To Do: find a way to make these optional
             var mqttMessage = new MqttApplicationMessageBuilder()
@@ -78,7 +78,7 @@ namespace KM.MessageQueue.Mqtt.Tcp
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
         {
-            var reader = new TcpMqttMessageQueueReader<TMessage>(this);
+            var reader = new MqttMessageQueueReader<TMessage>(this);
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
