@@ -25,6 +25,15 @@ namespace KM.MessageQueue.Azure.Topic
         /// Setup the <see cref="ServiceBusClient"/> using a connection string
         /// </summary>
         /// <param name="connectionString"></param>
+        public void UseConnectionString(string connectionString)
+        {
+            UseConnectionString(connectionString, options => { });
+        }
+
+        /// <summary>
+        /// Setup the <see cref="ServiceBusClient"/> using a connection string
+        /// </summary>
+        /// <param name="connectionString"></param>
         /// <param name="configureSettings"></param>
         /// <exception cref="ArgumentNullException"></exception>
         public void UseConnectionString(string connectionString, Action<ServiceBusClientOptions> configureSettings)
@@ -51,38 +60,36 @@ namespace KM.MessageQueue.Azure.Topic
         /// <param name="entityPath"></param>
         /// <param name="sharedAccessKeyName"></param>
         /// <param name="sharedAccessKey"></param>
+        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey)
+        {
+            UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, null, (_) => { });
+        }
+
+        /// <summary>
+        /// Setup the <see cref="ServiceBusClient"/> by building a connection string
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <param name="entityPath"></param>
+        /// <param name="sharedAccessKeyName"></param>
+        /// <param name="sharedAccessKey"></param>
         /// <param name="configureSettings"></param>
         /// <exception cref="ArgumentNullException"></exception>
         public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, Action<ServiceBusClientOptions> configureSettings)
         {
-            if (string.IsNullOrWhiteSpace(endpoint))
-            {
-                throw new ArgumentNullException(nameof(endpoint));
-            }
+            UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, null, configureSettings);
+        }
 
-            if (string.IsNullOrWhiteSpace(entityPath))
-            {
-                throw new ArgumentNullException(nameof(entityPath));
-            }
-
-            if (string.IsNullOrWhiteSpace(sharedAccessKeyName))
-            {
-                throw new ArgumentNullException(nameof(sharedAccessKeyName));
-            }
-
-            if (string.IsNullOrWhiteSpace(sharedAccessKey))
-            {
-                throw new ArgumentNullException(nameof(sharedAccessKey));
-            }
-
-            if (configureSettings is null)
-            {
-                throw new ArgumentNullException(nameof(configureSettings));
-            }
-
-            EntityPath = entityPath;
-            ConnectionString = $"Endpoint={endpoint};SharedAccessKeyName={sharedAccessKeyName};SharedAccessKey={sharedAccessKey};EntityPath={entityPath}";
-            configureSettings(ServiceBusClientOptions);
+        /// <summary>
+        /// Setup the <see cref="ServiceBusClient"/> by building a connection string
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <param name="entityPath"></param>
+        /// <param name="sharedAccessKeyName"></param>
+        /// <param name="sharedAccessKey"></param>
+        /// <param name="transportType"></param>
+        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, string transportType)
+        {
+            UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, transportType, (_) => { });
         }
 
         /// <summary>
@@ -95,7 +102,7 @@ namespace KM.MessageQueue.Azure.Topic
         /// <param name="transportType"></param>
         /// <param name="configureSettings"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, string transportType, Action<ServiceBusClientOptions> configureSettings)
+        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, string? transportType, Action<ServiceBusClientOptions> configureSettings)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
             {
@@ -128,7 +135,12 @@ namespace KM.MessageQueue.Azure.Topic
             }
 
             EntityPath = entityPath;
-            ConnectionString = $"Endpoint={endpoint};SharedAccessKeyName={sharedAccessKeyName};SharedAccessKey={sharedAccessKey};EntityPath={entityPath};TransportType={transportType}";
+            ConnectionString = $"Endpoint={endpoint};SharedAccessKeyName={sharedAccessKeyName};SharedAccessKey={sharedAccessKey};EntityPath={entityPath};";
+            if (transportType is not null)
+            {
+                ConnectionString += "TransportType={transportType};";
+            }
+
             configureSettings(ServiceBusClientOptions);
         }
     }

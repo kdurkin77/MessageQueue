@@ -13,7 +13,7 @@ namespace KM.MessageQueue.Mqtt
         /// <summary>
         /// Options to create the <see cref="ManagedMqttClient"/>, use <see cref="ManagedMqttClientOptionsBuilder"/>
         /// </summary>
-        public ManagedMqttClientOptions? ManagedMqttClientOptions { get; set; }
+        public ManagedMqttClientOptions ManagedMqttClientOptions { get; set; } = new ManagedMqttClientOptions();
 
         /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default

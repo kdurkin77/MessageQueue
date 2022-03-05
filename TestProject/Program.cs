@@ -1,11 +1,14 @@
 ﻿using KM.MessageQueue;
 using KM.MessageQueue.Azure.Topic;
-//using KM.MessageQueue.Database.Sqlite;
 using KM.MessageQueue.FileSystem.Disk;
-using KM.MessageQueue.Formatters.Json;
+//using KM.MessageQueue.Formatters.ObjectToJsonObject;
+//using KM.MessageQueue.Formatters.ObjectToJsonString;
+//using KM.MessageQueue.Formatters.StringToBytes;
 using KM.MessageQueue.Specialized.Forwarder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MQTTnet.Client.Options;
+using MQTTnet.Extensions.ManagedClient;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -25,25 +28,75 @@ namespace TestProject
                         options.SetMinimumLevel(LogLevel.Trace);
                     })
                     .AddSingleton<MyApplication>()
-                    .AddSingleton(typeof(IMessageFormatter<>), typeof(JsonFormatter<>))
                     .AddSingleton<IMessageHandler<MyMessage>, MyMessageHandler>()
-                    //now we can write to either disk directly or sqlite
+
+                    //Azure queue
+                    .AddAzureTopicMessageQueue<MyMessage>(options =>
+                    {
+                        options.UseConnectionStringBuilder(
+                            endpoint: "YOUR ENDPOINT HERE",
+                            entityPath: "YOUR ENTITY PATH HERE",
+                            sharedAccessKeyName: "YOUR SHARED ACCESS KEY NAME HERE",
+                            sharedAccessKey: "YOUR SHARED ACCESS KEY HERE"
+                            //configure any service bus client options here
+                            //options =>
+                            //{
+                            //    options.TransportType = Azure.Messaging.ServiceBus.ServiceBusTransportType.AmqpTcp;
+                            //}
+                        );
+                        //to use your own formatter
+                        //options.MessageFormatter = new JsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
+                    })
+
+
+                    //elasticsearch
+                    .AddElasticSearchMessageQueue<MyMessage>(options =>
+                    {
+                        options.UseConnectionUri(new Uri("YOUR URI HERE"), settings =>
+                        {
+                            settings.BasicAuthentication("USERNAME", "PASSWORD");
+                            settings.ThrowExceptions();
+                        });
+                        //to use your own formatter
+                        //options.MessageFormatter = new JsonObjectFormatter<MyMessage>();
+                    })
+
+
+                    //Sqlite
+                    .AddSqliteMessageQueue<MyMessage>(options =>
+                    {
+                        var path = Path.Combine(AppContext.BaseDirectory, "Queue.db");
+                        options.ConnectionString = $"Data Source = {path}";
+                        //to use your own formatter
+                        //options.MessageFormatter = new JsonStringFormatter<MyMessage>();
+                    })
+
+
+                    //disk
                     .AddDiskMessageQueue<MyMessage>(options =>
                     {
                         options.MessageStore = new DirectoryInfo("/my-messages");
+                        //to use your own formatter
+                        //options.MessageFormatter = new JsonObjectFormatter<MyMessage>();
                     })
-                    //.AddSqliteMessageQueue<MyMessage>(options =>
-                    //{
-                    //    var path = Path.Combine(AppContext.BaseDirectory, "Queue.db");
-                    //    options.ConnectionString = $"Data Source = {path}";
-                    //})
-                    .AddAzureTopicMessageQueue<MyMessage>(options =>
+                    
+
+                    //MQTT
+                    .AddMqttMessageQueue<MyMessage>(options =>
                     {
-                        options.Endpoint = "YOUR ENDPOINT HERE";
-                        options.EntityPath = "YOUR ENTITY PATH HERE";
-                        options.SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE";
-                        options.SharedAccessKey = "YOUR SHARED ACCESS KEY HERE";
+                        options.ManagedMqttClientOptions =
+                            new ManagedMqttClientOptionsBuilder()
+                            .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
+                            .WithClientOptions(new MqttClientOptionsBuilder()
+                                .WithTcpServer("HOST HERE")
+                                .WithCredentials("USERNAME", "PASSWORD")
+                                .Build())
+                            .Build();
+                        //to use your own formatter
+                        //options.MessageFormatter = new JsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
                     })
+
+                    
                     .AddForwarderMessageQueue<MyMessage, DiskMessageQueue<MyMessage>, AzureTopicMessageQueue<MyMessage>>((services, options) =>
                     {
                         var logger = services.GetRequiredService<ILogger<ForwarderMessageQueue<MyMessage>>>();

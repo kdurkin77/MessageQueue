@@ -11,15 +11,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="2.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue.Azure.Topic" Version="2.0.0" />
     <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="2.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Json" Version="1.0.2" />
     <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="2.0.0" />
-    <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="2.0.0" />
+    <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="2.0.0" />-->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Azure.Topic\MessageQueue.Azure.Topic.csproj" />
+    <ProjectReference Include="..\MessageQueue.Database.ElasticSearch\MessageQueue.Database.ElasticSearch.csproj" />
+    <ProjectReference Include="..\MessageQueue.Database.Sqlite\MessageQueue.Database.Sqlite.csproj" />
+    <ProjectReference Include="..\MessageQueue.FileSystem.Disk\MessageQueue.FileSystem.Disk.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonObject\MessageQueue.Formatters.ObjectToJsonObject.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.StringToBytes\MessageQueue.Formatters.StringToBytes.csproj" />
+    <ProjectReference Include="..\MessageQueue.Mqtt\MessageQueue.Mqtt.csproj" />
+    <ProjectReference Include="..\MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj" />
   </ItemGroup>
 
 </Project>
