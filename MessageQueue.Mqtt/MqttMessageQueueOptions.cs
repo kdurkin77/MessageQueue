@@ -12,9 +12,6 @@ namespace KM.MessageQueue.Mqtt
     /// <typeparam name="TMessage"></typeparam>
     public sealed class MqttMessageQueueOptions<TMessage>
     {
-        /// <summary>
-        /// Options to create the <see cref="ManagedMqttClient"/>, use <see cref="ManagedMqttClientOptionsBuilder"/>
-        /// </summary>
         internal ManagedMqttClientOptions ManagedMqttClientOptions { get; set; } = new ManagedMqttClientOptions();
 
         internal Func<byte[], MessageAttributes, MqttApplicationMessage> MessageBuilder { get; set; } = 
@@ -26,6 +23,11 @@ namespace KM.MessageQueue.Mqtt
                 .WithRetainFlag()
                 .Build();
 
+        /// <summary>
+        /// Configures the <see cref="MqttApplicationMessageBuilder"/> to be used to upload the message to the queue
+        /// </summary>
+        /// <param name="configureBuilder"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void UseMessageBuilder(Action<MqttApplicationMessageBuilder> configureBuilder)
         {
             if (configureBuilder is null)
@@ -44,6 +46,11 @@ namespace KM.MessageQueue.Mqtt
             };
         }
 
+        /// <summary>
+        /// Congfigures the <see cref="MQTTnet.Extensions.ManagedClient.ManagedMqttClientOptions"/> using a <see cref="ManagedMqttClientOptionsBuilder"/>
+        /// </summary>
+        /// <param name="configureSettings"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void UseManagedMqttClientOptionsBuilder(Action<ManagedMqttClientOptionsBuilder> configureSettings)
         {
             if (configureSettings is null)
@@ -56,6 +63,11 @@ namespace KM.MessageQueue.Mqtt
             ManagedMqttClientOptions = builder.Build();
         }
 
+        /// <summary>
+        /// Congfigures the <see cref="MQTTnet.Extensions.ManagedClient.ManagedMqttClientOptions"/>
+        /// </summary>
+        /// <param name="configureSettings"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void UseManagedMqttClientOptions(Action<ManagedMqttClientOptions> configureSettings)
         {
             if (configureSettings is null)
