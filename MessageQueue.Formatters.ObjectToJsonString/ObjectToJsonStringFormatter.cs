@@ -3,7 +3,7 @@ using System;
 
 namespace KM.MessageQueue.Formatters.ObjectToJsonString
 {
-    public sealed class JsonStringFormatter<TMessage> : IMessageFormatter<TMessage, string>
+    public sealed class ObjectToJsonStringFormatter<TMessage> : IMessageFormatter<TMessage, string>
     {
         public string FormatMessage(TMessage message) =>
             JsonConvert.SerializeObject(message);

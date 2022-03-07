@@ -19,7 +19,7 @@ namespace KM.MessageQueue.Azure.Topic
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which serializes the message to JSON and then converts it to bytes
         /// </summary>
-        public IMessageFormatter<TMessage, byte[]> MessageFormatter { get; set; } = new JsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
+        public IMessageFormatter<TMessage, byte[]> MessageFormatter { get; set; } = new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
 
         /// <summary>
         /// Setup the <see cref="ServiceBusClient"/> using a connection string

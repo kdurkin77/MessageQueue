@@ -14,9 +14,8 @@ namespace TestProject
             return Task.CompletedTask;
         }
 
-        public async Task<CompletionResult> HandleMessageAsync(IMessageFormatter<MyMessage> formatter, byte[] messageBytes, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
+        public async Task<CompletionResult> HandleMessageAsync(MyMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
         {
-            var message = formatter.BytesToMessage(messageBytes);
             if (message is null || attributes is null)
             {
                 return CompletionResult.Abandon;

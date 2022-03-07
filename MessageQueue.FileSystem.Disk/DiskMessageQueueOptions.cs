@@ -26,6 +26,6 @@ namespace KM.MessageQueue.FileSystem.Disk
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which converts the message to a <see cref="JObject"/> />
         /// /// </summary>
-        public IMessageFormatter<TMessage, JObject> MessageFormatter { get; set; } = new JsonObjectFormatter<TMessage>();
+        public IMessageFormatter<TMessage, JObject> MessageFormatter { get; set; } = new ObjectToJsonObjectFormatter<TMessage>();
     }
 }

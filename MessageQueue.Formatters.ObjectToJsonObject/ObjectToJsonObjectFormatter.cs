@@ -3,7 +3,7 @@ using System;
 
 namespace KM.MessageQueue.Formatters.ObjectToJsonObject
 {
-    public sealed class JsonObjectFormatter<TMessage> : IMessageFormatter<TMessage, JObject>
+    public sealed class ObjectToJsonObjectFormatter<TMessage> : IMessageFormatter<TMessage, JObject>
     {
         public JObject FormatMessage(TMessage message)
         {
