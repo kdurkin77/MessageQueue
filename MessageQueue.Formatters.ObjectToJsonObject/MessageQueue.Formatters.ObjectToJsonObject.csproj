@@ -5,26 +5,26 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
-    <PackageId>KM.MessageQueue.Formatters.Json.JObject</PackageId>
+    <PackageId>KM.MessageQueue.Formatters.ObjectToJsonObject</PackageId>
     <PackageProjectUrl>https://www.nuget.org/</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Formatting;Json;JObject</PackageTags>
-    <Product>KM.MessageQueue.Formatters.Json.JObject</Product>
+    <Product>KM.MessageQueue.Formatters.ObjectToJsonObject</Product>
     <Description>A formatting implementation for KM.MessageQueue that serializes the object to a JObject</Description>
     <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
-    <Version>1.0.0</Version>
+    <Version>3.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <RootNamespace>KM.MessageQueue.Formatters.Json.JObject</RootNamespace>
-    <AssemblyName>KM.MessageQueue.Formatters.Json.JObject</AssemblyName>
+    <RootNamespace>KM.MessageQueue.Formatters.ObjectToJsonObject</RootNamespace>
+    <AssemblyName>KM.MessageQueue.Formatters.ObjectToJsonObject</AssemblyName>
   </PropertyGroup>
 
 
   <ItemGroup>
-    <!--<PackageReference Include="KM.MessageQueue" Version="1.0.1" />-->
+    <PackageReference Include="KM.MessageQueue" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
@@ -33,10 +33,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 
 </Project>

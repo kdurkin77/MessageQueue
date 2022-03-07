@@ -86,7 +86,8 @@ namespace TestProject
                         options.UseManagedMqttClientOptionsBuilder(opts =>
                             opts
                             .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-                            .WithClientOptions(new MqttClientOptionsBuilder()
+                            .WithClientOptions(opts =>
+                                opts
                                 .WithTcpServer("HOST HERE")
                                 .WithCredentials("USERNAME", "PASSWORD")
                                 .Build())

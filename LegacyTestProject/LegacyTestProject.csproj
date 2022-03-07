@@ -52,23 +52,41 @@
     <Reference Include="Azure.Messaging.ServiceBus, Version=7.6.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
       <HintPath>..\packages\Azure.Messaging.ServiceBus.7.6.0\lib\netstandard2.0\Azure.Messaging.ServiceBus.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.2.0.0\lib\netstandard2.0\KM.MessageQueue.dll</HintPath>
+    <Reference Include="Elasticsearch.Net, Version=7.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elasticsearch.Net.7.17.0\lib\net461\Elasticsearch.Net.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Azure.Topic, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Azure.Topic.2.0.0\lib\netstandard2.0\KM.MessageQueue.Azure.Topic.dll</HintPath>
+    <Reference Include="KM.MessageQueue, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.3.0.0\lib\netstandard2.0\KM.MessageQueue.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.2.0.0\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Azure.Topic, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Azure.Topic.3.0.0\lib\netstandard2.0\KM.MessageQueue.Azure.Topic.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Formatters.Json, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Formatters.Json.1.0.2\lib\netstandard2.0\KM.MessageQueue.Formatters.Json.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.3.0.0\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.2.0.0\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.3.0.0\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Sqlite, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Sqlite.2.0.0\lib\netstandard2.0\KM.MessageQueue.Sqlite.dll</HintPath>
+    <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.3.0.0\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
+    </Reference>
+    <Reference Include="KM.MessageQueue.Formatters.ObjectToJsonObject, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.ObjectToJsonObject.3.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.ObjectToJsonObject.dll</HintPath>
+    </Reference>
+    <Reference Include="KM.MessageQueue.Formatters.ObjectToJsonString, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.ObjectToJsonString.3.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.ObjectToJsonString.dll</HintPath>
+    </Reference>
+    <Reference Include="KM.MessageQueue.Formatters.Specialized.Composition, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.Specialized.Composition.3.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.Specialized.Composition.dll</HintPath>
+    </Reference>
+    <Reference Include="KM.MessageQueue.Formatters.StringToBytes, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.StringToBytes.3.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.StringToBytes.dll</HintPath>
+    </Reference>
+    <Reference Include="KM.MessageQueue.Mqtt, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Mqtt.3.0.0\lib\netstandard2.0\KM.MessageQueue.Mqtt.dll</HintPath>
+    </Reference>
+    <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.3.0.0\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Amqp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Amqp.2.5.10\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
@@ -79,8 +97,9 @@
     <Reference Include="Microsoft.Bcl.HashCode, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.HashCode.1.1.1\lib\net461\Microsoft.Bcl.HashCode.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Data.Sqlite, Version=3.1.22.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.3.1.22\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Data.Sqlite, Version=6.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.6.0.2\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.3.1.6\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
@@ -124,20 +143,29 @@
     <Reference Include="Microsoft.Extensions.Primitives, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Primitives.6.0.0\lib\net461\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
+    <Reference Include="MQTTnet, Version=3.1.2.0, Culture=neutral, PublicKeyToken=b69712f52770c0a7, processorArchitecture=MSIL">
+      <HintPath>..\packages\MQTTnet.3.1.2\lib\net461\MQTTnet.dll</HintPath>
+    </Reference>
+    <Reference Include="MQTTnet.Extensions.ManagedClient, Version=3.1.2.0, Culture=neutral, PublicKeyToken=b69712f52770c0a7, processorArchitecture=MSIL">
+      <HintPath>..\packages\MQTTnet.Extensions.ManagedClient.3.1.2\lib\net461\MQTTnet.Extensions.ManagedClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Nest, Version=7.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\NEST.7.17.0\lib\net461\Nest.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.4.976, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.4\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
+    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.7.1395, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.7\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
     </Reference>
-    <Reference Include="SQLitePCLRaw.core, Version=2.0.4.976, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.core.2.0.4\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
+    <Reference Include="SQLitePCLRaw.core, Version=2.0.7.1395, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.core.2.0.7\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
     </Reference>
-    <Reference Include="SQLitePCLRaw.nativelibrary, Version=2.0.4.976, Culture=neutral, PublicKeyToken=502ed628492ab262, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.4\lib\net461\SQLitePCLRaw.nativelibrary.dll</HintPath>
+    <Reference Include="SQLitePCLRaw.nativelibrary, Version=2.0.7.1395, Culture=neutral, PublicKeyToken=502ed628492ab262, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.7\lib\net461\SQLitePCLRaw.nativelibrary.dll</HintPath>
     </Reference>
-    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.0.4.976, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.0.4\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
+    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.0.7.1395, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.0.7\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -147,7 +175,7 @@
       <HintPath>..\packages\System.Collections.Immutable.1.7.1\lib\net461\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+      <HintPath>..\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -244,8 +272,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets'))" />
     <Error Condition="!Exists('..\packages\System.Text.Json.6.0.2\build\System.Text.Json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Text.Json.6.0.2\build\System.Text.Json.targets'))" />
-    <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.4\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.4\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets'))" />
+    <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.7\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.7\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets'))" />
   </Target>
   <Import Project="..\packages\System.Text.Json.6.0.2\build\System.Text.Json.targets" Condition="Exists('..\packages\System.Text.Json.6.0.2\build\System.Text.Json.targets')" />
-  <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.4\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.4\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
+  <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.7\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.7\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
 </Project>

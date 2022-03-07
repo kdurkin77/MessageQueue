@@ -1,8 +1,9 @@
 ﻿using KM.MessageQueue;
 using KM.MessageQueue.Azure.Topic;
-//using KM.MessageQueue.Database.Sqlite;
+using KM.MessageQueue.Database.ElasticSearch;
+using KM.MessageQueue.Database.Sqlite;
 using KM.MessageQueue.FileSystem.Disk;
-using KM.MessageQueue.Formatters.Json;
+using KM.MessageQueue.Mqtt;
 using KM.MessageQueue.Specialized.Forwarder;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,28 +18,45 @@ namespace LegacyTestProject
     {
         public static async Task Main(string[] _)
         {
-            var formatter = new JsonFormatter<MyMessage>();
-            var diskOptions = new DiskMessageQueueOptions()
+            //elasticsearch setup example
+            var elasticSearchOptions = new ElasticSearchMessageQueueOptions<MyMessage>();
+            elasticSearchOptions.UseConnectionUri(new Uri("YOUR URI HERE"), 
+                (options) => 
+                { 
+                    options.ThrowExceptions();
+                });
+            var elasticSearchQueue = new ElasticSearchMessageQueue<MyMessage>(new Logger<ElasticSearchMessageQueue<MyMessage>>(), Options.Create(elasticSearchOptions));
+            
+            //sqlite setup example
+            var sqliteOptions = new SqliteMessageQueueOptions<MyMessage>()
+            {
+                ConnectionString = $"Data Source = {Path.Combine(AppContext.BaseDirectory, "Queue.db")}"
+            };
+            var sqliteQueue = new SqliteMessageQueue<MyMessage>(new Logger<SqliteMessageQueue<MyMessage>>(), Options.Create(sqliteOptions));
+
+            //mqtt setup example
+            var mqttOptions = new MqttMessageQueueOptions<MyMessage>();
+            mqttOptions.UseManagedMqttClientOptionsBuilder(builder =>
+            {
+                builder.WithClientOptions(options =>
+                    options
+                    .WithTcpServer("HOST HERE")
+                    .WithCredentials("USERNAME", "PASSWORD")
+                    .Build()
+                );
+            });
+
+
+            //setup for disk queue forwarding to azure queue
+            var diskOptions = new DiskMessageQueueOptions<MyMessage>()
             {
                 MessageStore = new DirectoryInfo("/my-messages")
             };
-            var diskQueue = new DiskMessageQueue<MyMessage>(new Logger<DiskMessageQueue<MyMessage>>(), Options.Create(diskOptions), formatter);
+            var diskQueue = new DiskMessageQueue<MyMessage>(new Logger<DiskMessageQueue<MyMessage>>(), Options.Create(diskOptions));
 
-            //sqlite queue could be used in place of disk queue also
-            //var sqliteOptions = new SqliteMessageQueueOptions()
-            //{
-            //    ConnectionString = $"Data Source = {Path.Combine(AppContext.BaseDirectory, "Queue.db")}"
-            //};
-            //var sqliteQueue = new SqliteMessageQueue<MyMessage>(new Logger<SqliteMessageQueue<MyMessage>>, Options.Create(sqliteOptions), formatter);
-
-            var azureTopicOptions = new AzureTopicMessageQueueOptions()
-            {
-                Endpoint = "YOUR ENDPOINT HERE",
-                EntityPath = "YOUR ENTITY PATH HERE",
-                SharedAccessKey = "YOUR SHARED ACCESS KEY HERE",
-                SharedAccessKeyName = "YOUR SHARED ACCESS KEY NAME HERE"
-            };
-            var azureTopic = new AzureTopicMessageQueue<MyMessage>(new Logger<AzureTopicMessageQueue<MyMessage>>(), Options.Create(azureTopicOptions), formatter);
+            var azureTopicOptions = new AzureTopicMessageQueueOptions<MyMessage>();
+            azureTopicOptions.UseConnectionStringBuilder("YOUR ENDPOINT HERE", "YOUR ENTITYPATH HERE", "YOUR SHARED ACCESS KEY NAME HERE", "YOUR SHARED ACCESS KEY HERE");
+            var azureTopic = new AzureTopicMessageQueue<MyMessage>(new Logger<AzureTopicMessageQueue<MyMessage>>(), Options.Create(azureTopicOptions));
 
             var forwarderLogger = new Logger<ForwarderMessageQueue<MyMessage>>();
             var forwarderOptions = new ForwarderMessageQueueOptions()
@@ -52,18 +70,22 @@ namespace LegacyTestProject
             };
             var forwarder = new ForwarderMessageQueue<MyMessage>(forwarderLogger, Options.Create(forwarderOptions), diskQueue, azureTopic);
 
+
+            //create the message
             var msg = new MyMessage()
             {
                 GUID = Guid.NewGuid(),
                 TEST = "TEST"
             };
 
+            //with attributes
             var attributes = new MessageAttributes()
             {
                 Label = "YOUR LABEL HERE",
                 ContentType = "application/json"
             };
 
+            //and post to whichever queue you'd like. this one posts to the forwarder queue which posts to the disk and then forwards to azure
             await forwarder.PostMessageAsync(msg, attributes, CancellationToken.None);
 
             Console.Write("press any key to exit");

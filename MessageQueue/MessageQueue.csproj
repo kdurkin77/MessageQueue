@@ -13,14 +13,13 @@
     <Product>KM.MessageQueue</Product>
     <Description>A library to help with using different types of messsage queues. This package includes the interfaces required for the real queues</Description>
     <PackageReleaseNotes>
-		** POSSIBLE BREAKING CHANGES **
-		Renamed IReadOnlyQueue to IReadOnlyMessageQueue
-		Renamed IWriteOnlyQueue to IWriteOnlyMessageQueue
-		Renamed MessageReaderStartOptions to MessageQueueReaderStartOptions
-		Renamed MessageReaderState to MessageQueueReaderState
-		Updated the IDisposable conditional to be if it's standard 2.1 or great or net so that future versions are set
+		** BREAKING CHANGES **
+		IMessageFormatter now takes a generic type in and out so that the formatted type isn't tied down to just byte[]
+		IMessageFormatter's functions renamed from BytesToMessage to RevertMessage and MessageToBytes to FormatMessage
+		IMessageHandler now takes in the original message itself instead of the formatted message and the formatter
+		Added XML Documentation Comments
 	</PackageReleaseNotes>
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>

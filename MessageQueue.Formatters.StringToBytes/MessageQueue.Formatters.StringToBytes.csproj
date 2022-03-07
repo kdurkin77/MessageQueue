@@ -13,7 +13,7 @@
 		<Product>KM.MessageQueue.Formatters.StringToBytes</Product>
 		<Description>A formatting implementation for KM.MessageQueue that converts a string to a byte array</Description>
 		<PackageReleaseNotes>Initial Release</PackageReleaseNotes>
-		<Version>1.0.0</Version>
+		<Version>3.0.0</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -23,14 +23,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="KM.MessageQueue" Version="3.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="..\LICENSE">
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
 	</ItemGroup>
 
 </Project>
