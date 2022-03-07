@@ -7,16 +7,16 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ForwarderExtensions
     {
-        public static IServiceCollection AddForwarderMessageQueue<TMessageIn, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<ForwarderMessageQueueOptions> configureOptions)
-            where TSourceQueue : IMessageQueue<TMessageIn>
-            where TDestinationQueue : IMessageQueue<TMessageIn>
+        public static IServiceCollection AddForwarderMessageQueue<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<ForwarderMessageQueueOptions> configureOptions)
+            where TSourceQueue : IMessageQueue<TMessage>
+            where TDestinationQueue : IMessageQueue<TMessage>
         {
-            return services.AddForwarderMessageQueue<TMessageIn, TSourceQueue, TDestinationQueue>((_, options) => configureOptions(options));
+            return services.AddForwarderMessageQueue<TMessage, TSourceQueue, TDestinationQueue>((_, options) => configureOptions(options));
         }
 
-        public static IServiceCollection AddForwarderMessageQueue<TMessageIn, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<IServiceProvider, ForwarderMessageQueueOptions> configureOptions)
-            where TSourceQueue : IMessageQueue<TMessageIn>
-            where TDestinationQueue : IMessageQueue<TMessageIn>
+        public static IServiceCollection AddForwarderMessageQueue<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<IServiceProvider, ForwarderMessageQueueOptions> configureOptions)
+            where TSourceQueue : IMessageQueue<TMessage>
+            where TDestinationQueue : IMessageQueue<TMessage>
         {
             if (services is null)
             {
@@ -29,15 +29,15 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services
-                .AddSingleton<IMessageQueue<TMessageIn>>(services =>
+                .AddSingleton<IMessageQueue<TMessage>>(services =>
                 {
-                    var logger = services.GetRequiredService<ILogger<ForwarderMessageQueue<TMessageIn>>>();
+                    var logger = services.GetRequiredService<ILogger<ForwarderMessageQueue<TMessage>>>();
                     var source = services.GetRequiredService<TSourceQueue>();
                     var destination = services.GetRequiredService<TDestinationQueue>();
 
                     var options = new ForwarderMessageQueueOptions();
                     configureOptions(services, options);
-                    return new ForwarderMessageQueue<TMessageIn>(logger, Options.Options.Create(options), source, destination);
+                    return new ForwarderMessageQueue<TMessage>(logger, Options.Options.Create(options), source, destination);
                 });
         }
     }
