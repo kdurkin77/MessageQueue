@@ -12,14 +12,8 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Azure;Topic;</PackageTags>
     <Product>KM.MessageQueue.Azure.Topic</Product>
     <Description>An Azure topic implementation from the interfaces in KM.MessageQueue</Description>
-    <PackageReleaseNotes>
-		** BREAKING CHANGES **
-		AzureTopicMessageQueueOptions now accepts an IMessageFormatter instead of having to register it
-		If you do not specify a formatter the default one will be used. The default formatter serializes the object to a json string and then converts the json string to a byte[]
-		Added functions UseConnectionString and UseConnectionStringBuilder so you can use either the connection string or pass the parts over and have it built and configure the ServiceBusClientOptions
-		AzureTopicMessageQueueReader's MessageHandler now accepts the original message instead of the formatted message and the formatter
-	</PackageReleaseNotes>
-    <Version>3.0.0</Version>
+    <PackageReleaseNotes>Corrected bug where transportType was unable to be null in AzureTopicMessageQueueOptions.UseConnectionStringBuilder</PackageReleaseNotes>
+    <Version>3.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>

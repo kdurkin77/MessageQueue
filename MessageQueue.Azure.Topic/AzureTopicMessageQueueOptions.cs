@@ -124,11 +124,6 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(sharedAccessKey));
             }
 
-            if (string.IsNullOrWhiteSpace(transportType))
-            {
-                throw new ArgumentNullException(nameof(transportType));
-            }
-
             if (configureSettings is null)
             {
                 throw new ArgumentNullException(nameof(configureSettings));
