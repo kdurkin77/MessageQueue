@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="3.0.0" />
+    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="3.0.1" />
     <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="3.0.0" />
     <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="3.0.0" />
     <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="3.0.0" />
