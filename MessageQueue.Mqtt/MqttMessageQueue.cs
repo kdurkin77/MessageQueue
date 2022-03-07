@@ -65,14 +65,7 @@ namespace KM.MessageQueue.Mqtt
 
             _logger.LogTrace($"posting to {nameof(MqttMessageQueue<TMessage>)} - {attributes.Label}");
 
-            //To Do: find a way to make these optional
-            var mqttMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(attributes.Label)
-                .WithPayload(messageBytes)
-                .WithExactlyOnceQoS()
-                .WithRetainFlag()
-                .Build();
-
+            var mqttMessage = _options.MessageBuilder(messageBytes, attributes);
             await _managedMqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
         }
 

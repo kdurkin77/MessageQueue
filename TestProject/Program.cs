@@ -8,7 +8,6 @@ using KM.MessageQueue.Specialized.Forwarder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MQTTnet.Client.Options;
-using MQTTnet.Extensions.ManagedClient;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -84,14 +83,20 @@ namespace TestProject
                     //MQTT
                     .AddMqttMessageQueue<MyMessage>(options =>
                     {
-                        options.ManagedMqttClientOptions =
-                            new ManagedMqttClientOptionsBuilder()
+                        options.UseManagedMqttClientOptionsBuilder(opts =>
+                            opts
                             .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
                             .WithClientOptions(new MqttClientOptionsBuilder()
                                 .WithTcpServer("HOST HERE")
                                 .WithCredentials("USERNAME", "PASSWORD")
                                 .Build())
-                            .Build();
+                        );
+                        //to handle building messages differently
+                        //options.UseMessageBuilder(builder =>
+                        //    builder
+                        //    .WithExactlyOnceQoS()
+                        //    .WithRetainFlag()
+                        //    );
                         //to use your own formatter
                         //options.MessageFormatter = new JsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
                     })
