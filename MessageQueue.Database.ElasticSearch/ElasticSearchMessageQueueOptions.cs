@@ -26,7 +26,8 @@ namespace KM.MessageQueue.Database.ElasticSearch
         /// </summary>
         /// <param name="uri"></param>
         /// <param name="configureSettings"></param>
-        public void UseConnectionUri(Uri uri, Action<ConnectionSettings> configureSettings)
+        /// <returns>ElasticSearchMessageQueueOptions</returns>
+        public ElasticSearchMessageQueueOptions<TMessage> UseConnectionUri(Uri uri, Action<ConnectionSettings> configureSettings)
         {
             if(uri is null)
             {
@@ -40,6 +41,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
             ConnectionSettings = new ConnectionSettings(uri);
             configureSettings(ConnectionSettings);
+            return this;
         }
 
         /// <summary>
@@ -47,7 +49,8 @@ namespace KM.MessageQueue.Database.ElasticSearch
         /// </summary>
         /// <param name="uris"></param>
         /// <param name="configureSettings"></param>
-        public void UseConnectionPool(IEnumerable<Uri> uris, Action<ConnectionSettings> configureSettings)
+        /// <returns>ElasticSearchMessageQueueOptions</returns>
+        public ElasticSearchMessageQueueOptions<TMessage> UseConnectionPool(IEnumerable<Uri> uris, Action<ConnectionSettings> configureSettings)
         {
             if (uris is null)
             {
@@ -67,6 +70,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
             var connPool = new SniffingConnectionPool(uris);
             ConnectionSettings = new ConnectionSettings(connPool);
             configureSettings(ConnectionSettings);
+            return this;
         }
     }
 }

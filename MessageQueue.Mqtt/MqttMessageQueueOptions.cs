@@ -27,8 +27,9 @@ namespace KM.MessageQueue.Mqtt
         /// Configures the <see cref="MqttApplicationMessageBuilder"/> to be used to upload the message to the queue
         /// </summary>
         /// <param name="configureBuilder"></param>
+        /// <returns>MqttMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseMessageBuilder(Action<MqttApplicationMessageBuilder> configureBuilder)
+        public MqttMessageQueueOptions<TMessage> UseMessageBuilder(Action<MqttApplicationMessageBuilder> configureBuilder)
         {
             if (configureBuilder is null)
             {
@@ -44,14 +45,16 @@ namespace KM.MessageQueue.Mqtt
                 configureBuilder(baseBuilder);
                 return baseBuilder.Build();
             };
+            return this;
         }
 
         /// <summary>
         /// Congfigures the <see cref="MQTTnet.Extensions.ManagedClient.ManagedMqttClientOptions"/> using a <see cref="ManagedMqttClientOptionsBuilder"/>
         /// </summary>
         /// <param name="configureSettings"></param>
+        /// <returns>MqttMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseManagedMqttClientOptionsBuilder(Action<ManagedMqttClientOptionsBuilder> configureSettings)
+        public MqttMessageQueueOptions<TMessage> UseManagedMqttClientOptionsBuilder(Action<ManagedMqttClientOptionsBuilder> configureSettings)
         {
             if (configureSettings is null)
             {
@@ -61,14 +64,16 @@ namespace KM.MessageQueue.Mqtt
             var builder = new ManagedMqttClientOptionsBuilder();
             configureSettings(builder);
             ManagedMqttClientOptions = builder.Build();
+            return this;
         }
 
         /// <summary>
         /// Congfigures the <see cref="MQTTnet.Extensions.ManagedClient.ManagedMqttClientOptions"/>
         /// </summary>
         /// <param name="configureSettings"></param>
+        /// <returns>MqttMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseManagedMqttClientOptions(Action<ManagedMqttClientOptions> configureSettings)
+        public MqttMessageQueueOptions<TMessage> UseManagedMqttClientOptions(Action<ManagedMqttClientOptions> configureSettings)
         {
             if (configureSettings is null)
             {
@@ -76,6 +81,7 @@ namespace KM.MessageQueue.Mqtt
             }
 
             configureSettings(ManagedMqttClientOptions);
+            return this;
         }
 
         /// <summary>

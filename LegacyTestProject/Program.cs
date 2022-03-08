@@ -19,12 +19,14 @@ namespace LegacyTestProject
         public static async Task Main(string[] _)
         {
             //elasticsearch setup example
-            var elasticSearchOptions = new ElasticSearchMessageQueueOptions<MyMessage>();
-            elasticSearchOptions.UseConnectionUri(new Uri("YOUR URI HERE"), 
-                (options) => 
-                { 
-                    options.ThrowExceptions();
-                });
+            var elasticSearchOptions = 
+                new ElasticSearchMessageQueueOptions<MyMessage>()
+                .UseConnectionUri(new Uri("YOUR URI HERE"), 
+                    (options) => 
+                    { 
+                        options.ThrowExceptions();
+                    }
+                );
             var elasticSearchQueue = new ElasticSearchMessageQueue<MyMessage>(new Logger<ElasticSearchMessageQueue<MyMessage>>(), Options.Create(elasticSearchOptions));
             
             //sqlite setup example
@@ -35,16 +37,17 @@ namespace LegacyTestProject
             var sqliteQueue = new SqliteMessageQueue<MyMessage>(new Logger<SqliteMessageQueue<MyMessage>>(), Options.Create(sqliteOptions));
 
             //mqtt setup example
-            var mqttOptions = new MqttMessageQueueOptions<MyMessage>();
-            mqttOptions.UseManagedMqttClientOptionsBuilder(builder =>
-            {
-                builder.WithClientOptions(options =>
-                    options
-                    .WithTcpServer("HOST HERE")
-                    .WithCredentials("USERNAME", "PASSWORD")
-                    .Build()
-                );
-            });
+            var mqttOptions = 
+                new MqttMessageQueueOptions<MyMessage>()
+                .UseManagedMqttClientOptionsBuilder(builder =>
+                {
+                    builder.WithClientOptions(options =>
+                        options
+                        .WithTcpServer("HOST HERE")
+                        .WithCredentials("USERNAME", "PASSWORD")
+                        .Build()
+                    );
+                });
 
 
             //setup for disk queue forwarding to azure queue
@@ -54,8 +57,14 @@ namespace LegacyTestProject
             };
             var diskQueue = new DiskMessageQueue<MyMessage>(new Logger<DiskMessageQueue<MyMessage>>(), Options.Create(diskOptions));
 
-            var azureTopicOptions = new AzureTopicMessageQueueOptions<MyMessage>();
-            azureTopicOptions.UseConnectionStringBuilder("YOUR ENDPOINT HERE", "YOUR ENTITYPATH HERE", "YOUR SHARED ACCESS KEY NAME HERE", "YOUR SHARED ACCESS KEY HERE");
+            var azureTopicOptions = 
+                new AzureTopicMessageQueueOptions<MyMessage>()
+                .UseConnectionStringBuilder(
+                    endpoint:"YOUR ENDPOINT HERE", 
+                    entityPath: "YOUR ENTITYPATH HERE", 
+                    sharedAccessKeyName: "YOUR SHARED ACCESS KEY NAME HERE", 
+                    sharedAccessKey: "YOUR SHARED ACCESS KEY HERE"
+                );
             var azureTopic = new AzureTopicMessageQueue<MyMessage>(new Logger<AzureTopicMessageQueue<MyMessage>>(), Options.Create(azureTopicOptions));
 
             var forwarderLogger = new Logger<ForwarderMessageQueue<MyMessage>>();

@@ -12,8 +12,8 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Azure;Topic;</PackageTags>
     <Product>KM.MessageQueue.Azure.Topic</Product>
     <Description>An Azure topic implementation from the interfaces in KM.MessageQueue</Description>
-    <PackageReleaseNotes>Corrected bug where transportType was unable to be null in AzureTopicMessageQueueOptions.UseConnectionStringBuilder</PackageReleaseNotes>
-    <Version>3.0.1</Version>
+    <PackageReleaseNotes>AzureTopicMessageQueueOptions functions now return AzureTopicMessageQueueOptions so they can be chained if need be</PackageReleaseNotes>
+    <Version>3.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>

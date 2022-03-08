@@ -7,7 +7,6 @@ using KM.MessageQueue.FileSystem.Disk;
 using KM.MessageQueue.Specialized.Forwarder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MQTTnet.Client.Options;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -23,8 +22,9 @@ namespace TestProject
                 var services = new ServiceCollection()
                     .AddLogging(options =>
                     {
-                        options.AddConsole();
-                        options.SetMinimumLevel(LogLevel.Trace);
+                        options
+                            .AddConsole()
+                            .SetMinimumLevel(LogLevel.Trace);
                     })
                     .AddSingleton<MyApplication>()
                     .AddSingleton<IMessageHandler<MyMessage>, MyMessageHandler>()
@@ -32,32 +32,35 @@ namespace TestProject
                     //Azure queue
                     .AddAzureTopicMessageQueue<MyMessage>(options =>
                     {
-                        options.UseConnectionStringBuilder(
-                            endpoint: "YOUR ENDPOINT HERE",
-                            entityPath: "YOUR ENTITY PATH HERE",
-                            sharedAccessKeyName: "YOUR SHARED ACCESS KEY NAME HERE",
-                            sharedAccessKey: "YOUR SHARED ACCESS KEY HERE"
-                            //configure any service bus client options here
-                            //options =>
-                            //{
-                            //    options.TransportType = Azure.Messaging.ServiceBus.ServiceBusTransportType.AmqpTcp;
-                            //}
-                        );
+                        options
+                            .UseConnectionStringBuilder(
+                                endpoint: "YOUR ENDPOINT HERE",
+                                entityPath: "YOUR ENTITY PATH HERE",
+                                sharedAccessKeyName: "YOUR SHARED ACCESS KEY NAME HERE",
+                                sharedAccessKey: "YOUR SHARED ACCESS KEY HERE"
+                                //configure any service bus client options here
+                                //options =>
+                                //{
+                                //    options.TransportType = Azure.Messaging.ServiceBus.ServiceBusTransportType.AmqpTcp;
+                                //}
+                            );
                         //to use your own formatter
-                        //options.MessageFormatter = new JsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
+                        //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
                     })
 
 
                     //elasticsearch
                     .AddElasticSearchMessageQueue<MyMessage>(options =>
                     {
-                        options.UseConnectionUri(new Uri("YOUR URI HERE"), settings =>
-                        {
-                            settings.BasicAuthentication("USERNAME", "PASSWORD");
-                            settings.ThrowExceptions();
-                        });
+                        options
+                            .UseConnectionUri(new Uri("YOUR URI HERE"), settings =>
+                            {
+                                settings
+                                    .BasicAuthentication("USERNAME", "PASSWORD")
+                                    .ThrowExceptions();
+                            });
                         //to use your own formatter
-                        //options.MessageFormatter = new JsonObjectFormatter<MyMessage>();
+                        //options.MessageFormatter = new ObjectToJsonObjectFormatter<MyMessage>();
                     })
 
 
@@ -67,7 +70,7 @@ namespace TestProject
                         var path = Path.Combine(AppContext.BaseDirectory, "Queue.db");
                         options.ConnectionString = $"Data Source = {path}";
                         //to use your own formatter
-                        //options.MessageFormatter = new JsonStringFormatter<MyMessage>();
+                        //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>();
                     })
 
 
@@ -76,30 +79,31 @@ namespace TestProject
                     {
                         options.MessageStore = new DirectoryInfo("/my-messages");
                         //to use your own formatter
-                        //options.MessageFormatter = new JsonObjectFormatter<MyMessage>();
+                        //options.MessageFormatter = new ObjectToJsonObjectFormatter<MyMessage>();
                     })
                     
 
                     //MQTT
                     .AddMqttMessageQueue<MyMessage>(options =>
                     {
-                        options.UseManagedMqttClientOptionsBuilder(opts =>
-                            opts
-                            .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-                            .WithClientOptions(opts =>
+                        options
+                            .UseManagedMqttClientOptionsBuilder(opts =>
                                 opts
-                                .WithTcpServer("HOST HERE")
-                                .WithCredentials("USERNAME", "PASSWORD")
-                                .Build())
-                        );
-                        //to handle building messages differently
-                        //options.UseMessageBuilder(builder =>
-                        //    builder
-                        //    .WithExactlyOnceQoS()
-                        //    .WithRetainFlag()
-                        //    );
+                                .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
+                                .WithClientOptions(opts =>
+                                    opts
+                                    .WithTcpServer("HOST HERE")
+                                    .WithCredentials("USERNAME", "PASSWORD")
+                                    .Build())
+                            );
+                            //to handle building messages differently
+                            //.UseMessageBuilder(builder =>
+                            //    builder
+                            //    .WithExactlyOnceQoS()
+                            //    .WithRetainFlag()
+                            //);
                         //to use your own formatter
-                        //options.MessageFormatter = new JsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
+                        //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
                     })
 
                     

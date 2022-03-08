@@ -25,9 +25,10 @@ namespace KM.MessageQueue.Azure.Topic
         /// Setup the <see cref="ServiceBusClient"/> using a connection string
         /// </summary>
         /// <param name="connectionString"></param>
-        public void UseConnectionString(string connectionString)
+        /// <returns>AzureTopicMessageQueueOptions</returns>
+        public AzureTopicMessageQueueOptions<TMessage> UseConnectionString(string connectionString)
         {
-            UseConnectionString(connectionString, options => { });
+            return UseConnectionString(connectionString, options => { });
         }
 
         /// <summary>
@@ -35,8 +36,9 @@ namespace KM.MessageQueue.Azure.Topic
         /// </summary>
         /// <param name="connectionString"></param>
         /// <param name="configureSettings"></param>
+        /// <returns>AzureTopicMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseConnectionString(string connectionString, Action<ServiceBusClientOptions> configureSettings)
+        public AzureTopicMessageQueueOptions<TMessage> UseConnectionString(string connectionString, Action<ServiceBusClientOptions> configureSettings)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
             {
@@ -51,6 +53,7 @@ namespace KM.MessageQueue.Azure.Topic
             EntityPath = keyValuePairs.Where(key => string.Equals(key, "EntityPath", StringComparison.OrdinalIgnoreCase)).First();
             ConnectionString = connectionString;
             configureSettings(ServiceBusClientOptions);
+            return this;
         }
 
         /// <summary>
@@ -60,9 +63,10 @@ namespace KM.MessageQueue.Azure.Topic
         /// <param name="entityPath"></param>
         /// <param name="sharedAccessKeyName"></param>
         /// <param name="sharedAccessKey"></param>
-        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey)
+        /// <returns>AzureTopicMessageQueueOptions</returns>
+        public AzureTopicMessageQueueOptions<TMessage> UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey)
         {
-            UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, null, (_) => { });
+            return UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, null, (_) => { });
         }
 
         /// <summary>
@@ -73,10 +77,11 @@ namespace KM.MessageQueue.Azure.Topic
         /// <param name="sharedAccessKeyName"></param>
         /// <param name="sharedAccessKey"></param>
         /// <param name="configureSettings"></param>
+        /// <returns>AzureTopicMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, Action<ServiceBusClientOptions> configureSettings)
+        public AzureTopicMessageQueueOptions<TMessage> UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, Action<ServiceBusClientOptions> configureSettings)
         {
-            UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, null, configureSettings);
+            return UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, null, configureSettings);
         }
 
         /// <summary>
@@ -87,9 +92,10 @@ namespace KM.MessageQueue.Azure.Topic
         /// <param name="sharedAccessKeyName"></param>
         /// <param name="sharedAccessKey"></param>
         /// <param name="transportType"></param>
-        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, string transportType)
+        /// <returns>AzureTopicMessageQueueOptions</returns>
+        public AzureTopicMessageQueueOptions<TMessage> UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, string transportType)
         {
-            UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, transportType, (_) => { });
+            return UseConnectionStringBuilder(endpoint, entityPath, sharedAccessKeyName, sharedAccessKey, transportType, (_) => { });
         }
 
         /// <summary>
@@ -101,8 +107,9 @@ namespace KM.MessageQueue.Azure.Topic
         /// <param name="sharedAccessKey"></param>
         /// <param name="transportType"></param>
         /// <param name="configureSettings"></param>
+        /// <returns>AzureTopicMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, string? transportType, Action<ServiceBusClientOptions> configureSettings)
+        public AzureTopicMessageQueueOptions<TMessage> UseConnectionStringBuilder(string endpoint, string entityPath, string sharedAccessKeyName, string sharedAccessKey, string? transportType, Action<ServiceBusClientOptions> configureSettings)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
             {
@@ -137,6 +144,7 @@ namespace KM.MessageQueue.Azure.Topic
             }
 
             configureSettings(ServiceBusClientOptions);
+            return this;
         }
     }
 }
