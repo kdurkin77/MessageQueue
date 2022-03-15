@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace TestProject
@@ -38,11 +39,11 @@ namespace TestProject
                                 entityPath: "YOUR ENTITY PATH HERE",
                                 sharedAccessKeyName: "YOUR SHARED ACCESS KEY NAME HERE",
                                 sharedAccessKey: "YOUR SHARED ACCESS KEY HERE"
-                                //configure any service bus client options here
-                                //options =>
-                                //{
-                                //    options.TransportType = Azure.Messaging.ServiceBus.ServiceBusTransportType.AmqpTcp;
-                                //}
+                            //configure any service bus client options here
+                            //options =>
+                            //{
+                            //    options.TransportType = Azure.Messaging.ServiceBus.ServiceBusTransportType.AmqpTcp;
+                            //}
                             );
                         //to use your own formatter
                         //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
@@ -81,7 +82,7 @@ namespace TestProject
                         //to use your own formatter
                         //options.MessageFormatter = new ObjectToJsonObjectFormatter<MyMessage>();
                     })
-                    
+
 
                     //MQTT
                     .AddMqttMessageQueue<MyMessage>(options =>
@@ -96,17 +97,47 @@ namespace TestProject
                                     .WithCredentials("USERNAME", "PASSWORD")
                                     .Build())
                             );
-                            //to handle building messages differently
-                            //.UseMessageBuilder(builder =>
-                            //    builder
-                            //    .WithExactlyOnceQoS()
-                            //    .WithRetainFlag()
-                            //);
+                        //to handle building messages differently
+                        //.UseMessageBuilder(builder =>
+                        //    builder
+                        //    .WithExactlyOnceQoS()
+                        //    .WithRetainFlag()
+                        //);
                         //to use your own formatter
                         //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
                     })
 
-                    
+
+                    //Http
+                    .AddHttpMessageQueue<MyMessage>(options =>
+                    {
+                        options.Url = "YOUR URL HERE";
+                        options.Method = HttpMethod.Post;
+                        //to put the message in the body of the request
+                        //can also pass a formatter here to use your own
+                        options.UseBody();
+                        //to put the message in the query parameters
+                        //can also pass a formatter here to use your own
+                        options.UseQueryParameters();
+                        //to check the response a custom way
+                        //options.CheckHttpResponse = message =>
+                        //{
+                        //    if (message is null)
+                        //    {
+                        //        throw new Exception("No response");
+                        //    }
+
+                        //    message.EnsureSuccessStatusCode();
+                        //};
+                        //Any headers you may need
+                        //options.Headers = new Dictionary<string, string>()
+                        //{
+                        //    {"Authorization", "Basic Username:Password" }
+                        //};
+                    })
+
+
+                    //Forwarder example that sends to disk and then forwards to azure
                     .AddForwarderMessageQueue<MyMessage, DiskMessageQueue<MyMessage>, AzureTopicMessageQueue<MyMessage>>((services, options) =>
                     {
                         var logger = services.GetRequiredService<ILogger<ForwarderMessageQueue<MyMessage>>>();

@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net5;net6;</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<Authors>kdurkin77;reed-adams;</Authors>
+		<PackageId>KM.MessageQueue.Http</PackageId>
+		<PackageProjectUrl>https://www.nuget.org/</PackageProjectUrl>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
+		<PackageTags>MessageQueue;Queue;Http;</PackageTags>
+		<Product>KM.MessageQueue.Http</Product>
+		<Description>A queue implementation that calls an HTTP API endpoint from the interfaces in KM.MessageQueue</Description>
+		<PackageReleaseNotes>Initial release</PackageReleaseNotes>
+		<Version>3.0.3</Version>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<RootNamespace>KM.MessageQueue.Http</RootNamespace>
+		<AssemblyName>KM.MessageQueue.Http</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="KM.MessageQueue" Version="3.0.0" />
+		<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="3.0.0" />
+		<PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="3.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\MessageQueue.Formatters.JsonStringToDictionary\MessageQueue.Formatters.JsonStringToDictionary.csproj" />
+	  <ProjectReference Include="..\MessageQueue.Formatters.StringToHttpContent\MessageQueue.Formatters.StringToHttpContent.csproj" />
+	</ItemGroup>
+
+</Project>

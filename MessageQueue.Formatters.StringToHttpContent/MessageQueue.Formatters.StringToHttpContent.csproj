@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5;net6;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Authors>kdurkin77;reed-adams;</Authors>
+    <PackageId>KM.MessageQueue.Formatters.StringToHttpContent</PackageId>
+    <PackageProjectUrl>https://www.nuget.org/</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
+    <PackageTags>MessageQueue;Queue;MessageReader;Reader;Formatting;String;HttpContent</PackageTags>
+    <Product>KM.MessageQueue.Formatters.StringToHttpContent</Product>
+    <Description>A formatting implementation for KM.MessageQueue that converts a string to HttpContent</Description>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <Version>3.0.3</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>KM.MessageQueue.Formatters.StringToHttpContent</RootNamespace>
+    <AssemblyName>KM.MessageQueue.Formatters.StringToHttpContent</AssemblyName>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="KM.MessageQueue" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

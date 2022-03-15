@@ -1,6 +1,5 @@
 ﻿using KM.MessageQueue;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -71,7 +70,6 @@ namespace TestProject
                 };
 
                 await queue.PostMessageAsync(msg, attributes, token);
-
                 await Task.Delay(500);
             }
         }
