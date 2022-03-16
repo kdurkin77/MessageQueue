@@ -14,7 +14,7 @@
     <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="4.0.0" />
     <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="4.0.0" />
     <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="4.0.0" />
-    <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="4.0.0" />
+    <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="4.0.1" />
     <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="4.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="4.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="4.0.0" />
