@@ -1,4 +1,5 @@
 ﻿using Elasticsearch.Net;
+using KM.MessageQueue.Formatters.ObjectToJsonObject;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nest;
@@ -14,22 +15,22 @@ namespace KM.MessageQueue.Database.ElasticSearch
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly ElasticSearchMessageQueueOptions<TMessage> _options;
         private readonly ElasticClient _client;
+        private readonly IMessageFormatter<TMessage, JObject> _messageFormatter;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
         public ElasticSearchMessageQueue(ILogger<ElasticSearchMessageQueue<TMessage>> logger, IOptions<ElasticSearchMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-
-            if(_options.ConnectionSettings is null)
+            var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonObjectFormatter<TMessage>();
+            if (opts.ConnectionSettings is null)
             {
-                throw new ArgumentException($"{nameof(_options)}.{nameof(_options.ConnectionSettings)} cannot be null");
+                throw new ArgumentException($"{nameof(opts)}.{nameof(opts.ConnectionSettings)} cannot be null");
             }
 
-            _client = new ElasticClient(_options.ConnectionSettings);
+            _client = new ElasticClient(opts.ConnectionSettings);
 
             _logger.LogTrace($"{nameof(ElasticSearchMessageQueue<TMessage>)} initialized");
         }
@@ -62,7 +63,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
             ThrowIfDisposed();
 
-            var messageObject = _options.MessageFormatter.FormatMessage(message);
+            var messageObject = _messageFormatter.FormatMessage(message);
             var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
             elasticSearchMessage.Merge(messageObject);
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);

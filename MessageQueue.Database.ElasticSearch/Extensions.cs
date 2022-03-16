@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class ElasticDatabaseExtensions
+    public static class ElasticSearchMessageQueueExtensions
     {
         /// <summary>
         /// Add an <see cref="ElasticSearchMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"/>

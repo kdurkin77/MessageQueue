@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using KM.MessageQueue.Formatters.JsonStringToDictionary;
+using KM.MessageQueue.Formatters.ObjectToJsonObject;
+using KM.MessageQueue.Formatters.ObjectToJsonString;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Http.Headers;
-
-#if NET5_0_OR_GREATER
-using System.Collections.Generic;
-#endif
 
 namespace KM.MessageQueue.Http
 {
@@ -17,20 +17,42 @@ namespace KM.MessageQueue.Http
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        internal readonly HttpMessageQueueOptions<TMessage> _options;
         internal readonly HttpClient _client;
+        internal readonly Uri _uri;
+        internal readonly HttpMethod _method;
+        internal readonly bool _shouldUseBody;
+        internal readonly bool _shouldUseQueryParameters;
+        internal readonly Action<HttpResponseMessage?> _checkHttpResponse;
+        internal readonly IMessageFormatter<TMessage, HttpContent> _bodyMessageFormatter;
+        internal readonly IMessageFormatter<TMessage, IDictionary<string, string>> _queryMessageFormatter;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
         public HttpMessageQueue(ILogger<HttpMessageQueue<TMessage>> logger, IOptions<HttpMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
+
+            _uri = opts.Uri ?? throw new ArgumentException($"{nameof(opts)}.{nameof(opts.Uri)} cannot be null");
+            _method = opts.Method ?? HttpMethod.Get;
+            _shouldUseBody = opts.ShouldUseBody ?? false;
+            _shouldUseQueryParameters = opts.ShouldUseQueryParameters ?? !_shouldUseBody;
+            _checkHttpResponse = opts.CheckHttpResponse ??
+                (message =>
+                {
+                    if (message is null)
+                    {
+                        throw new ArgumentNullException(nameof(message));
+                    }
+                    message.EnsureSuccessStatusCode();
+                });
+            _bodyMessageFormatter = opts.BodyMessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToHttpContentFormatter());
+            _queryMessageFormatter = opts.QueryMessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new JsonStringToDictionary());
 
             _client = new HttpClient();
-            if(_options.Headers is not null)
+            if(opts.Headers is not null)
             {
-                foreach (var header in _options.Headers)
+                foreach (var header in opts.Headers)
                 {
                     _client.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
@@ -63,17 +85,17 @@ namespace KM.MessageQueue.Http
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var url = _options.Url;
-            if(_options.ShouldUseQueryParameters)
+            var url = _uri.ToString();
+            if(_shouldUseQueryParameters)
             {
-                var queryDict = _options.QueryMessageFormatter.FormatMessage(message);
-                url = QueryHelpers.AddQueryString(_options.Url, queryDict);
+                var queryDict = _queryMessageFormatter.FormatMessage(message);
+                url = QueryHelpers.AddQueryString(url, queryDict);
             }
 
-            var request = new HttpRequestMessage(_options.Method, url);
-            if(_options.ShouldUseBody)
+            var request = new HttpRequestMessage(_method, url);
+            if(_shouldUseBody)
             {
-                request.Content = _options.BodyMessageFormatter.FormatMessage(message);
+                request.Content = _bodyMessageFormatter.FormatMessage(message);
                 if (attributes.ContentType is not null)
                 {
                     request.Content.Headers.ContentType = new MediaTypeHeaderValue(attributes.ContentType);
@@ -101,8 +123,10 @@ namespace KM.MessageQueue.Http
 #endif
             }
 
+            _logger.LogTrace($"Posting to {_uri}");
+
             var result = await _client.SendAsync(request, cancellationToken);
-            _options.CheckHttpResponse(result);
+            _checkHttpResponse(result);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)

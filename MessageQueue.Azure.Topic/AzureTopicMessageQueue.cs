@@ -1,4 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
+using KM.MessageQueue.Formatters.ObjectToJsonString;
+using KM.MessageQueue.Formatters.StringToBytes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -12,6 +14,7 @@ namespace KM.MessageQueue.Azure.Topic
         private bool _disposed = false;
         private readonly ILogger _logger;
         internal readonly AzureTopicMessageQueueOptions<TMessage> _options;
+        internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
         internal readonly ServiceBusClient _serviceBusClient;
 
         private static readonly MessageAttributes _emptyAttributes = new();
@@ -21,6 +24,7 @@ namespace KM.MessageQueue.Azure.Topic
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _serviceBusClient = new ServiceBusClient(_options.ConnectionString, _options.ServiceBusClientOptions);
+            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
         }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
@@ -49,7 +53,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _options.MessageFormatter.FormatMessage(message);
+            var messageBytes = _messageFormatter.FormatMessage(message);
             var sender = _serviceBusClient.CreateSender(_options.EntityPath);
             var sbMessage = new ServiceBusMessage(messageBytes)
             {

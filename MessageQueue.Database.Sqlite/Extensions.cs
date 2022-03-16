@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class SqliteQueueExtensions
+    public static class SqliteMessageQueueExtensions
     {
         /// <summary>
         /// Add a <see cref="SqliteMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"/>

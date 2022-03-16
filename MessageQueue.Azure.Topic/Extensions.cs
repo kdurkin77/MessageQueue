@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class AzureTopicExtensions
+    public static class AzureTopicMessageQueueExtensions
     {
         /// <summary>
         /// Add an <see cref="AzureTopicMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"/>

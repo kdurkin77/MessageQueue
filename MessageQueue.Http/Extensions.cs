@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class Extensions
+    public static class HttpMessageQueueExtensions
     {
         /// <summary>
         /// Adds a <see cref="HttpMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"

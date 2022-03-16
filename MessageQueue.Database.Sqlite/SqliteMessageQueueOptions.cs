@@ -19,6 +19,6 @@ namespace KM.MessageQueue.Database.Sqlite
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which serializes the message to a json string />
         /// </summary>
-        public IMessageFormatter<TMessage, string> MessageFormatter { get; set; } = new ObjectToJsonStringFormatter<TMessage>();
+        public IMessageFormatter<TMessage, string>? MessageFormatter { get; set; }
     }
 }

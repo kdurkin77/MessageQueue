@@ -1,5 +1,4 @@
 ﻿using Elasticsearch.Net;
-using KM.MessageQueue.Formatters.ObjectToJsonObject;
 using Nest;
 using Newtonsoft.Json.Linq;
 using System;
@@ -19,7 +18,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which converts the message to a <see cref="JObject"/>
         /// </summary>
-        public IMessageFormatter<TMessage, JObject> MessageFormatter { get; set; } = new ObjectToJsonObjectFormatter<TMessage>();
+        public IMessageFormatter<TMessage, JObject>? MessageFormatter { get; set; }
 
         /// <summary>
         /// Sets up the <see cref="ConnectionSettings"/> using a <see cref="Uri"/>

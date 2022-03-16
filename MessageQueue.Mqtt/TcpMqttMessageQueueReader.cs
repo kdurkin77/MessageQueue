@@ -83,7 +83,7 @@ namespace KM.MessageQueue.Mqtt
                     UserProperties = e.ApplicationMessage.UserProperties?.ToDictionary(p => p.Name, p => (object)p.Value)
                 };
 
-                var message = _queue._options.MessageFormatter.RevertMessage(e.ApplicationMessage.Payload);
+                var message = _queue._messageFormatter.RevertMessage(e.ApplicationMessage.Payload);
                 await startOptions.MessageHandler.HandleMessageAsync(message, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
             }
         }

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using KM.MessageQueue.Formatters.ObjectToJsonString;
+using KM.MessageQueue.Formatters.StringToBytes;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Extensions.ManagedClient;
@@ -13,6 +15,8 @@ namespace KM.MessageQueue.Mqtt
         private bool _disposed = false; 
         private readonly ILogger _logger;
         internal readonly MqttMessageQueueOptions<TMessage> _options;
+        internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
+        internal readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
         internal readonly IManagedMqttClient _managedMqttClient;
 
         private static readonly MessageAttributes _emptyAttributes = new();
@@ -21,7 +25,15 @@ namespace KM.MessageQueue.Mqtt
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            
+            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
+            _messageBuilder = _options.MessageBuilder ??
+                ((payload, attributes) =>
+                new MqttApplicationMessageBuilder()
+                    .WithTopic(attributes.Label)
+                    .WithPayload(payload)
+                    .WithExactlyOnceQoS()
+                    .WithRetainFlag()
+                    .Build());
             _managedMqttClient = new MqttFactory().CreateManagedMqttClient();
             var clientOpts = _options.ManagedMqttClientOptions ?? throw new ArgumentException($"{nameof(options)}.{nameof(_options.ManagedMqttClientOptions)} cannot be null");
             _managedMqttClient.StartAsync(clientOpts).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -61,11 +73,11 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _options.MessageFormatter.FormatMessage(message);
+            var messageBytes = _messageFormatter.FormatMessage(message);
 
             _logger.LogTrace($"posting to {nameof(MqttMessageQueue<TMessage>)} - {attributes.Label}");
 
-            var mqttMessage = _options.MessageBuilder(messageBytes, attributes);
+            var mqttMessage = _messageBuilder(messageBytes, attributes);
             await _managedMqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
         }
 

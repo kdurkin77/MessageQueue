@@ -1,6 +1,4 @@
-﻿using KM.MessageQueue.Formatters.ObjectToJsonObject;
-using KM.MessageQueue.Formatters.ObjectToJsonString;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 
@@ -12,18 +10,20 @@ namespace KM.MessageQueue.Http
     /// <typeparam name="TMessage"></typeparam>
     public sealed class HttpMessageQueueOptions<TMessage>
     {
-        internal bool ShouldUseBody { get; set; } = true;
-        internal bool ShouldUseQueryParameters { get; set; } = false;
+        internal bool? ShouldUseBody { get; set; }
+        internal bool? ShouldUseQueryParameters { get; set; }
+        internal IMessageFormatter<TMessage, HttpContent>? BodyMessageFormatter { get; set; }
+        internal IMessageFormatter<TMessage, IDictionary<string, string>>? QueryMessageFormatter { get; set; }
 
         /// <summary>
         /// The URL to do the HTTP request
         /// </summary>
-        public string? Url { get; set; }
+        public Uri? Uri { get; set; }
 
         /// <summary>
-        /// The type of HTTP request - Get, Post, Patch, etc
+        /// The type of HTTP request, default is Get
         /// </summary>
-        public HttpMethod Method { get; set; } = HttpMethod.Get;
+        public HttpMethod? Method { get; set; }
 
         /// <summary>
         /// Any headers required
@@ -31,33 +31,14 @@ namespace KM.MessageQueue.Http
         public IDictionary<string, string>? Headers { get; set; }
 
         /// <summary>
-        /// The formatter to use to format the message for the body of the HTTP request
-        /// The default is to convert the message to a Json string and then to HttpContext
-        /// </summary>
-        public IMessageFormatter<TMessage, HttpContent> BodyMessageFormatter { get; set; } = new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToHttpContentFormatter());
-
-        /// <summary>
-        /// The formatter to use to format the message for the query parameters of the HTTP request
-        /// The default is to convert the message to a Json string and then convert to a Dictionary
-        /// </summary>
-        public IMessageFormatter<TMessage, IDictionary<string, string>> QueryMessageFormatter { get; set; } = new ObjectToJsonStringFormatter<TMessage>().Compose(new JsonStringToDictionary());
-        
-        /// <summary>
         /// Function to check to see if we get a successful response from the HTTP request. By default, this function
         /// simply checks that there is successful status code response
         /// </summary>
-        public Action<HttpResponseMessage?> CheckHttpResponse { get; set; } =
-            message =>
-            {
-                if(message is null) 
-                {
-                    throw new HttpRequestException("No response returned");
-                }
-                message.EnsureSuccessStatusCode();
-            };
+        public Action<HttpResponseMessage?>? CheckHttpResponse { get; set; }
 
         /// <summary>
         /// Use the default formatter to add the message to the body of the request
+        /// The default forrmatter converts the message to a Json string and then to HttpContext
         /// </summary>
         /// <returns></returns>
         public HttpMessageQueueOptions<TMessage> UseBody()
@@ -79,6 +60,7 @@ namespace KM.MessageQueue.Http
 
         /// <summary>
         /// Use the default formatter to add the message to the query parameters of the request
+        /// The default formatter converts the message to a Json string and then to a Dictionary
         /// </summary>
         /// <returns></returns>
         public HttpMessageQueueOptions<TMessage> UseQueryParameters()

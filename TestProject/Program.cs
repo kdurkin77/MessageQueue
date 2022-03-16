@@ -111,7 +111,7 @@ namespace TestProject
                     //Http
                     .AddHttpMessageQueue<MyMessage>(options =>
                     {
-                        options.Url = "YOUR URL HERE";
+                        options.Uri = new Uri("YOUR URL HERE");
                         options.Method = HttpMethod.Post;
                         //to put the message in the body of the request
                         //can also pass a formatter here to use your own

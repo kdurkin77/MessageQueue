@@ -1,6 +1,4 @@
-﻿using KM.MessageQueue.Formatters.ObjectToJsonString;
-using KM.MessageQueue.Formatters.StringToBytes;
-using MQTTnet;
+﻿using MQTTnet;
 using MQTTnet.Extensions.ManagedClient;
 using System;
 
@@ -14,14 +12,13 @@ namespace KM.MessageQueue.Mqtt
     {
         internal ManagedMqttClientOptions ManagedMqttClientOptions { get; set; } = new ManagedMqttClientOptions();
 
-        internal Func<byte[], MessageAttributes, MqttApplicationMessage> MessageBuilder { get; set; } = 
-            (payload, attributes) => 
-            new MqttApplicationMessageBuilder()
-                .WithTopic(attributes.Label)
-                .WithPayload(payload)
-                .WithExactlyOnceQoS()
-                .WithRetainFlag()
-                .Build();
+        internal Func<byte[], MessageAttributes, MqttApplicationMessage>? MessageBuilder { get; set; } 
+
+        /// <summary>
+        /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
+        /// formatter which serializes the message to JSON and then converts it to bytes
+        /// </summary>
+        public IMessageFormatter<TMessage, byte[]>? MessageFormatter { get; set; }
 
         /// <summary>
         /// Configures the <see cref="MqttApplicationMessageBuilder"/> to be used to upload the message to the queue
@@ -83,11 +80,5 @@ namespace KM.MessageQueue.Mqtt
             configureSettings(ManagedMqttClientOptions);
             return this;
         }
-
-        /// <summary>
-        /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
-        /// formatter which serializes the message to JSON and then converts it to bytes
-        /// </summary>
-        public IMessageFormatter<TMessage, byte[]> MessageFormatter { get; set; } = new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
     }
 }

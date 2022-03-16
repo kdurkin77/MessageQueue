@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class MqttExtensions
+    public static class MqttMessageQueueExtensions
     {
         /// <summary>
         /// Add a <see cref="MqttMessageQueue{TMessage}"/> to the specified <see cref="IServiceCollection"/>

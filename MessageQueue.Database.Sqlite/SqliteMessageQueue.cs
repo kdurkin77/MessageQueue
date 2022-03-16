@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using KM.MessageQueue.Formatters.ObjectToJsonString;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -19,6 +20,7 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly SemaphoreSlim _sync;
 
         internal readonly SqliteMessageQueueOptions<TMessage> _options;
+        internal readonly IMessageFormatter<TMessage, string> _messageFormatter;
         internal readonly SqliteDatabaseContext _dbContext;
 
         private static readonly MessageAttributes _emptyAttributes = new();
@@ -27,6 +29,7 @@ namespace KM.MessageQueue.Database.Sqlite
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>();
 
             if (string.IsNullOrWhiteSpace(_options.ConnectionString))
             {
@@ -86,7 +89,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
-                var messageBytes = _options.MessageFormatter.FormatMessage(message);
+                var messageBytes = _messageFormatter.FormatMessage(message);
 
                 var sqlMessage =
                     new SqliteQueueMessage()
@@ -133,7 +136,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
                 var item = _messageQueue.Peek();
                 var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes) ?? throw new Exception("Attributes formatted incorrectly");
-                var message = _options.MessageFormatter.RevertMessage(item.Body);
+                var message = _messageFormatter.RevertMessage(item.Body);
                 var result = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {

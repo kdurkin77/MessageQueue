@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace KM.MessageQueue.Formatters.ObjectToJsonObject
+namespace KM.MessageQueue.Formatters.JsonStringToDictionary
 {
     public sealed class JsonStringToDictionary : IMessageFormatter<string, IDictionary<string, string>>
     {

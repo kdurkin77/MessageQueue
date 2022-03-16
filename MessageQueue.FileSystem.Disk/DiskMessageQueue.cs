@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using KM.MessageQueue.Formatters.ObjectToJsonObject;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +19,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         private bool _disposed = false;
         private readonly ILogger _logger;
         private readonly DiskMessageQueueOptions<TMessage> _options;
+        private readonly IMessageFormatter<TMessage, JObject> _messageFormatter;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
@@ -30,7 +33,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-
+            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonObjectFormatter<TMessage>();
             if (_options.MessageStore is null)
             {
                 throw new ArgumentException($"{nameof(_options)}.{nameof(_options.MessageStore)} cannot be null");
@@ -111,7 +114,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                     }
                 }
 
-                var formattedMessage = _options.MessageFormatter.FormatMessage(message);
+                var formattedMessage = _messageFormatter.FormatMessage(message);
 
                 var diskMessage =
                     new DiskMessage(
@@ -222,7 +225,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 }
 
                 var item = _messageQueue.Peek();
-                var message = _options.MessageFormatter.RevertMessage(item.Message.Body);
+                var message = _messageFormatter.RevertMessage(item.Message.Body);
                 var result = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {

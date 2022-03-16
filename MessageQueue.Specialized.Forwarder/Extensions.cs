@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class ForwarderExtensions
+    public static class ForwarderMessageQueueExtensions
     {
         public static IServiceCollection AddForwarderMessageQueue<TMessage, TSourceQueue, TDestinationQueue>(this IServiceCollection services, Action<ForwarderMessageQueueOptions> configureOptions)
             where TSourceQueue : IMessageQueue<TMessage>
