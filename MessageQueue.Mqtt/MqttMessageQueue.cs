@@ -73,7 +73,7 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _messageFormatter.FormatMessage(message);
+            var messageBytes = await _messageFormatter.FormatMessage(message);
 
             _logger.LogTrace($"posting to {nameof(MqttMessageQueue<TMessage>)} - {attributes.Label}");
 

@@ -1,4 +1,6 @@
-﻿namespace KM.MessageQueue
+﻿using System.Threading.Tasks;
+
+namespace KM.MessageQueue
 {
     /// <summary>
     /// An interface for a formatter for an <see cref="IMessageQueue{TMessage}"/>
@@ -12,13 +14,13 @@
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        TMessageIn RevertMessage(TMessageOut message);
+        Task<TMessageIn> RevertMessage(TMessageOut message);
 
         /// <summary>
         /// Converts a message from <typeparamref name="TMessageIn"/> to <typeparamref name="TMessageOut"/>
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        TMessageOut FormatMessage(TMessageIn message);
+        Task<TMessageOut> FormatMessage(TMessageIn message);
     }
 }

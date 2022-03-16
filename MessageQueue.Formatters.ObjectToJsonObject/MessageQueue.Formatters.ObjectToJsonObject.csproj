@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5;net6;</TargetFrameworks>
@@ -6,14 +6,17 @@
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
     <PackageId>KM.MessageQueue.Formatters.ObjectToJsonObject</PackageId>
-    <PackageProjectUrl>https://www.nuget.org/</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Formatting;Json;JObject</PackageTags>
     <Product>KM.MessageQueue.Formatters.ObjectToJsonObject</Product>
     <Description>A formatting implementation for KM.MessageQueue that serializes the object to a JObject</Description>
-    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
-    <Version>3.0.0</Version>
+    <PackageReleaseNotes>
+		** BREAKING CHANGE **
+		Updated KM.MessageQueue - FormatMessage and RevertMessage now return Task so they can be awaited
+	</PackageReleaseNotes>
+    <Version>4.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,7 +27,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="3.0.0" />
+    <PackageReference Include="KM.MessageQueue" Version="4.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
@@ -34,5 +37,5 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-
+	
 </Project>

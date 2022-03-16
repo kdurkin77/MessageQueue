@@ -114,7 +114,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                     }
                 }
 
-                var formattedMessage = _messageFormatter.FormatMessage(message);
+                var formattedMessage = await _messageFormatter.FormatMessage(message);
 
                 var diskMessage =
                     new DiskMessage(
@@ -225,7 +225,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 }
 
                 var item = _messageQueue.Peek();
-                var message = _messageFormatter.RevertMessage(item.Message.Body);
+                var message = await _messageFormatter.RevertMessage(item.Message.Body);
                 var result = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {

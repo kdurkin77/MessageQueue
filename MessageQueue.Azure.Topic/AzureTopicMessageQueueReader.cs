@@ -102,7 +102,7 @@ namespace KM.MessageQueue.Azure.Topic
                     UserProperties = args.Message.ApplicationProperties.ToDictionary(a => a.Key, a => a.Value)
                 };
 
-                var message = _queue._messageFormatter.RevertMessage(args.Message.Body.ToArray());
+                var message = await _queue._messageFormatter.RevertMessage(args.Message.Body.ToArray());
                 var result = await startOptions.MessageHandler.HandleMessageAsync(message, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
                 switch (result)
                 {

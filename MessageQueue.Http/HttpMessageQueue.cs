@@ -88,14 +88,14 @@ namespace KM.MessageQueue.Http
             var url = _uri.ToString();
             if(_shouldUseQueryParameters)
             {
-                var queryDict = _queryMessageFormatter.FormatMessage(message);
+                var queryDict = await _queryMessageFormatter.FormatMessage(message);
                 url = QueryHelpers.AddQueryString(url, queryDict);
             }
 
             var request = new HttpRequestMessage(_method, url);
             if(_shouldUseBody)
             {
-                request.Content = _bodyMessageFormatter.FormatMessage(message);
+                request.Content = await _bodyMessageFormatter.FormatMessage(message);
                 if (attributes.ContentType is not null)
                 {
                     request.Content.Headers.ContentType = new MediaTypeHeaderValue(attributes.ContentType);

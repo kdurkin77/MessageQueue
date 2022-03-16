@@ -6,20 +6,17 @@
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
     <PackageId>KM.MessageQueue</PackageId>
-    <PackageProjectUrl>https://www.nuget.org/</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;</PackageTags>
     <Product>KM.MessageQueue</Product>
     <Description>A library to help with using different types of messsage queues. This package includes the interfaces required for the real queues</Description>
     <PackageReleaseNotes>
-		** BREAKING CHANGES **
-		IMessageFormatter now takes a generic type in and out so that the formatted type isn't tied down to just byte[]
-		IMessageFormatter's functions renamed from BytesToMessage to RevertMessage and MessageToBytes to FormatMessage
-		IMessageHandler now takes in the original message itself instead of the formatted message and the formatter
-		Added XML Documentation Comments
+		** BREAKING CHANGE **
+		IMessageFormatter functions now return tasks to allow for async
 	</PackageReleaseNotes>
-    <Version>3.0.3</Version>
+    <Version>4.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>

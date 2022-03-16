@@ -8,6 +8,7 @@ using KM.MessageQueue.Specialized.Forwarder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+//using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -111,14 +112,14 @@ namespace TestProject
                     //Http
                     .AddHttpMessageQueue<MyMessage>(options =>
                     {
-                        options.Uri = new Uri("YOUR URL HERE");
+                        options.Uri = new Uri("https://raptordataapidev.ctdi.com/StbEngineering/InsertException");
                         options.Method = HttpMethod.Post;
                         //to put the message in the body of the request
                         //can also pass a formatter here to use your own
                         options.UseBody();
                         //to put the message in the query parameters
                         //can also pass a formatter here to use your own
-                        options.UseQueryParameters();
+                        //options.UseQueryParameters();
                         //to check the response a custom way
                         //options.CheckHttpResponse = message =>
                         //{

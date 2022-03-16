@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Formatters.Specialized.Composition
 {
@@ -13,26 +14,26 @@ namespace KM.MessageQueue.Formatters.Specialized.Composition
             _destinationFormatter = destinationFormatter ?? throw new ArgumentNullException(nameof(destinationFormatter));
         }
 
-        public TMessageOut FormatMessage(TMessageIn message)
+        public async Task<TMessageOut> FormatMessage(TMessageIn message)
         {
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var intermediateMessage = _sourceFormatter.FormatMessage(message);
-            return _destinationFormatter.FormatMessage(intermediateMessage);
+            var intermediateMessage = await _sourceFormatter.FormatMessage(message);
+            return await _destinationFormatter.FormatMessage(intermediateMessage);
         }
 
-        public TMessageIn RevertMessage(TMessageOut message)
+        public async Task<TMessageIn> RevertMessage(TMessageOut message)
         {
             if (message is null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var intermediateMessage = _destinationFormatter.RevertMessage(message);
-            return _sourceFormatter.RevertMessage(intermediateMessage);
+            var intermediateMessage = await _destinationFormatter.RevertMessage(message);
+            return await _sourceFormatter.RevertMessage(intermediateMessage);
         }
     }
 }

@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Formatters.ObjectToJsonObject
 {
     public sealed class StringToHttpContentFormatter : IMessageFormatter<string, HttpContent>
     {
-        public HttpContent FormatMessage(string message)
+        public Task<HttpContent> FormatMessage(string message)
         {
             if (message is null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
-            return new StringContent(message);
+            return Task.FromResult((HttpContent)new StringContent(message, Encoding.UTF8, "application/json"));
         }
 
-        public string RevertMessage(HttpContent message)
+        public async Task<string> RevertMessage(HttpContent message)
         {
             if (message is null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
-            return message.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            return await message.ReadAsStringAsync().ConfigureAwait(false);
         }
     }
 }

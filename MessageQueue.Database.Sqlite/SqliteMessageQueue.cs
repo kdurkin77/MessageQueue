@@ -89,7 +89,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
-                var messageBytes = _messageFormatter.FormatMessage(message);
+                var messageBytes = await _messageFormatter.FormatMessage(message);
 
                 var sqlMessage =
                     new SqliteQueueMessage()
@@ -136,7 +136,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
                 var item = _messageQueue.Peek();
                 var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes) ?? throw new Exception("Attributes formatted incorrectly");
-                var message = _messageFormatter.RevertMessage(item.Body);
+                var message = await _messageFormatter.RevertMessage(item.Body);
                 var result = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)
                 {

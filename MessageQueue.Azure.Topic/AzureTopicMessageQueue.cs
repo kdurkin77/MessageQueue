@@ -53,7 +53,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = _messageFormatter.FormatMessage(message);
+            var messageBytes = await _messageFormatter.FormatMessage(message);
             var sender = _serviceBusClient.CreateSender(_options.EntityPath);
             var sbMessage = new ServiceBusMessage(messageBytes)
             {
