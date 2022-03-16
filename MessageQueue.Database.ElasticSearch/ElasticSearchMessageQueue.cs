@@ -63,7 +63,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
             ThrowIfDisposed();
 
-            var messageObject = _messageFormatter.FormatMessage(message);
+            var messageObject = await _messageFormatter.FormatMessage(message);
             var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
             elasticSearchMessage.Merge(messageObject);
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
