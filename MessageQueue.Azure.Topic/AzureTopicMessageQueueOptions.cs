@@ -1,6 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace KM.MessageQueue.Azure.Topic
 {
@@ -47,8 +48,36 @@ namespace KM.MessageQueue.Azure.Topic
             {
                 throw new ArgumentNullException(nameof(configureSettings));
             }
-            var keyValuePairs = connectionString.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-            EntityPath = keyValuePairs.Where(key => string.Equals(key, "EntityPath", StringComparison.OrdinalIgnoreCase)).First();
+
+            var keyValuePairs = Regex.Matches(connectionString, @"\s*(?<key>[^;=]+)\s*=\s*((?<value>[^'][^;]*)|'(?<value>[^']*)')")
+                .Cast<Match>()
+                .ToDictionary(m => m.Groups["key"].Value, m => m.Groups["value"].Value);
+
+            var entityPath = keyValuePairs.SingleOrDefault(k => string.Equals(k.Key, "EntityPath", StringComparison.OrdinalIgnoreCase)).Value;
+            if (entityPath is null)
+            {
+                //check the end of the endpoint for entity path
+                var endpoint = keyValuePairs.SingleOrDefault(k => string.Equals(k.Key, "Endpoint", StringComparison.OrdinalIgnoreCase)).Value;
+                if (endpoint is null)
+                {
+                    throw new ArgumentException($"{nameof(connectionString)} must include Endpoint", nameof(connectionString));
+                }
+
+                var index = endpoint.LastIndexOf("/");
+                if(index == -1)
+                {
+                    throw new ArgumentException($"{nameof(connectionString)} must include EntityPath or have it specified in Endpoint");
+                }
+
+                entityPath = endpoint.Substring(index + 1);
+            }
+
+            if (string.IsNullOrWhiteSpace(entityPath))
+            {
+                throw new ArgumentException($"{nameof(connectionString)} must include EntityPath or have it specified in Endpoint");
+            }
+
+            EntityPath = entityPath;
             ConnectionString = connectionString;
             configureSettings(ServiceBusClientOptions);
             return this;
