@@ -71,6 +71,8 @@ namespace TestProject
                     {
                         var path = Path.Combine(AppContext.BaseDirectory, "Queue.db");
                         options.ConnectionString = $"Data Source = {path}";
+                        //to increase the delay between checking messages when idle
+                        //options.IdleDelay = TimeSpan.FromSeconds(200);
                         //to use your own formatter
                         //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>();
                     })
@@ -80,6 +82,8 @@ namespace TestProject
                     .AddDiskMessageQueue<MyMessage>(options =>
                     {
                         options.MessageStore = new DirectoryInfo("/my-messages");
+                        //to increase the delay between checking messages when idle
+                        //options.IdleDelay = TimeSpan.FromSeconds(200);
                         //to use your own formatter
                         //options.MessageFormatter = new ObjectToJsonObjectFormatter<MyMessage>();
                     })

@@ -1,4 +1,4 @@
-﻿using KM.MessageQueue.Formatters.ObjectToJsonString;
+﻿using System;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
@@ -15,6 +15,10 @@ namespace KM.MessageQueue.Database.Sqlite
         /// Max queue size
         /// </summary>
         public int? MaxQueueSize { get; set; }
+        /// <summary>
+        /// Delay before rechecking for messages in the reader if there weren't any before
+        /// </summary>
+        public TimeSpan? IdleDelay { get; set; }
         /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which serializes the message to a json string />

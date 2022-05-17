@@ -13,12 +13,10 @@
     <Product>KM.MessageQueue.FileSystem.Disk</Product>
     <Description>A queue implementation to write to the disk from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		** POSSIBLE BREAKING CHANGE **
-		Update KM.MessageQueue which changes the IMessageFormatters to return Task
-		Awaiting IMessageFormatter's FormatMessage and RevertMessage functions since they now return Task
-		If you have a custom formatter it will need to be updated
+		Added an option for IdleDelay which is the delay between checking for messages to handle when there were no messages in the previous check
+		The default delay is 100ms
 	</PackageReleaseNotes>
-    <Version>4.0.0</Version>
+    <Version>4.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>

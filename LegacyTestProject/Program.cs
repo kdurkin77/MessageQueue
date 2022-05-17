@@ -33,6 +33,8 @@ namespace LegacyTestProject
             var sqliteOptions = new SqliteMessageQueueOptions<MyMessage>()
             {
                 ConnectionString = $"Data Source = {Path.Combine(AppContext.BaseDirectory, "Queue.db")}"
+                //to increase the delay between checking messages when idle
+                //IdleDelay = TimeSpan.FromMilliseconds(200)
             };
             var sqliteQueue = new SqliteMessageQueue<MyMessage>(new Logger<SqliteMessageQueue<MyMessage>>(), Options.Create(sqliteOptions));
 
@@ -54,6 +56,8 @@ namespace LegacyTestProject
             var diskOptions = new DiskMessageQueueOptions<MyMessage>()
             {
                 MessageStore = new DirectoryInfo("/my-messages")
+                //to increase the delay between checking messages when idle
+                //IdleDelay = TimeSpan.FromMilliseconds(200)
             };
             var diskQueue = new DiskMessageQueue<MyMessage>(new Logger<DiskMessageQueue<MyMessage>>(), Options.Create(diskOptions));
 

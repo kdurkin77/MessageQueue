@@ -18,7 +18,8 @@ namespace KM.MessageQueue.FileSystem.Disk
     {
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly DiskMessageQueueOptions<TMessage> _options;
+
+        internal readonly DiskMessageQueueOptions<TMessage> _options;
         private readonly IMessageFormatter<TMessage, JObject> _messageFormatter;
 
         private static readonly MessageAttributes _emptyAttributes = new();

@@ -43,7 +43,8 @@ namespace KM.MessageQueue.Database.Sqlite
 
                 _readerTokenSource = new CancellationTokenSource();
 
-                _readerTask = Task.Run(() => ReaderLoop(startOptions.MessageHandler, startOptions.UserData, cancellationToken), _readerTokenSource.Token);
+                var idleDelay = _queue._options.IdleDelay ?? TimeSpan.FromMilliseconds(100);
+                _readerTask = Task.Run(() => ReaderLoop(startOptions.MessageHandler, startOptions.UserData, idleDelay, cancellationToken), _readerTokenSource.Token);
 
                 State = MessageQueueReaderState.Running;
             }
@@ -53,7 +54,7 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        private async Task ReaderLoop(IMessageHandler<TMessage> messageHandler, object? userData, CancellationToken cancellationToken)
+        private async Task ReaderLoop(IMessageHandler<TMessage> messageHandler, object? userData, TimeSpan idleDelay, CancellationToken cancellationToken)
         {
             if (messageHandler is null)
             {
@@ -78,7 +79,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     var gotMessage = await _queue.TryReadMessageAsync(messageHandler.HandleMessageAsync, userData, source.Token).ConfigureAwait(false);
                     if (!gotMessage)
                     {
-                        await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+                        await Task.Delay(idleDelay, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }

@@ -20,8 +20,8 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly SemaphoreSlim _sync;
 
         internal readonly SqliteMessageQueueOptions<TMessage> _options;
-        internal readonly IMessageFormatter<TMessage, string> _messageFormatter;
-        internal readonly SqliteDatabaseContext _dbContext;
+        private readonly IMessageFormatter<TMessage, string> _messageFormatter;
+        private readonly SqliteDatabaseContext _dbContext;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 

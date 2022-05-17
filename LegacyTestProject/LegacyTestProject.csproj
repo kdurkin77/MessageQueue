@@ -64,11 +64,11 @@
     <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=4.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.4.0.1\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.4.0.0\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=4.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.4.0.1\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.4.0.0\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
+    <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=4.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.4.0.1\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
     </Reference>
     <Reference Include="KM.MessageQueue.Formatters.ObjectToJsonObject, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Formatters.ObjectToJsonObject.4.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.ObjectToJsonObject.dll</HintPath>

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
 
 namespace KM.MessageQueue.FileSystem.Disk
@@ -21,6 +22,10 @@ namespace KM.MessageQueue.FileSystem.Disk
         /// Where to store the messages
         /// </summary>
         public DirectoryInfo? MessageStore { get; set; }
+        /// <summary>
+        /// Delay before rechecking for messages in the reader if there weren't any before
+        /// </summary>
+        public TimeSpan? IdleDelay { get; set; }
         /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which converts the message to a <see cref="JObject"/> />
