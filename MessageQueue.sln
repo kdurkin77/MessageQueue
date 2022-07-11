@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Http", "Messag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.StringToHttpContent", "MessageQueue.Formatters.StringToHttpContent\MessageQueue.Formatters.StringToHttpContent.csproj", "{E67F1004-3E4F-49E0-B00A-30ED968B0A0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue.Formatters.JsonStringToDictionary", "MessageQueue.Formatters.JsonStringToDictionary\MessageQueue.Formatters.JsonStringToDictionary.csproj", "{C3C81D35-0C9F-43C7-88B2-ED1622461F9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.JsonStringToDictionary", "MessageQueue.Formatters.JsonStringToDictionary\MessageQueue.Formatters.JsonStringToDictionary.csproj", "{C3C81D35-0C9F-43C7-88B2-ED1622461F9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
