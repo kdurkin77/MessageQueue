@@ -1,6 +1,9 @@
 ﻿using MQTTnet;
+using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Packets;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,8 +61,8 @@ namespace KM.MessageQueue.Mqtt
 
                 ReaderTokenSource = new CancellationTokenSource();
                 _subscriptionName = startOptions.SubscriptionName;
-                await _queue._managedMqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build()).ConfigureAwait(false);
-                _queue._managedMqttClient.UseApplicationMessageReceivedHandler(MessageHandler);
+                await _queue._managedMqttClient.SubscribeAsync(new List<MqttTopicFilter>() { new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build() }).ConfigureAwait(false);
+                _queue._managedMqttClient.ApplicationMessageReceivedAsync += MessageHandler;
 
                 State = MessageQueueReaderState.Running;
             }

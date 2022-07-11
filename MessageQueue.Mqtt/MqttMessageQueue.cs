@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Protocol;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace KM.MessageQueue.Mqtt
                 new MqttApplicationMessageBuilder()
                     .WithTopic(attributes.Label)
                     .WithPayload(payload)
-                    .WithExactlyOnceQoS()
+                    .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
                     .WithRetainFlag()
                     .Build());
             _managedMqttClient = new MqttFactory().CreateManagedMqttClient();
@@ -78,7 +79,7 @@ namespace KM.MessageQueue.Mqtt
             _logger.LogTrace($"posting to {nameof(MqttMessageQueue<TMessage>)} - {attributes.Label}");
 
             var mqttMessage = _messageBuilder(messageBytes, attributes);
-            await _managedMqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
+            await _managedMqttClient.EnqueueAsync(mqttMessage).ConfigureAwait(false);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
