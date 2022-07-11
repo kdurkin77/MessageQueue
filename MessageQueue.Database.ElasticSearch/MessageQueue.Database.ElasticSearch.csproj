@@ -12,10 +12,8 @@
 		<PackageTags>MessageQueue;Queue;MessageReader;Reader;Database;ElasticSearch;</PackageTags>
 		<Product>KM.MessageQueue.Database.ElasticSearch</Product>
 		<Description>A queue implementation to write to an ElasticSearch database from the interfaces in KM.MessageQueue</Description>
-		<PackageReleaseNotes>
-			Forgot to await the FormatMessage call so the message would have been formatted incorrectly with a Task
-		</PackageReleaseNotes>
-		<Version>4.0.1</Version>
+		<PackageReleaseNotes>Updated NEST package</PackageReleaseNotes>
+		<Version>4.0.2</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>

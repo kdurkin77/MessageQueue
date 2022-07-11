@@ -12,11 +12,8 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Azure;Topic;</PackageTags>
     <Product>KM.MessageQueue.Azure.Topic</Product>
     <Description>An Azure topic implementation from the interfaces in KM.MessageQueue</Description>
-    <PackageReleaseNotes>
-		Corrected the UseConnectionString function to ensure we're parsing it correctly. 
-		Allowing for either EntityPath on it's own or at the end of the endpoint
-	</PackageReleaseNotes>
-    <Version>4.0.1</Version>
+    <PackageReleaseNotes>Updated Azure.Messaging.ServiceBus package</PackageReleaseNotes>
+    <Version>4.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>

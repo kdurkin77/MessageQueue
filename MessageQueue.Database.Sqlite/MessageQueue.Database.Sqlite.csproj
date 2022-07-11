@@ -12,11 +12,8 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Sqlite;</PackageTags>
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
-    <PackageReleaseNotes>
-		Added an option for IdleDelay which is the delay between checking for messages to handle when there were no messages in the previous check
-		The default delay is 100ms
-	</PackageReleaseNotes>
-    <Version>4.0.1</Version>
+    <PackageReleaseNotes>Updated Microsoft.EntityFrameworkCore.Sqlite package</PackageReleaseNotes>
+    <Version>4.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>
