@@ -98,8 +98,8 @@
       <HintPath>..\packages\Microsoft.Bcl.HashCode.1.1.1\lib\net461\Microsoft.Bcl.HashCode.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Data.Sqlite, Version=6.0.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.6.0.6\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
+    <Reference Include="Microsoft.Data.Sqlite, Version=6.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.6.0.8\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.3.1.6\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
@@ -143,11 +143,11 @@
     <Reference Include="Microsoft.Extensions.Primitives, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Primitives.6.0.0\lib\net461\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
-    <Reference Include="MQTTnet, Version=4.0.1.184, Culture=neutral, PublicKeyToken=fdb7629f2e364a63, processorArchitecture=MSIL">
-      <HintPath>..\packages\MQTTnet.4.0.1.184\lib\net461\MQTTnet.dll</HintPath>
+    <Reference Include="MQTTnet, Version=4.1.0.247, Culture=neutral, PublicKeyToken=fdb7629f2e364a63, processorArchitecture=MSIL">
+      <HintPath>..\packages\MQTTnet.4.1.0.247\lib\net461\MQTTnet.dll</HintPath>
     </Reference>
-    <Reference Include="MQTTnet.Extensions.ManagedClient, Version=4.0.1.184, Culture=neutral, PublicKeyToken=fdb7629f2e364a63, processorArchitecture=MSIL">
-      <HintPath>..\packages\MQTTnet.Extensions.ManagedClient.4.0.1.184\lib\net461\MQTTnet.Extensions.ManagedClient.dll</HintPath>
+    <Reference Include="MQTTnet.Extensions.ManagedClient, Version=4.1.0.247, Culture=neutral, PublicKeyToken=fdb7629f2e364a63, processorArchitecture=MSIL">
+      <HintPath>..\packages\MQTTnet.Extensions.ManagedClient.4.1.0.247\lib\net461\MQTTnet.Extensions.ManagedClient.dll</HintPath>
     </Reference>
     <Reference Include="Nest, Version=7.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
       <HintPath>..\packages\NEST.7.17.4\lib\net461\Nest.dll</HintPath>

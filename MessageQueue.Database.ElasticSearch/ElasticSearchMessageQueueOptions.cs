@@ -43,6 +43,28 @@ namespace KM.MessageQueue.Database.ElasticSearch
             return this;
         }
 
+        public ElasticSearchMessageQueueOptions<TMessage> UseApiKey(string cloudId, string apiKey, Action<ConnectionSettings> configureSettings)
+        {
+            if(string.IsNullOrWhiteSpace(cloudId))
+            {
+                throw new ArgumentNullException(nameof(cloudId));
+            }
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new ArgumentNullException(nameof(apiKey));
+            }
+
+            if (configureSettings is null)
+            {
+                throw new ArgumentNullException(nameof(configureSettings));
+            }
+
+            ConnectionSettings = new ConnectionSettings(cloudId, new ApiKeyAuthenticationCredentials(apiKey));
+            configureSettings(ConnectionSettings);
+            return this;
+        }
+
         /// <summary>
         /// Sets up the <see cref="ConnectionSettings"/> using a collection of <see cref="Uri"/> to create a <see cref="SniffingConnectionPool"/>
         /// </summary>

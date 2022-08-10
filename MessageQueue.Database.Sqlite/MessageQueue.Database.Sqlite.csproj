@@ -13,7 +13,7 @@
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>Updated Microsoft.EntityFrameworkCore.Sqlite package</PackageReleaseNotes>
-    <Version>4.0.2</Version>
+    <Version>4.0.3</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -32,7 +32,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
-      <Version>6.0.6</Version>
+      <Version>6.0.8</Version>
     </PackageReference>
   </ItemGroup>
 	

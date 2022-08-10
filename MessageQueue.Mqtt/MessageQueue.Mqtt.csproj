@@ -13,7 +13,7 @@
 	  <Product>KM.MessageQueue.Mqtt</Product>
 	  <Description>An MQTT implementation from the interfaces in KM.MessageQueue</Description>
 	  <PackageReleaseNotes>Updated MQTTnet.Extensions.ManagedClient package</PackageReleaseNotes>
-	  <Version>4.0.2</Version>
+	  <Version>4.0.3</Version>
   </PropertyGroup>
 	
 	<PropertyGroup>
@@ -29,7 +29,7 @@
     <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="4.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-    <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.0.1.184" />
+    <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.1.0.247" />
   </ItemGroup>
 	
   <ItemGroup>

@@ -12,8 +12,8 @@
 		<PackageTags>MessageQueue;Queue;MessageReader;Reader;Database;ElasticSearch;</PackageTags>
 		<Product>KM.MessageQueue.Database.ElasticSearch</Product>
 		<Description>A queue implementation to write to an ElasticSearch database from the interfaces in KM.MessageQueue</Description>
-		<PackageReleaseNotes>Updated NEST package</PackageReleaseNotes>
-		<Version>4.0.2</Version>
+		<PackageReleaseNotes>Added handling for using an API Key and Cloud ID to connect</PackageReleaseNotes>
+		<Version>4.0.3</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>
