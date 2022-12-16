@@ -13,7 +13,7 @@ namespace KM.MessageQueue.Database.Sqlite
     public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
-        private long _sequenceNumber;
+        private long? _sequenceNumber;
 
         private readonly ILogger _logger;
         private readonly Queue<SqliteQueueMessage> _messageQueue;
@@ -135,7 +135,17 @@ namespace KM.MessageQueue.Database.Sqlite
                 }
 
                 var item = _messageQueue.Peek();
+
+                if (item.Attributes is null)
+                {
+                    throw new Exception("Attributes cannot be null");
+                }
                 var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes) ?? throw new Exception("Attributes formatted incorrectly");
+                
+                if (item.Body is null)
+                {
+                    throw new Exception("Body cannot be null");
+                }
                 var message = await _messageFormatter.RevertMessage(item.Body);
                 var result = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
                 if (result == CompletionResult.Complete)

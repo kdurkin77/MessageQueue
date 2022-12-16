@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -11,21 +11,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="4.0.2" />
-    <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="4.0.1" />
-    <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="4.0.3" />
-    <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="4.0.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="4.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="4.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="4.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="4.0.0" />
-    <PackageReference Include="KM.MessageQueue.Mqtt" Version="4.0.3" />
-    <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="4.0.0" />
-    <PackageReference Include="KM.MessageQueue.Http" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Mqtt" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Http" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 	
 </Project>
