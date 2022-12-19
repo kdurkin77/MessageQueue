@@ -1,4 +1,5 @@
 ﻿using KM.MessageQueue.Formatters.ObjectToJsonString;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -37,7 +38,9 @@ namespace KM.MessageQueue.Database.Sqlite
             }
 
             //! to appease netstandard2.0 compiler, it doesn't realize that IsNullOrWhiteSpace is null checking
-            _dbContext = new SqliteDatabaseContext(_options.ConnectionString!);
+            var dbContextOptsBuilder = new DbContextOptionsBuilder<SqliteDatabaseContext>();
+            dbContextOptsBuilder.UseSqlite(_options.ConnectionString);
+            _dbContext = new SqliteDatabaseContext(dbContextOptsBuilder.Options);
 
             _sync = new SemaphoreSlim(1, 1);
 

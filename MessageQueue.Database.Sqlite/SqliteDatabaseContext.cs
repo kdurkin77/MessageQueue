@@ -9,16 +9,11 @@ namespace KM.MessageQueue.Database.Sqlite
     {
         public DbSet<SqliteQueueMessage> SqliteQueueMessages => Set<SqliteQueueMessage>();
 
-        private readonly string _ConnectionString;
-
-        public SqliteDatabaseContext(string connectionString)
+        public SqliteDatabaseContext(DbContextOptions<SqliteDatabaseContext> options)
+            : base(options)
         {
-            _ConnectionString = connectionString;
             Database.EnsureCreated();
         }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite(_ConnectionString);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
