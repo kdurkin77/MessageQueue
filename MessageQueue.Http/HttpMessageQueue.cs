@@ -23,6 +23,7 @@ namespace KM.MessageQueue.Http
         internal readonly bool _shouldUseBody;
         internal readonly bool _shouldUseQueryParameters;
         internal readonly Action<HttpResponseMessage?> _checkHttpResponse;
+        internal readonly Func<HttpRequestMessage, Task>? _beforeSendMessage;
         internal readonly IMessageFormatter<TMessage, HttpContent> _bodyMessageFormatter;
         internal readonly IMessageFormatter<TMessage, IDictionary<string, string>> _queryMessageFormatter;
 
@@ -46,6 +47,7 @@ namespace KM.MessageQueue.Http
                     }
                     message.EnsureSuccessStatusCode();
                 });
+            _beforeSendMessage = opts.BeforeSendMessage;
             _bodyMessageFormatter = opts.BodyMessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToHttpContentFormatter());
             _queryMessageFormatter = opts.QueryMessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new JsonStringToDictionary());
 
@@ -123,7 +125,12 @@ namespace KM.MessageQueue.Http
 #endif
             }
 
-            _logger.LogTrace($"Posting to {_uri}");
+            if (_beforeSendMessage is not null)
+            {
+                await _beforeSendMessage(request);
+            }
+
+            _logger.LogTrace("Posting to {Uri}", _uri);
 
             var result = await _client.SendAsync(request, cancellationToken);
             _checkHttpResponse(result);
