@@ -13,9 +13,9 @@
 		<Product>KM.MessageQueue.Http</Product>
 		<Description>A queue implementation that calls an HTTP API endpoint from the interfaces in KM.MessageQueue</Description>
 		<PackageReleaseNotes>
-			Removed .NET5 and added .NET7
+			Adding hook to inspect/modify the HttpRequestMessage before being sent
 		</PackageReleaseNotes>
-		<Version>7.0.0</Version>
+		<Version>7.0.2</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>
