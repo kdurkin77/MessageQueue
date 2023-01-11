@@ -92,7 +92,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
-                var messageBytes = await _messageFormatter.FormatMessage(message);
+                var messageString = await _messageFormatter.FormatMessage(message);
 
                 var sqlMessage =
                     new SqliteQueueMessage()
@@ -100,10 +100,10 @@ namespace KM.MessageQueue.Database.Sqlite
                         Id = Guid.NewGuid(),
                         Attributes = JsonConvert.SerializeObject(attributes),
                         SequenceNumber = ++_sequenceNumber,
-                        Body = messageBytes
+                        Body = messageString
                     };
 
-                _logger.LogTrace($"Posting to {nameof(SqliteMessageQueue<TMessage>)}, Label: {{Label}}, Message: {{Message}}", attributes.Label, sqlMessage);
+                _logger.LogTrace($"Posting to {nameof(SqliteMessageQueue<TMessage>)}, Label: {{Label}}, Message: {{Message}}", attributes.Label, messageString);
 
                 _dbContext.SqliteQueueMessages.Add(sqlMessage);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

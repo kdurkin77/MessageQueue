@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		Better logging
+		Updated new logging to show the actual string message
 	</PackageReleaseNotes>
-    <Version>7.0.3</Version>
+    <Version>7.0.4</Version>
   </PropertyGroup>
 
   <PropertyGroup>
