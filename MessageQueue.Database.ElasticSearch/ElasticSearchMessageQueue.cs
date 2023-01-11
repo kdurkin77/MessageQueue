@@ -68,8 +68,9 @@ namespace KM.MessageQueue.Database.ElasticSearch
             elasticSearchMessage.Merge(messageObject);
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
 
-            _logger.LogTrace($"posting to {nameof(ElasticSearchMessageQueue<TMessage>)} - {attributes.Label}");
+            _logger.LogTrace($"Posting to {nameof(ElasticSearchMessageQueue<TMessage>)}, Label: {{Label}}, Message: {{Message}}", attributes.Label, elasticSearchMessageJson);
 
+            StringResponse? response = null;
             if (string.IsNullOrWhiteSpace(attributes.Label))
             {
                 if (string.IsNullOrWhiteSpace(_client.ConnectionSettings.DefaultIndex))
@@ -77,11 +78,16 @@ namespace KM.MessageQueue.Database.ElasticSearch
                     throw new Exception("Default index not specified");
                 }
 
-                await _client.LowLevel.IndexAsync<StringResponse>(_client.ConnectionSettings.DefaultIndex, (PostData)elasticSearchMessageJson, null, cancellationToken).ConfigureAwait(false);
+                response = await _client.LowLevel.IndexAsync<StringResponse>(_client.ConnectionSettings.DefaultIndex, (PostData)elasticSearchMessageJson, null, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await _client.LowLevel.IndexAsync<StringResponse>(attributes.Label, (PostData)elasticSearchMessageJson, null, cancellationToken).ConfigureAwait(false);
+                response = await _client.LowLevel.IndexAsync<StringResponse>(attributes.Label, (PostData)elasticSearchMessageJson, null, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (!response.Success)
+            {
+                _logger.LogError($"{nameof(ElasticSearchMessageQueue<TMessage>)} error response: {{Response}}", response.Body);
             }
         }
 
@@ -104,7 +110,6 @@ namespace KM.MessageQueue.Database.ElasticSearch
             {
                 return;
             }
-
 
             _disposed = true;
             GC.SuppressFinalize(this);
