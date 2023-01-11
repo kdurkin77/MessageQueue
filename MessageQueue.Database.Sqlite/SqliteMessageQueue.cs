@@ -103,7 +103,7 @@ namespace KM.MessageQueue.Database.Sqlite
                         Body = messageBytes
                     };
 
-                _logger.LogTrace($"posting to {nameof(SqliteMessageQueue<TMessage>)}- {attributes.Label}");
+                _logger.LogTrace($"Posting to {nameof(SqliteMessageQueue<TMessage>)}, Label: {{Label}}, Message: {{Message}}", attributes.Label, sqlMessage);
 
                 _dbContext.SqliteQueueMessages.Add(sqlMessage);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
