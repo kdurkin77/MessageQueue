@@ -7,6 +7,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
     {
         public string? SourceSubscriptionName { get; set; }
         public object? SourceUserData { get; set; }
+        public TimeSpan? RetryDelay { get; set; }
         public Func<Exception, Task<CompletionResult>>? ForwardingErrorHandler { get; set; }
     }
 }

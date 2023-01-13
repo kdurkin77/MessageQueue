@@ -9,20 +9,21 @@ namespace KM.MessageQueue.Specialized.Forwarder
     {
         private readonly ILogger _logger;
         private readonly IMessageQueue<TMessage> _destinationQueue;
+        private readonly TimeSpan? _retryDelay;
         private readonly Func<Exception, Task<CompletionResult>> _forwarderErrorHandler;
 
-        public Handler(ILogger logger, IMessageQueue<TMessage> destinationQueue, Func<Exception, Task<CompletionResult>> forwarderErrorHandler)
+        public Handler(ILogger logger, IMessageQueue<TMessage> destinationQueue, TimeSpan? retryDelay, Func<Exception, Task<CompletionResult>> forwarderErrorHandler)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
+            _retryDelay = retryDelay;
             _forwarderErrorHandler = forwarderErrorHandler ?? throw new ArgumentNullException(nameof(forwarderErrorHandler));
         }
 
-        public Task HandleErrorAsync(Exception error, object? userData, CancellationToken cancellationToken)
+        public async Task HandleErrorAsync(Exception error, object? userData, CancellationToken cancellationToken)
         {
             _logger.LogError(error, $"Error in {nameof(Handler<TMessage>)}");
-            _forwarderErrorHandler(error);
-            return Task.CompletedTask;
+            await _forwarderErrorHandler(error);
         }
 
         public async Task<CompletionResult> HandleMessageAsync(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
@@ -35,7 +36,12 @@ namespace KM.MessageQueue.Specialized.Forwarder
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failure posting to {nameof(Handler<TMessage>)} destination queue");
-                return await _forwarderErrorHandler(ex).ConfigureAwait(false);
+                var result = await _forwarderErrorHandler(ex).ConfigureAwait(false);
+                if (_retryDelay is not null)
+                {
+                    await Task.Delay(_retryDelay.Value, cancellationToken).ConfigureAwait(false);
+                }
+                return result;
             }
         }
     }

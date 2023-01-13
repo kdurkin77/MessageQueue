@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
     <PackageReleaseNotes>
-		Removed .NET5 and added .NET7
+		Added a new option to have a retry delay for if a message fails to post to the destination queue
 	</PackageReleaseNotes>
-    <Version>7.0.0</Version>
+    <Version>7.0.5</Version>
   </PropertyGroup>
 
   <PropertyGroup>

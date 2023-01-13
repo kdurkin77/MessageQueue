@@ -23,7 +23,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
             _destinationQueue = destinationQueue ?? throw new ArgumentNullException(nameof(destinationQueue));
 
             var forwarderErrorHandler = _options.ForwardingErrorHandler ?? (_ => Task.FromResult(CompletionResult.Abandon));
-            var startOptions = new MessageQueueReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue, forwarderErrorHandler))
+            var startOptions = new MessageQueueReaderStartOptions<TMessage>(new Handler<TMessage>(_logger, _destinationQueue, _options.RetryDelay, forwarderErrorHandler))
             {
                 SubscriptionName = _options.SourceSubscriptionName,
                 UserData = _options.SourceUserData
