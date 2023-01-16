@@ -8,22 +8,6 @@ namespace KM.MessageQueue.Specialized.Forwarder
 {
     public sealed class ForwarderMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
-        private bool _disposed = false;
-        private readonly CancellationTokenSource _cancellationSource = new();
-
-        private readonly ILogger _logger;
-        private readonly IMessageQueue<TMessage> _sourceQueue;
-        private readonly IMessageQueue<TMessage> _destinationQueue;
-        private readonly TimeSpan _retryDelay;
-        private readonly string? _subscriptionName;
-        private readonly object? _userData;
-        private readonly Func<Exception, Task<CompletionResult>>? _forwardingErrorHandler;
-        private readonly bool _disposeSourceQueue;
-        private readonly bool _disposeDestinationQueue;
-
-
-        private readonly Task _readerLoopTask;
-
         public ForwarderMessageQueue(ILogger<ForwarderMessageQueue<TMessage>> logger, IOptions<ForwarderMessageQueueOptions> options, IMessageQueue<TMessage> sourceQueue, IMessageQueue<TMessage> destinationQueue)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -53,6 +37,22 @@ namespace KM.MessageQueue.Specialized.Forwarder
         }
 
 
+        private bool _disposed = false;
+        private readonly CancellationTokenSource _cancellationSource = new();
+
+        private readonly ILogger _logger;
+        private readonly IMessageQueue<TMessage> _sourceQueue;
+        private readonly IMessageQueue<TMessage> _destinationQueue;
+        private readonly TimeSpan _retryDelay;
+        private readonly string? _subscriptionName;
+        private readonly object? _userData;
+        private readonly Func<Exception, Task<CompletionResult>>? _forwardingErrorHandler;
+        private readonly bool _disposeSourceQueue;
+        private readonly bool _disposeDestinationQueue;
+
+        private readonly Task _readerLoopTask;
+
+
         private async Task ReadSourceQueueLoop()
         {
             _logger.LogTrace($"{Name} entering {nameof(ReadSourceQueueLoop)}");
@@ -80,7 +80,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)} in {nameof(sourceReader.ReadMessageAsync)}");
+                        _logger.LogError(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)} in {nameof(sourceReader.ReadMessageAsync)}.  Retry in {{RetryDelay}}", _retryDelay);
                         await Task.Delay(_retryDelay).ConfigureAwait(false);
                     }
                 }
@@ -90,9 +90,10 @@ namespace KM.MessageQueue.Specialized.Forwarder
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)}");
+                throw;
             }
 
-            _logger.LogTrace($"{Name} exiting {nameof(ReadSourceQueueLoop)}");
+            _logger.LogTrace($"{Name} {nameof(ReadSourceQueueLoop)} exiting");
 
             async Task<CompletionResult> PushToDestinationQueue(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
             {
@@ -162,7 +163,6 @@ namespace KM.MessageQueue.Specialized.Forwarder
                 throw new ObjectDisposedException(Name);
             }
         }
-
 
         private async Task ShutdownAsync()
         {

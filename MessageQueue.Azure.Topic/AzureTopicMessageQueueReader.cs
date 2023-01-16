@@ -37,9 +37,11 @@ namespace KM.MessageQueue.Azure.Topic
                 PrefetchCount = options.PrefetchCount ?? 1,
             };
 
-            _serviceBusReceiver = _queue._serviceBusClient.CreateReceiver(_queue._options.EntityPath, options.SubscriptionName, receiverOptions);
+            _serviceBusReceiver = _queue._serviceBusClient.CreateReceiver(_queue._entityPath, options.SubscriptionName, receiverOptions);
 
             Name = options.Name ?? nameof(AzureTopicMessageQueueReader<TMessage>);
+
+            _logger.LogTrace($"{Name} initialized");
         }
 
 

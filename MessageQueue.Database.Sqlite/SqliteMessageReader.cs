@@ -7,14 +7,6 @@ namespace KM.MessageQueue.Database.Sqlite
 {
     internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>
     {
-        private bool _disposed = false;
-        private readonly SemaphoreSlim _sync = new(1, 1);
-
-        private readonly ILogger _logger;
-        private readonly SqliteMessageQueue<TMessage> _queue;
-        private readonly string? _subscriptionName;
-        private readonly object? _userData;
-
         public SqliteMessageReader(ILogger logger, SqliteMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -29,7 +21,17 @@ namespace KM.MessageQueue.Database.Sqlite
             _userData = options.UserData;
 
             Name = options.Name ?? nameof(SqliteMessageReader<TMessage>);
+
+            _logger.LogTrace($"{Name} initialized");
         }
+
+        private bool _disposed = false;
+        private readonly SemaphoreSlim _sync = new(1, 1);
+
+        private readonly ILogger _logger;
+        private readonly SqliteMessageQueue<TMessage> _queue;
+        private readonly string? _subscriptionName;
+        private readonly object? _userData;
 
 
         public string Name { get; }

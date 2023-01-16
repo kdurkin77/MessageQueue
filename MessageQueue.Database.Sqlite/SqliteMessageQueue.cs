@@ -13,19 +13,6 @@ namespace KM.MessageQueue.Database.Sqlite
 {
     public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
-        private bool _disposed = false;
-        private readonly SemaphoreSlim _sync = new(1, 1);
-
-        private readonly ILogger _logger;
-        private readonly TimeSpan _idleDelay;
-        private readonly IMessageFormatter<TMessage, string> _messageFormatter;
-        private readonly int? _maxQueueSize;
-        private readonly Queue<SqliteQueueMessage> _messageQueue;
-        private readonly SqliteDatabaseContext _dbContext;
-        private long? _sequenceNumber;
-
-        private static readonly MessageAttributes _emptyAttributes = new();
-
         public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -57,8 +44,23 @@ namespace KM.MessageQueue.Database.Sqlite
 
             Name = opts.Name ?? nameof(SqliteMessageQueue<TMessage>);
 
-            _logger.LogTrace($"{nameof(SqliteMessageQueue<TMessage>)} initialized with {_messageQueue.Count} stored messages");
+            _logger.LogTrace($"{Name} initialized with {_messageQueue.Count} stored messages");
         }
+
+
+        private bool _disposed = false;
+        private readonly SemaphoreSlim _sync = new(1, 1);
+
+        private readonly ILogger _logger;
+        private readonly TimeSpan _idleDelay;
+        private readonly IMessageFormatter<TMessage, string> _messageFormatter;
+        private readonly int? _maxQueueSize;
+        private readonly Queue<SqliteQueueMessage> _messageQueue;
+        private readonly SqliteDatabaseContext _dbContext;
+        private long? _sequenceNumber;
+
+        private static readonly MessageAttributes _emptyAttributes = new();
+
 
         public string Name { get; }
 
@@ -95,7 +97,8 @@ namespace KM.MessageQueue.Database.Sqlite
                 {
                     if (_messageQueue.Count >= maxQueueSize)
                     {
-                        throw new InvalidOperationException($"{Name} exceeded maximum queue size of {maxQueueSize}");
+                        _logger.LogError($"{Name} {nameof(PostMessageAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
+                        throw new InvalidOperationException($"{Name} {nameof(PostMessageAsync)} exceeded maximum queue size of {maxQueueSize}");
                     }
                 }
 
@@ -110,7 +113,7 @@ namespace KM.MessageQueue.Database.Sqlite
                         Body = messageString
                     };
 
-                _logger.LogTrace($"Posting to {nameof(SqliteMessageQueue<TMessage>)}, Label: {{Label}}, Message: {{Message}}", attributes.Label, messageString);
+                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to store, Label: {{Label}}, Message: {{Message}}", attributes.Label, messageString);
 
                 _dbContext.SqliteQueueMessages.Add(sqlMessage);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -156,14 +159,20 @@ namespace KM.MessageQueue.Database.Sqlite
 
                     if (item.Attributes is null)
                     {
+                        _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null attributes", item.Id);
                         throw new Exception($"{item.Attributes} is required");
                     }
 
-                    var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes)
-                        ?? throw new FormatException($"{nameof(item.Attributes)} is invalid");
+                    var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes);
+                    if (atts is null)
+                    {
+                        _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has invalid attributes: {{Attributes}}", item.Id, item.Attributes);
+                        throw new FormatException($"{nameof(item.Attributes)} is invalid");
+                    }
 
                     if (item.Body is null)
                     {
+                        _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null body", item.Id);
                         throw new Exception($"{nameof(item.Body)} is required");
                     }
 
@@ -220,7 +229,6 @@ namespace KM.MessageQueue.Database.Sqlite
             _disposed = true;
             GC.SuppressFinalize(this);
 
-            // compiler appeasement
             await Task.CompletedTask;
         }
 

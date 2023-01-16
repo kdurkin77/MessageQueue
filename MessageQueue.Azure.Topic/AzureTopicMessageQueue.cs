@@ -11,23 +11,31 @@ namespace KM.MessageQueue.Azure.Topic
 {
     public sealed class AzureTopicMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
+        public AzureTopicMessageQueue(ILogger<AzureTopicMessageQueue<TMessage>> logger, IOptions<AzureTopicMessageQueueOptions<TMessage>> options)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
+
+            _entityPath = opts.EntityPath;
+            _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
+            _serviceBusClient = new ServiceBusClient(opts.ConnectionString, opts.ServiceBusClientOptions);
+
+            Name = opts.Name ?? nameof(AzureTopicMessageQueue<TMessage>);
+
+            _logger.LogTrace($"{Name} initialized");
+        }
+
+
         private bool _disposed = false;
 
         private readonly ILogger _logger;
-        internal readonly AzureTopicMessageQueueOptions<TMessage> _options;
+        internal string? _entityPath;
         internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
         internal readonly ServiceBusClient _serviceBusClient;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
-        public AzureTopicMessageQueue(ILogger<AzureTopicMessageQueue<TMessage>> logger, IOptions<AzureTopicMessageQueueOptions<TMessage>> options)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _serviceBusClient = new ServiceBusClient(_options.ConnectionString, _options.ServiceBusClientOptions);
-            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
-            Name = nameof(AzureTopicMessageQueue<TMessage>);
-        }
 
         public string Name { get; }
 
@@ -58,22 +66,22 @@ namespace KM.MessageQueue.Azure.Topic
             }
 
             var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
-            await using var sender = _serviceBusClient.CreateSender(_options.EntityPath);
+            await using var sender = _serviceBusClient.CreateSender(_entityPath);
             var sbMessage = new ServiceBusMessage(messageBytes)
             {
                 ContentType = attributes.ContentType,
                 Subject = attributes.Label
             };
 
-            if (attributes.UserProperties != null)
+            if (attributes.UserProperties is { } userProperties)
             {
-                foreach (var userProperty in attributes.UserProperties)
+                foreach (var userProperty in userProperties)
                 {
                     sbMessage.ApplicationProperties.Add(userProperty.Key, userProperty.Value);
                 }
             }
 
-            _logger.LogTrace($"posting to {_serviceBusClient.FullyQualifiedNamespace}/{_options.EntityPath}/{attributes.Label}");
+            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Path}}", $"{_serviceBusClient.FullyQualifiedNamespace}/{_entityPath}/{attributes.Label}");
 
             await sender.SendMessageAsync(sbMessage, cancellationToken).ConfigureAwait(false);
         }

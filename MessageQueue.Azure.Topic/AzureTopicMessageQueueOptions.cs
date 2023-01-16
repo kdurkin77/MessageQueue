@@ -15,6 +15,11 @@ namespace KM.MessageQueue.Azure.Topic
         internal string? EntityPath { get; set; }
 
         /// <summary>
+        /// Optional name to identify this queue
+        /// </summary>
+        public string? Name { get; set; }
+
+        /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which serializes the message to JSON and then converts it to bytes
         /// </summary>
