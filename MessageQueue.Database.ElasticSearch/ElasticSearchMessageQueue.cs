@@ -14,6 +14,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
     public sealed class ElasticSearchMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
+
         private readonly ILogger _logger;
         private readonly ElasticClient _client;
         private readonly IMessageFormatter<TMessage, JObject> _messageFormatter;
@@ -27,13 +28,16 @@ namespace KM.MessageQueue.Database.ElasticSearch
             _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonObjectFormatter<TMessage>();
             if (opts.ConnectionSettings is null)
             {
-                throw new ArgumentException($"{nameof(opts)}.{nameof(opts.ConnectionSettings)} cannot be null");
+                throw new ArgumentException($"{nameof(opts.ConnectionSettings)} is required", nameof(options));
             }
 
             _client = new ElasticClient(opts.ConnectionSettings);
+            Name = opts.Name ?? nameof(ElasticSearchMessageQueue<TMessage>);
 
-            _logger.LogTrace($"{nameof(ElasticSearchMessageQueue<TMessage>)} initialized");
+            _logger.LogTrace($"{Name} initialized");
         }
+
+        public string Name { get; }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -61,9 +65,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            ThrowIfDisposed();
-
-            var messageObject = await _messageFormatter.FormatMessage(message);
+            var messageObject = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
             var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
             elasticSearchMessage.Merge(messageObject);
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
@@ -91,16 +93,16 @@ namespace KM.MessageQueue.Database.ElasticSearch
             }
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         private void ThrowIfDisposed()
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(ElasticSearchMessageQueue<TMessage>));
+                throw new ObjectDisposedException(Name);
             }
         }
 

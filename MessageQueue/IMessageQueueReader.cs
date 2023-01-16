@@ -14,23 +14,40 @@ namespace KM.MessageQueue
 #endif
     {
         /// <summary>
-        /// The state of the reader
+        /// A name to identify this queue reader
         /// </summary>
-        MessageQueueReaderState State { get; }
+        string Name { get; }
 
         /// <summary>
-        /// The start function for the reader
+        /// Read a message from the queue
         /// </summary>
-        /// <param name="startOptions"></param>
+        /// <param name="action"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken);
+        Task<CompletionResult> ReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
 
         /// <summary>
-        /// The stop function for the reader
+        /// Read a message from the queue
         /// </summary>
+        /// <param name="action"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task StopAsync(CancellationToken cancellationToken);
+        Task<(CompletionResult CompletionResult, TResult Result)> ReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Attempt to read a message from the queue
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<(bool, CompletionResult)> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Attempt to read a message from the queue
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken);
     }
 }

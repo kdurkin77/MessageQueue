@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -9,170 +10,158 @@ namespace KM.MessageQueue.Azure.Topic
     internal sealed class AzureTopicMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
     {
         private bool _disposed = false;
-        private readonly AzureTopicMessageQueue<TMessage> _queue;
-
         private readonly SemaphoreSlim _sync = new(1, 1);
 
-        public MessageQueueReaderState State { get; private set; } = MessageQueueReaderState.Stopped;
+        private readonly ILogger _logger;
+        private readonly AzureTopicMessageQueue<TMessage> _queue;
+        private readonly string? _subscriptionName;
+        private readonly object? _userData;
+        private readonly ServiceBusReceiver _serviceBusReceiver;
 
-        private ServiceBusProcessor? _serviceBusProcessor = null;
-        private ServiceBusProcessor ServiceBusProcessor
+        public AzureTopicMessageQueueReader(ILogger logger, AzureTopicMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
-            get => _serviceBusProcessor ?? throw new SystemException($"{nameof(AzureTopicMessageQueueReader<TMessage>)}.{nameof(_serviceBusProcessor)} is null");
-            set => _serviceBusProcessor = value;
-        }
-
-        private CancellationTokenSource? _readerTokenSource = null;
-        private CancellationTokenSource ReaderTokenSource
-        {
-            get => _readerTokenSource ?? throw new SystemException($"{nameof(AzureTopicMessageQueueReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
-            set => _readerTokenSource = value;
-        }
-
-        public AzureTopicMessageQueueReader(AzureTopicMessageQueue<TMessage> queue)
-        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            _subscriptionName = options.SubscriptionName;
+            _userData = options.UserData;
+
+            var receiverOptions = new ServiceBusReceiverOptions()
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock,
+                PrefetchCount = options.PrefetchCount ?? 1,
+            };
+
+            _serviceBusReceiver = _queue._serviceBusClient.CreateReceiver(_queue._options.EntityPath, options.SubscriptionName, receiverOptions);
+
+            Name = options.Name ?? nameof(AzureTopicMessageQueueReader<TMessage>);
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
+
+        public string Name { get; }
+
+        public async Task<CompletionResult> ReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            if (startOptions is null)
+            if (action is null)
             {
-                throw new ArgumentNullException(nameof(startOptions));
+                throw new ArgumentNullException(nameof(action));
             }
 
-            if (startOptions.SubscriptionName is null)
+            var (completionResult, _) = await ReadMessageAsync(Wrapper, cancellationToken).ConfigureAwait(false);
+
+            return completionResult;
+
+
+            async Task<(CompletionResult CompletionResult, int)> Wrapper(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
             {
-                throw new ArgumentException($"{nameof(startOptions)}.{nameof(startOptions.SubscriptionName)} cannot be null");
+                var completionResult = await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
+                return (completionResult, 0);
+            }
+        }
+
+        public async Task<(CompletionResult CompletionResult, TResult Result)> ReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
             }
 
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (State == MessageQueueReaderState.Running)
-                {
-                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already started");
-                }
-
-                if (State == MessageQueueReaderState.StopRequested)
-                {
-                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is stopping");
-                }
-
-                ReaderTokenSource = new CancellationTokenSource();
-
-                var opts = new ServiceBusProcessorOptions()
-                {
-                    ReceiveMode = ServiceBusReceiveMode.PeekLock,
-                    AutoCompleteMessages = false,
-                    MaxConcurrentCalls = 1
-                };
-
-                if (startOptions.PrefetchCount.HasValue)
-                {
-                    opts.PrefetchCount = startOptions.PrefetchCount.Value;
-                }
-
-                ServiceBusProcessor = _queue._serviceBusClient.CreateProcessor(_queue._options.EntityPath, startOptions.SubscriptionName, opts);
-                ServiceBusProcessor.ProcessMessageAsync += MessageHandler;
-                ServiceBusProcessor.ProcessErrorAsync += ErrorHandler;
-                await ServiceBusProcessor.StartProcessingAsync(CancellationToken.None).ConfigureAwait(false);
-
-                State = MessageQueueReaderState.Running;
-            }
-            finally
-            {
-                _sync.Release();
-            }
-
-            async Task MessageHandler(ProcessMessageEventArgs args)
-            {
-                if (ReaderTokenSource.IsCancellationRequested)
-                {
-                    // do not stop the reader in the middle of a read
-                    return;
-                }
+                var azureMessage = await _serviceBusReceiver.ReceiveMessageAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 var attributes = new MessageAttributes()
                 {
-                    ContentType = args.Message.ContentType,
-                    Label = startOptions.SubscriptionName,
-                    UserProperties = args.Message.ApplicationProperties.ToDictionary(a => a.Key, a => a.Value)
+                    ContentType = azureMessage.ContentType,
+                    Label = _subscriptionName,
+                    UserProperties = azureMessage.ApplicationProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
                 };
 
-                var message = await _queue._messageFormatter.RevertMessage(args.Message.Body.ToArray());
-                var result = await startOptions.MessageHandler.HandleMessageAsync(message, attributes, startOptions.UserData, cancellationToken).ConfigureAwait(false);
-                switch (result)
+                var originalMessage = await _queue._messageFormatter.RevertMessage(azureMessage.Body.ToArray()).ConfigureAwait(false);
+
+                var (completionResult, result) = await action(originalMessage, attributes, _userData, cancellationToken).ConfigureAwait(false);
+                switch (completionResult)
                 {
                     case CompletionResult.Complete:
-                        await args.CompleteMessageAsync(args.Message, cancellationToken).ConfigureAwait(false);
+                        await _serviceBusReceiver.CompleteMessageAsync(azureMessage, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case CompletionResult.Abandon:
-                        await args.AbandonMessageAsync(args.Message, null, cancellationToken).ConfigureAwait(false);
+                        await _serviceBusReceiver.AbandonMessageAsync(azureMessage, null, cancellationToken).ConfigureAwait(false);
                         break;
 
                     default:
                         throw new NotSupportedException($"{result}");
                 }
+
+                return (completionResult, result);
             }
-
-            async Task ErrorHandler(ProcessErrorEventArgs exceptionReceivedEventArgs)
+            catch (Exception ex)
             {
-                await startOptions.MessageHandler.HandleErrorAsync(exceptionReceivedEventArgs.Exception, startOptions.UserData, ReaderTokenSource.Token).ConfigureAwait(false);
-                await InternalStopAsync().ConfigureAwait(false);
-            }
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                if (State == MessageQueueReaderState.Stopped)
-                {
-                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already stopped");
-                }
-
-                if (State == MessageQueueReaderState.StopRequested)
-                {
-                    throw new InvalidOperationException($"{nameof(AzureTopicMessageQueueReader<TMessage>)} is already stopping");
-                }
-
-                await InternalStopAsync().ConfigureAwait(false);
+                _logger.LogError(ex, $"{Name} exception in {nameof(ReadMessageAsync)}");
+                throw;
             }
             finally
             {
-                _sync.Release();
+                _ = _sync.Release();
             }
         }
 
-        private async Task InternalStopAsync()
+        public async Task<(bool, CompletionResult)> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {
-            _readerTokenSource?.Cancel();
+            ThrowIfDisposed();
 
-            var processor = _serviceBusProcessor;
-            if (processor != null)
+            if (action is null)
             {
-                if (!processor.IsClosed)
-                {
-                    await processor.CloseAsync().ConfigureAwait(false);
-                }
+                throw new ArgumentNullException(nameof(action));
             }
 
-            _readerTokenSource?.Dispose();
-            State = MessageQueueReaderState.Stopped;
+            try
+            {
+                var completionResult = await ReadMessageAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default);
+            }
+        }
+
+        public async Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var (completionResult, result) = await ReadMessageAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult, result);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default, default!);
+            }
         }
 
         private void ThrowIfDisposed()
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(AzureTopicMessageQueueReader<TMessage>));
+                throw new ObjectDisposedException($"{_queue.Name} {Name}");
             }
         }
 
@@ -182,8 +171,6 @@ namespace KM.MessageQueue.Azure.Topic
             {
                 return;
             }
-
-            InternalStopAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
             _disposed = true;
             GC.SuppressFinalize(this);
@@ -198,10 +185,10 @@ namespace KM.MessageQueue.Azure.Topic
                 return;
             }
 
-            await InternalStopAsync().ConfigureAwait(false);
-
             _disposed = true;
             GC.SuppressFinalize(this);
+
+            await Task.CompletedTask;
         }
 
 #endif

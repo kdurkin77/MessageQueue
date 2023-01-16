@@ -1,22 +1,15 @@
-﻿using System;
-
-namespace KM.MessageQueue
+﻿namespace KM.MessageQueue
 {
     /// <summary>
     /// Options required for an <see cref="IMessageQueueReader<TMessage>"/>
     /// </summary>
     /// <typeparam name="TMessage"></typeparam>
-    public sealed class MessageQueueReaderStartOptions<TMessage>
+    public sealed class MessageQueueReaderOptions<TMessage>
     {
-        public MessageQueueReaderStartOptions(IMessageHandler<TMessage> messageHandler)
-        {
-            MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
-        }
-
         /// <summary>
-        /// An <see cref="IMessageHandler{TMessage}"/> to handle received messages
+        /// Optional name to identify this queue reader
         /// </summary>
-        public IMessageHandler<TMessage> MessageHandler { get; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Optional prefetch count

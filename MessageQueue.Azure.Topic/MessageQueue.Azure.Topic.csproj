@@ -26,10 +26,10 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.11.1" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.0.0" />
-	<PackageReference Include="KM.MessageQueue" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue" Version="7.0.0" />-->
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
   </ItemGroup>
@@ -39,6 +39,12 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.StringToBytes\MessageQueue.Formatters.StringToBytes.csproj" />
   </ItemGroup>
 	
 </Project>

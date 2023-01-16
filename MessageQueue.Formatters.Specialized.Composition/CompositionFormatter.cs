@@ -21,8 +21,8 @@ namespace KM.MessageQueue.Formatters.Specialized.Composition
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var intermediateMessage = await _sourceFormatter.FormatMessage(message);
-            return await _destinationFormatter.FormatMessage(intermediateMessage);
+            var intermediateMessage = await _sourceFormatter.FormatMessage(message).ConfigureAwait(false);
+            return await _destinationFormatter.FormatMessage(intermediateMessage).ConfigureAwait(false);
         }
 
         public async Task<TMessageIn> RevertMessage(TMessageOut message)
@@ -32,8 +32,8 @@ namespace KM.MessageQueue.Formatters.Specialized.Composition
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var intermediateMessage = await _destinationFormatter.RevertMessage(message);
-            return await _sourceFormatter.RevertMessage(intermediateMessage);
+            var intermediateMessage = await _destinationFormatter.RevertMessage(message).ConfigureAwait(false);
+            return await _sourceFormatter.RevertMessage(intermediateMessage).ConfigureAwait(false);
         }
     }
 }

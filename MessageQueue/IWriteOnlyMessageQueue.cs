@@ -14,6 +14,11 @@ namespace KM.MessageQueue
 #endif
     {
         /// <summary>
+        /// A name to identify this queue
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
         /// Post a message to the queue
         /// </summary>
         /// <param name="message"></param>

@@ -14,27 +14,47 @@ namespace TestProject
     public sealed class MyApplication
     {
         private readonly IMessageQueue<MyMessage> _messageQueue;
-        private readonly IMessageHandler<MyMessage> _handler;
 
-        public MyApplication(IMessageQueue<MyMessage> messageQueue, IMessageHandler<MyMessage> handler)
+        public MyApplication(IMessageQueue<MyMessage> messageQueue)
         {
             _messageQueue = messageQueue;
-            _handler = handler;
         }
 
         public async Task RunAsync(CancellationToken token)
         {
             var writerTask = Task.Run(() => WriteMessages(_messageQueue, token), token);
 
-            await using var reader_1 = await _messageQueue.GetReaderAsync(token);
-            //await using var reader_2 = await _messageQueue.GetReaderAsync(token);
-
-            var start_options_1 = new MessageQueueReaderStartOptions<MyMessage>(_handler)
+            var reader_options_1 = new MessageQueueReaderOptions<MyMessage>()
             {
                 //UserData = "1",
                 SubscriptionName = "YOUR SUBSCRIPTION NAME HERE"
             };
-            await reader_1.StartAsync(start_options_1, token);
+
+            await using var reader_1 = await _messageQueue.GetReaderAsync(reader_options_1, token);
+            //await using var reader_2 = await _messageQueue.GetReaderAsync(token);
+
+            //await reader_1.StartAsync(start_options_1, token);
+
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+            int count = 0;
+            bool loop;
+            do
+            {
+                (loop, _) = await reader_1.TryReadMessageAsync(
+                    (msg, _, _, _) =>
+                    {
+                        Console.WriteLine($"Read [{++count}]: {msg.Id} {msg.Test}");
+                        return Task.FromResult(CompletionResult.Complete);
+                    }, cts.Token);
+
+                if (!loop)
+                {
+                    Console.WriteLine("Exiting reader loop");
+                }
+
+            } while (loop);
+
 
             //var start_options_2 = new MessageReaderStartOptions<MyMessage>(_handler)
             //{
@@ -45,10 +65,12 @@ namespace TestProject
 
             await writerTask;
 
+            _messageQueue.Dispose();
+
             Console.Write("press any key to exit");
             Console.ReadKey();
 
-            await reader_1.StopAsync(token);
+            //await reader_1.StopAsync(token);
             //await reader_2.StopAsync(token);
         }
 
@@ -70,7 +92,7 @@ namespace TestProject
                 };
 
                 await queue.PostMessageAsync(msg, attributes, token);
-                await Task.Delay(500);
+                await Task.Delay(500, token);
             }
         }
     }

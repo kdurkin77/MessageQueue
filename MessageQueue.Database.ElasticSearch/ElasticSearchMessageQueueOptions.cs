@@ -13,12 +13,36 @@ namespace KM.MessageQueue.Database.ElasticSearch
     public sealed class ElasticSearchMessageQueueOptions<TMessage>
     {
         internal ConnectionSettings ConnectionSettings { get; private set; } = new ConnectionSettings();
+        internal string? Name { get; set; }
 
         /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which converts the message to a <see cref="JObject"/>
         /// </summary>
         public IMessageFormatter<TMessage, JObject>? MessageFormatter { get; set; }
+
+        /// <summary>
+        /// Give a name to this queue
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public ElasticSearchMessageQueueOptions<TMessage> UseName(string name)
+        {
+            if (name is null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            name = name.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException($"{nameof(name)} is required", nameof(name));
+            }
+
+            Name = name;
+
+            return this;
+        }
 
         /// <summary>
         /// Sets up the <see cref="ConnectionSettings"/> using a <see cref="Uri"/>
@@ -28,12 +52,12 @@ namespace KM.MessageQueue.Database.ElasticSearch
         /// <returns>ElasticSearchMessageQueueOptions</returns>
         public ElasticSearchMessageQueueOptions<TMessage> UseConnectionUri(Uri uri, Action<ConnectionSettings> configureSettings)
         {
-            if(uri is null)
+            if (uri is null)
             {
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if(configureSettings is null)
+            if (configureSettings is null)
             {
                 throw new ArgumentNullException(nameof(configureSettings));
             }
@@ -45,7 +69,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
         public ElasticSearchMessageQueueOptions<TMessage> UseApiKey(string cloudId, string apiKey, Action<ConnectionSettings> configureSettings)
         {
-            if(string.IsNullOrWhiteSpace(cloudId))
+            if (string.IsNullOrWhiteSpace(cloudId))
             {
                 throw new ArgumentNullException(nameof(cloudId));
             }

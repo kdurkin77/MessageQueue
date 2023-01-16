@@ -17,6 +17,11 @@ namespace KM.MessageQueue.Http
         internal IMessageFormatter<TMessage, IDictionary<string, string>>? QueryMessageFormatter { get; set; }
 
         /// <summary>
+        /// Optional name to identify this queue
+        /// </summary>
+        public string? Name { get; set; }
+
+        /// <summary>
         /// The URL to do the HTTP request
         /// </summary>
         public Uri? Uri { get; set; }

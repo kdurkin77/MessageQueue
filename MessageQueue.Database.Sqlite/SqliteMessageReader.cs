@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,124 +8,110 @@ namespace KM.MessageQueue.Database.Sqlite
     internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>
     {
         private bool _disposed = false;
-        private readonly SqliteMessageQueue<TMessage> _queue;
         private readonly SemaphoreSlim _sync = new(1, 1);
 
-        public MessageQueueReaderState State { get; private set; } = MessageQueueReaderState.Stopped;
-        private Task? _readerTask = null;
-        private CancellationTokenSource? _readerTokenSource = null;
+        private readonly ILogger _logger;
+        private readonly SqliteMessageQueue<TMessage> _queue;
+        private readonly string? _subscriptionName;
+        private readonly object? _userData;
 
-        public SqliteMessageReader(SqliteMessageQueue<TMessage> queue)
+        public SqliteMessageReader(ILogger logger, SqliteMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            _subscriptionName = options.SubscriptionName;
+            _userData = options.UserData;
+
+            Name = options.Name ?? nameof(SqliteMessageReader<TMessage>);
         }
 
-        public async Task StartAsync(MessageQueueReaderStartOptions<TMessage> startOptions, CancellationToken cancellationToken)
+
+        public string Name { get; }
+
+        public async Task<CompletionResult> ReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            if (startOptions is null)
+            if (action is null)
             {
-                throw new ArgumentNullException(nameof(startOptions));
+                throw new ArgumentNullException(nameof(action));
             }
+
+            var (completionResult, _) = await ReadMessageAsync(Wrapper, cancellationToken).ConfigureAwait(false);
+
+            return completionResult;
+
+
+            async Task<(CompletionResult CompletionResult, int)> Wrapper(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
+            {
+                var completionResult = await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
+                return (completionResult, 0);
+            }
+        }
+
+        public async Task<(CompletionResult CompletionResult, TResult Result)> ReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
 
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (State == MessageQueueReaderState.Running)
-                {
-                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is already started");
-                }
-
-                if (State == MessageQueueReaderState.StopRequested)
-                {
-                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is stopping");
-                }
-
-                _readerTokenSource = new CancellationTokenSource();
-
-                var idleDelay = _queue._options.IdleDelay ?? TimeSpan.FromMilliseconds(100);
-                _readerTask = Task.Run(() => ReaderLoop(startOptions.MessageHandler, startOptions.UserData, idleDelay, cancellationToken), _readerTokenSource.Token);
-
-                State = MessageQueueReaderState.Running;
-            }
-            finally
-            {
-                _sync.Release();
-            }
-        }
-
-        private async Task ReaderLoop(IMessageHandler<TMessage> messageHandler, object? userData, TimeSpan idleDelay, CancellationToken cancellationToken)
-        {
-            if (messageHandler is null)
-            {
-                throw new ArgumentNullException(nameof(messageHandler));
-            }
-
-            try
-            {
-                while (true)
-                {
-                    var source = _readerTokenSource;
-                    if (source is null)
-                    {
-                        throw new SystemException($"{nameof(SqliteMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
-                    }
-
-                    if (source.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    var gotMessage = await _queue.TryReadMessageAsync(messageHandler.HandleMessageAsync, userData, source.Token).ConfigureAwait(false);
-                    if (!gotMessage)
-                    {
-                        await Task.Delay(idleDelay, cancellationToken).ConfigureAwait(false);
-                    }
-                }
+                return await _queue.InternalReadMessageAsync(action, _userData, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await messageHandler.HandleErrorAsync(ex, userData, cancellationToken).ConfigureAwait(false);
+                _logger.LogError(ex, $"{Name} exception in {nameof(ReadMessageAsync)}");
                 throw;
             }
             finally
             {
-                _readerTokenSource?.Dispose();
-                _readerTokenSource = null;
-                _readerTask = null;
-                State = MessageQueueReaderState.Stopped;
+                _ = _sync.Release();
             }
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public async Task<(bool, CompletionResult)> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             try
             {
-                if (State == MessageQueueReaderState.Stopped)
-                {
-                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is already stopped");
-                }
-
-                if (State == MessageQueueReaderState.StopRequested)
-                {
-                    throw new InvalidOperationException($"{nameof(SqliteMessageReader<TMessage>)} is already stopping");
-                }
-
-                if (_readerTokenSource is null)
-                {
-                    throw new SystemException($"{nameof(SqliteMessageReader<TMessage>)}.{nameof(_readerTokenSource)} is null");
-                }
-
-                _readerTokenSource.Cancel();
-                State = MessageQueueReaderState.StopRequested;
+                var completionResult = await ReadMessageAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult);
             }
-            finally
+            catch (OperationCanceledException)
             {
-                _sync.Release();
+                return (false, default);
+            }
+        }
+
+        public async Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var (completionResult, result) = await ReadMessageAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult, result);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default, default!);
             }
         }
 
@@ -132,7 +119,7 @@ namespace KM.MessageQueue.Database.Sqlite
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(SqliteMessageReader<TMessage>));
+                throw new ObjectDisposedException($"{_queue.Name} {Name}");
             }
         }
 
@@ -142,8 +129,6 @@ namespace KM.MessageQueue.Database.Sqlite
             {
                 return;
             }
-
-            _readerTokenSource?.Cancel();
 
             _disposed = true;
             GC.SuppressFinalize(this);
@@ -157,8 +142,6 @@ namespace KM.MessageQueue.Database.Sqlite
             {
                 return;
             }
-
-            _readerTokenSource?.Cancel();
 
             _disposed = true;
             GC.SuppressFinalize(this);

@@ -13,8 +13,8 @@
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
     <PackageReleaseNotes>
-		Added a new option to have a retry delay for if a message fails to post to the destination queue
-	</PackageReleaseNotes>
+      Added a new option to have a retry delay for if a message fails to post to the destination queue
+    </PackageReleaseNotes>
     <Version>7.0.5</Version>
   </PropertyGroup>
 
@@ -25,7 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.0.0" />
+    <Compile Remove="Handler.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />-->
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
   </ItemGroup>
@@ -36,5 +40,9 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
+  </ItemGroup>
+
 </Project>

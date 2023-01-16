@@ -1,43 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<Authors>kdurkin77;reed-adams;</Authors>
-		<PackageId>KM.MessageQueue.Database.ElasticSearch</PackageId>
-		<PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
-		<PackageTags>MessageQueue;Queue;MessageReader;Reader;Database;ElasticSearch;</PackageTags>
-		<Product>KM.MessageQueue.Database.ElasticSearch</Product>
-		<Description>A queue implementation to write to an ElasticSearch database from the interfaces in KM.MessageQueue</Description>
-		<PackageReleaseNotes>
-			Better logger trace and checking the response from ES to log if there's an error
-		</PackageReleaseNotes>
-		<Version>7.0.1</Version>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Authors>kdurkin77;reed-adams;</Authors>
+    <PackageId>KM.MessageQueue.Database.ElasticSearch</PackageId>
+    <PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
+    <PackageTags>MessageQueue;Queue;MessageReader;Reader;Database;ElasticSearch;</PackageTags>
+    <Product>KM.MessageQueue.Database.ElasticSearch</Product>
+    <Description>A queue implementation to write to an ElasticSearch database from the interfaces in KM.MessageQueue</Description>
+    <PackageReleaseNotes>
+      Better logger trace and checking the response from ES to log if there's an error
+    </PackageReleaseNotes>
+    <Version>7.0.1</Version>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<RootNamespace>KM.MessageQueue.Database.ElasticSearch</RootNamespace>
-		<AssemblyName>KM.MessageQueue.Database.ElasticSearch</AssemblyName>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>KM.MessageQueue.Database.ElasticSearch</RootNamespace>
+    <AssemblyName>KM.MessageQueue.Database.ElasticSearch</AssemblyName>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="KM.MessageQueue" Version="7.0.0" />
-		<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
-		<PackageReference Include="NEST" Version="7.17.5" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-	</ItemGroup>
+  <ItemGroup>
+    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.0.0" />-->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+    <PackageReference Include="NEST" Version="7.17.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Include="..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
-	
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonObject\MessageQueue.Formatters.ObjectToJsonObject.csproj" />
+  </ItemGroup>
+
 </Project>

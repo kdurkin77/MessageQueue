@@ -14,10 +14,16 @@ namespace KM.MessageQueue
 #endif
     {
         /// <summary>
+        /// The name that identifies this queue
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
         /// Gets the reader for the <see cref="IReadOnlyMessageQueue{TMessage}"/>
         /// </summary>
+        /// <param name="options"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken);
+        Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken);
     }
 }

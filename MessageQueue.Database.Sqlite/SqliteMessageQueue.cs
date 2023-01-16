@@ -14,46 +14,53 @@ namespace KM.MessageQueue.Database.Sqlite
     public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
-        private long? _sequenceNumber;
+        private readonly SemaphoreSlim _sync = new(1, 1);
 
         private readonly ILogger _logger;
-        private readonly Queue<SqliteQueueMessage> _messageQueue;
-        private readonly SemaphoreSlim _sync;
-
-        internal readonly SqliteMessageQueueOptions<TMessage> _options;
+        private readonly TimeSpan _idleDelay;
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
+        private readonly int? _maxQueueSize;
+        private readonly Queue<SqliteQueueMessage> _messageQueue;
         private readonly SqliteDatabaseContext _dbContext;
+        private long? _sequenceNumber;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
         public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>();
 
-            if (string.IsNullOrWhiteSpace(_options.ConnectionString))
+            var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
+
+            _idleDelay = opts.IdleDelay ?? TimeSpan.FromMilliseconds(100);
+            _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>();
+            _maxQueueSize = opts.MaxQueueSize;
+
+            if (string.IsNullOrWhiteSpace(opts.ConnectionString))
             {
-                throw new ArgumentException($"{nameof(_options)}.{nameof(_options.ConnectionString)} cannot be null or whitespace");
+                throw new ArgumentException($"{nameof(opts.ConnectionString)} is required", nameof(options));
             }
 
-            //! to appease netstandard2.0 compiler, it doesn't realize that IsNullOrWhiteSpace is null checking
             var dbContextOptsBuilder = new DbContextOptionsBuilder<SqliteDatabaseContext>();
-            dbContextOptsBuilder.UseSqlite(_options.ConnectionString);
-            _dbContext = new SqliteDatabaseContext(dbContextOptsBuilder.Options);
+            dbContextOptsBuilder.UseSqlite(opts.ConnectionString);
 
-            _sync = new SemaphoreSlim(1, 1);
+            _dbContext = new SqliteDatabaseContext(dbContextOptsBuilder.Options);
 
             _messageQueue = new Queue<SqliteQueueMessage>(
                 _dbContext.SqliteQueueMessages
-                .OrderBy(item => item.SequenceNumber)
+                    .OrderBy(item => item.SequenceNumber)
                 );
 
-            _sequenceNumber = _messageQueue.Any() 
-                ? _messageQueue.Select(item => item.SequenceNumber).Max() : 0L;
+            _sequenceNumber = _messageQueue.Any()
+                ? _messageQueue.Select(item => item.SequenceNumber).Max()
+                : 0L;
+
+            Name = opts.Name ?? nameof(SqliteMessageQueue<TMessage>);
 
             _logger.LogTrace($"{nameof(SqliteMessageQueue<TMessage>)} initialized with {_messageQueue.Count} stored messages");
         }
+
+        public string Name { get; }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -84,15 +91,15 @@ namespace KM.MessageQueue.Database.Sqlite
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (_options.MaxQueueSize.HasValue)
+                if (_maxQueueSize is { } maxQueueSize)
                 {
-                    if (_messageQueue.Count >= _options.MaxQueueSize.Value)
+                    if (_messageQueue.Count >= maxQueueSize)
                     {
-                        throw new InvalidOperationException("Maximum queue size exceeded");
+                        throw new InvalidOperationException($"{Name} exceeded maximum queue size of {maxQueueSize}");
                     }
                 }
 
-                var messageString = await _messageFormatter.FormatMessage(message);
+                var messageString = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
 
                 var sqlMessage =
                     new SqliteQueueMessage()
@@ -112,57 +119,69 @@ namespace KM.MessageQueue.Database.Sqlite
             }
             finally
             {
-                _sync.Release();
+                _ = _sync.Release();
             }
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
-            var reader = new SqliteMessageReader<TMessage>(this);
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var reader = new SqliteMessageReader<TMessage>(_logger, this, options);
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
-        internal async Task<bool> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<(CompletionResult, TResult)> InternalReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {
                 throw new ArgumentNullException(nameof(action));
             }
 
-            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
+            while (true)
             {
-                if (!_messageQueue.Any())
+                await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
                 {
-                    return false;
-                }
+                    if (!_messageQueue.Any())
+                    {
+                        await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
 
-                var item = _messageQueue.Peek();
+                    var item = _messageQueue.Peek();
 
-                if (item.Attributes is null)
-                {
-                    throw new Exception("Attributes cannot be null");
-                }
-                var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes) ?? throw new Exception("Attributes formatted incorrectly");
-                
-                if (item.Body is null)
-                {
-                    throw new Exception("Body cannot be null");
-                }
-                var message = await _messageFormatter.RevertMessage(item.Body);
-                var result = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
-                if (result == CompletionResult.Complete)
-                {
-                    _dbContext.Remove(item);
-                    await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                    _messageQueue.Dequeue();
-                }
+                    if (item.Attributes is null)
+                    {
+                        throw new Exception($"{item.Attributes} is required");
+                    }
 
-                return true;
-            }
-            finally
-            {
-                _sync.Release();
+                    var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes)
+                        ?? throw new FormatException($"{nameof(item.Attributes)} is invalid");
+
+                    if (item.Body is null)
+                    {
+                        throw new Exception($"{nameof(item.Body)} is required");
+                    }
+
+                    var message = await _messageFormatter.RevertMessage(item.Body).ConfigureAwait(false);
+                    var (completionResult, result) = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
+                    if (completionResult == CompletionResult.Complete)
+                    {
+                        _dbContext.Remove(item);
+                        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                        _messageQueue.Dequeue();
+                    }
+
+                    return (completionResult, result);
+                }
+                finally
+                {
+                    _ = _sync.Release();
+                }
             }
         }
 

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
-	<LangVersion>latest</LangVersion>
-	<Nullable>enable</Nullable>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
     <PackageId>KM.MessageQueue.Database.Sqlite</PackageId>
     <PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
@@ -13,8 +13,8 @@
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		Updated new logging to show the actual string message
-	</PackageReleaseNotes>
+      Updated new logging to show the actual string message
+    </PackageReleaseNotes>
     <Version>7.0.4</Version>
   </PropertyGroup>
 
@@ -25,8 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.0.0" />-->
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
@@ -37,24 +37,28 @@
       <Version>7.0.1</Version>
     </PackageReference>
   </ItemGroup>
-	
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
       <Version>5.0.14</Version>
     </PackageReference>
   </ItemGroup>
-	
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
       <Version>3.1.22</Version>
     </PackageReference>
   </ItemGroup>
-	
+
   <ItemGroup>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
+  </ItemGroup>
+
 </Project>

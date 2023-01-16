@@ -8,17 +8,25 @@ namespace KM.MessageQueue.Database.Sqlite
     public sealed class SqliteMessageQueueOptions<TMessage>
     {
         /// <summary>
+        /// Optional name to identify this queue
+        /// </summary>
+        public string? Name { get; set; }
+
+        /// <summary>
         /// Connection string for the database. The table will be created for you if it does not already exist
         /// </summary>
         public string? ConnectionString { get; set; }
+
         /// <summary>
         /// Max queue size
         /// </summary>
         public int? MaxQueueSize { get; set; }
+
         /// <summary>
         /// Delay before rechecking for messages in the reader if there weren't any before
         /// </summary>
         public TimeSpan? IdleDelay { get; set; }
+
         /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which serializes the message to a json string />

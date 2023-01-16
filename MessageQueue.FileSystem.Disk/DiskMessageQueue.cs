@@ -17,32 +17,36 @@ namespace KM.MessageQueue.FileSystem.Disk
     public sealed class DiskMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
-        private readonly ILogger _logger;
+        private readonly SemaphoreSlim _sync = new(1, 1);
 
-        internal readonly DiskMessageQueueOptions<TMessage> _options;
+        private readonly ILogger _logger;
+        private readonly TimeSpan _idleDelay;
+        private readonly int? _maxQueueSize;
+        private readonly int _messagePartitionSize;
+
         private readonly IMessageFormatter<TMessage, JObject> _messageFormatter;
 
-        private static readonly MessageAttributes _emptyAttributes = new();
 
-        private readonly SemaphoreSlim _sync;
         private readonly DirectoryInfo _messageStore;
         private long _sequenceNumber;
         private readonly Queue<(FileInfo File, DiskMessage Message)> _messageQueue;
+
+        private static readonly MessageAttributes _emptyAttributes = new();
         private static readonly string _messageExtension = @"msg.json.gzip";
 
         public DiskMessageQueue(ILogger<DiskMessageQueue<TMessage>> logger, IOptions<DiskMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonObjectFormatter<TMessage>();
-            if (_options.MessageStore is null)
-            {
-                throw new ArgumentException($"{nameof(_options)}.{nameof(_options.MessageStore)} cannot be null");
-            }
 
-            _sync = new SemaphoreSlim(1, 1);
+            var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
-            _messageStore = _options.MessageStore ?? throw new ArgumentException($"{nameof(_options)}.{nameof(_options.MessageStore)} cannot be null");
+            _idleDelay = opts.IdleDelay ?? TimeSpan.FromMilliseconds(100);
+            _maxQueueSize = opts.MaxQueueSize;
+            _messagePartitionSize = opts.MessagePartitionSize ?? 5_000;
+
+            _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonObjectFormatter<TMessage>();
+
+            _messageStore = opts.MessageStore ?? throw new ArgumentException($"{nameof(opts.MessageStore)} is required", nameof(options));
 
             if (!_messageStore.Exists)
             {
@@ -59,7 +63,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                             var fileBytes = Decompress(compressedBytes);
                             var fileJson = Encoding.UTF8.GetString(fileBytes);
                             var diskMessage = JsonConvert.DeserializeObject<DiskMessage>(fileJson);
-                            if(diskMessage is null)
+                            if (diskMessage is null)
                             {
                                 throw new Exception($"Improperly formatted disk message queue file: {file.FullName}");
                             }
@@ -73,8 +77,13 @@ namespace KM.MessageQueue.FileSystem.Disk
                 ? _messageQueue.Select(item => item.Message.SequenceNumber).Max()
                 : 0L;
 
+            Name = opts.Name ?? nameof(DiskMessageQueue<TMessage>);
+
             _logger.LogTrace($"initialized with {_messageQueue.Count} stored messages");
         }
+
+
+        public string Name { get; }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -107,15 +116,15 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 ThrowIfDisposed();
 
-                if (_options.MaxQueueSize.HasValue)
+                if (_maxQueueSize is { } maxQueueSize)
                 {
-                    if (_messageQueue.Count >= _options.MaxQueueSize.Value)
+                    if (_messageQueue.Count >= maxQueueSize)
                     {
-                        throw new InvalidOperationException("Maximum queue size exceeded");
+                        throw new InvalidOperationException($"{Name} exceeded maximum queue size of {maxQueueSize}");
                     }
                 }
 
-                var formattedMessage = await _messageFormatter.FormatMessage(message);
+                var formattedMessage = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
 
                 var diskMessage =
                     new DiskMessage(
@@ -142,9 +151,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                 throw new ArgumentNullException(nameof(diskMessage));
             }
 
-            var partitionSize = _options.MessagePartitionSize ?? 5_000;
-
-            var partition = diskMessage.SequenceNumber / partitionSize;
+            var partition = diskMessage.SequenceNumber / _messagePartitionSize;
             var targetPath = Path.Combine(_messageStore.FullName, $"{partition}");
             if (!Directory.Exists(targetPath))
             {
@@ -204,41 +211,50 @@ namespace KM.MessageQueue.FileSystem.Disk
             return decompressed.ToArray();
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
-            var reader = new DiskMessageQueueReader<TMessage>(this);
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var reader = new DiskMessageQueueReader<TMessage>(_logger, this, options);
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
-        internal async Task<bool> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<(CompletionResult, TResult)> InternalReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {
                 throw new ArgumentNullException(nameof(action));
             }
 
-            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
+            while (true)
             {
-                if (!_messageQueue.Any())
+                await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
                 {
-                    return false;
-                }
+                    if (!_messageQueue.Any())
+                    {
+                        await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
 
-                var item = _messageQueue.Peek();
-                var message = await _messageFormatter.RevertMessage(item.Message.Body);
-                var result = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
-                if (result == CompletionResult.Complete)
+                    var item = _messageQueue.Peek();
+                    var message = await _messageFormatter.RevertMessage(item.Message.Body).ConfigureAwait(false);
+                    var (completionResult, result) = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
+                    if (completionResult == CompletionResult.Complete)
+                    {
+                        item.File.Delete();
+                        _messageQueue.Dequeue();
+                    }
+
+                    return (completionResult, result);
+                }
+                finally
                 {
-                    item.File.Delete();
-                    _messageQueue.Dequeue();
+                    _sync.Release();
                 }
-
-                return true;
-            }
-            finally
-            {
-                _sync.Release();
             }
         }
 
@@ -246,7 +262,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(DiskMessageQueue<TMessage>));
+                throw new ObjectDisposedException(Name);
             }
         }
 
@@ -256,8 +272,6 @@ namespace KM.MessageQueue.FileSystem.Disk
             {
                 return;
             }
-
-            // not needed for this queue?
 
             _disposed = true;
             GC.SuppressFinalize(this);
@@ -275,7 +289,6 @@ namespace KM.MessageQueue.FileSystem.Disk
             _disposed = true;
             GC.SuppressFinalize(this);
 
-            // compiler appeasement
             await Task.CompletedTask;
         }
 

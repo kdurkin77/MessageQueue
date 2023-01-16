@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="7.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue.Azure.Topic" Version="7.0.0" />
     <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="7.0.0" />
     <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="7.0.3" />
     <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="7.0.1" />
@@ -21,11 +21,21 @@
     <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.0.0" />
     <PackageReference Include="KM.MessageQueue.Mqtt" Version="7.0.0" />
     <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="7.0.0" />
-    <PackageReference Include="KM.MessageQueue.Http" Version="7.0.2" />
+    <PackageReference Include="KM.MessageQueue.Http" Version="7.0.2" />-->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Azure.Topic\MessageQueue.Azure.Topic.csproj" />
+    <ProjectReference Include="..\MessageQueue.Database.ElasticSearch\MessageQueue.Database.ElasticSearch.csproj" />
+    <ProjectReference Include="..\MessageQueue.Database.Sqlite\MessageQueue.Database.Sqlite.csproj" />
+    <ProjectReference Include="..\MessageQueue.FileSystem.Disk\MessageQueue.FileSystem.Disk.csproj" />
+    <ProjectReference Include="..\MessageQueue.Http\MessageQueue.Http.csproj" />
+    <ProjectReference Include="..\MessageQueue.Mqtt\MessageQueue.Mqtt.csproj" />
+    <ProjectReference Include="..\MessageQueue.Specialized.Forwarder\MessageQueue.Specialized.Forwarder.csproj" />
+  </ItemGroup>
+
 </Project>

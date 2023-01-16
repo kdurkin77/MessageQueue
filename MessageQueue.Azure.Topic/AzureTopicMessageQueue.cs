@@ -12,6 +12,7 @@ namespace KM.MessageQueue.Azure.Topic
     public sealed class AzureTopicMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
+
         private readonly ILogger _logger;
         internal readonly AzureTopicMessageQueueOptions<TMessage> _options;
         internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
@@ -25,7 +26,10 @@ namespace KM.MessageQueue.Azure.Topic
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _serviceBusClient = new ServiceBusClient(_options.ConnectionString, _options.ServiceBusClientOptions);
             _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
+            Name = nameof(AzureTopicMessageQueue<TMessage>);
         }
+
+        public string Name { get; }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -53,8 +57,8 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = await _messageFormatter.FormatMessage(message);
-            var sender = _serviceBusClient.CreateSender(_options.EntityPath);
+            var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
+            await using var sender = _serviceBusClient.CreateSender(_options.EntityPath);
             var sbMessage = new ServiceBusMessage(messageBytes)
             {
                 ContentType = attributes.ContentType,
@@ -72,12 +76,11 @@ namespace KM.MessageQueue.Azure.Topic
             _logger.LogTrace($"posting to {_serviceBusClient.FullyQualifiedNamespace}/{_options.EntityPath}/{attributes.Label}");
 
             await sender.SendMessageAsync(sbMessage, cancellationToken).ConfigureAwait(false);
-            await sender.DisposeAsync().ConfigureAwait(false);
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
-            var reader = new AzureTopicMessageQueueReader<TMessage>(this);
+            var reader = new AzureTopicMessageQueueReader<TMessage>(_logger, this, options);
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
@@ -85,7 +88,7 @@ namespace KM.MessageQueue.Azure.Topic
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(AzureTopicMessageQueue<TMessage>));
+                throw new ObjectDisposedException(Name);
             }
         }
 

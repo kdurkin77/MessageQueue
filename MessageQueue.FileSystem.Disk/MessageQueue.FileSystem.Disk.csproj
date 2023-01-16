@@ -13,8 +13,8 @@
     <Product>KM.MessageQueue.FileSystem.Disk</Product>
     <Description>A queue implementation to write to the disk from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		Removed .NET5 and added .NET7
-	</PackageReleaseNotes>
+      Removed .NET5 and added .NET7
+    </PackageReleaseNotes>
     <Version>7.0.0</Version>
   </PropertyGroup>
 
@@ -25,8 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.0.0" />-->
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
@@ -38,5 +38,9 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonObject\MessageQueue.Formatters.ObjectToJsonObject.csproj" />
+  </ItemGroup>
+
 </Project>

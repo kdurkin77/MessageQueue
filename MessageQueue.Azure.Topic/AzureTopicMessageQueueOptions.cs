@@ -44,7 +44,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(connectionString));
             }
 
-            if(configureSettings is null)
+            if (configureSettings is null)
             {
                 throw new ArgumentNullException(nameof(configureSettings));
             }
@@ -64,7 +64,7 @@ namespace KM.MessageQueue.Azure.Topic
                 }
 
                 var index = endpoint.LastIndexOf("/");
-                if(index == -1)
+                if (index == -1)
                 {
                     throw new ArgumentException($"{nameof(connectionString)} must include EntityPath or have it specified in Endpoint");
                 }
@@ -153,7 +153,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(sharedAccessKeyName));
             }
 
-            if(string.IsNullOrWhiteSpace(sharedAccessKey))
+            if (string.IsNullOrWhiteSpace(sharedAccessKey))
             {
                 throw new ArgumentNullException(nameof(sharedAccessKey));
             }

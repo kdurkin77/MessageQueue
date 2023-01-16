@@ -1,6 +1,6 @@
 ﻿using KM.MessageQueue.Formatters.JsonStringToDictionary;
-using KM.MessageQueue.Formatters.ObjectToJsonObject;
 using KM.MessageQueue.Formatters.ObjectToJsonString;
+using KM.MessageQueue.Formatters.StringToHttpContent;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +16,10 @@ namespace KM.MessageQueue.Http
     public sealed class HttpMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         private bool _disposed = false;
+
         private readonly ILogger _logger;
+
+
         internal readonly HttpClient _client;
         internal readonly Uri _uri;
         internal readonly HttpMethod _method;
@@ -32,6 +35,7 @@ namespace KM.MessageQueue.Http
         public HttpMessageQueue(ILogger<HttpMessageQueue<TMessage>> logger, IOptions<HttpMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
             var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
             _uri = opts.Uri ?? throw new ArgumentException($"{nameof(opts)}.{nameof(opts.Uri)} cannot be null");
@@ -52,14 +56,19 @@ namespace KM.MessageQueue.Http
             _queryMessageFormatter = opts.QueryMessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new JsonStringToDictionary());
 
             _client = new HttpClient();
-            if(opts.Headers is not null)
+            if (opts.Headers is not null)
             {
                 foreach (var header in opts.Headers)
                 {
                     _client.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
-            };
+            }
+
+            Name = opts.Name ?? nameof(HttpMessageQueue<TMessage>);
         }
+
+
+        public string Name { get; }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -88,16 +97,16 @@ namespace KM.MessageQueue.Http
             }
 
             var url = _uri.ToString();
-            if(_shouldUseQueryParameters)
+            if (_shouldUseQueryParameters)
             {
-                var queryDict = await _queryMessageFormatter.FormatMessage(message);
+                var queryDict = await _queryMessageFormatter.FormatMessage(message).ConfigureAwait(false);
                 url = QueryHelpers.AddQueryString(url, queryDict);
             }
 
             var request = new HttpRequestMessage(_method, url);
-            if(_shouldUseBody)
+            if (_shouldUseBody)
             {
-                request.Content = await _bodyMessageFormatter.FormatMessage(message);
+                request.Content = await _bodyMessageFormatter.FormatMessage(message).ConfigureAwait(false);
                 if (attributes.ContentType is not null)
                 {
                     request.Content.Headers.ContentType = new MediaTypeHeaderValue(attributes.ContentType);
@@ -109,7 +118,7 @@ namespace KM.MessageQueue.Http
                 foreach (var property in attributes.UserProperties)
                 {
 #if NET5_0_OR_GREATER
-                    request.Options.TryAdd(property.Key, property.Value);
+                    _ = request.Options.TryAdd(property.Key, property.Value);
 #else
                     request.Properties.Add(property);
 #endif
@@ -119,7 +128,7 @@ namespace KM.MessageQueue.Http
             if (attributes.Label is not null)
             {
 #if NET5_0_OR_GREATER
-                request.Options.TryAdd("Label", attributes.Label);
+                _ = request.Options.TryAdd("Label", attributes.Label);
 #else
                 request.Properties.Add("Label", attributes.Label);
 #endif
@@ -127,19 +136,21 @@ namespace KM.MessageQueue.Http
 
             if (_beforeSendMessage is not null)
             {
-                await _beforeSendMessage(request);
+                await _beforeSendMessage(request).ConfigureAwait(false);
             }
 
             _logger.LogTrace("Posting to {Uri}", _uri);
 
-            var result = await _client.SendAsync(request, cancellationToken);
+            var result = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             _checkHttpResponse(result);
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+            throw new NotSupportedException();
         }
+
 
         private void ThrowIfDisposed()
         {
@@ -177,7 +188,6 @@ namespace KM.MessageQueue.Http
             _disposed = true;
             GC.SuppressFinalize(this);
 
-            // compiler appeasement
             await Task.CompletedTask;
         }
 

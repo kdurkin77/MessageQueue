@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KM.MessageQueue.Formatters.ObjectToJsonObject
+namespace KM.MessageQueue.Formatters.StringToHttpContent
 {
     public sealed class StringToHttpContentFormatter : IMessageFormatter<string, HttpContent>
     {

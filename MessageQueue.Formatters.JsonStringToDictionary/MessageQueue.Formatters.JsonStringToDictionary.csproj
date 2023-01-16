@@ -1,40 +1,44 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<Authors>kdurkin77;reed-adams;</Authors>
-		<PackageId>KM.MessageQueue.Formatters.JsonStringToDictionary</PackageId>
-		<PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
-		<PackageTags>MessageQueue;Queue;MessageReader;Reader;Formatting;Json;Dictionary</PackageTags>
-		<Product>KM.MessageQueue.Formatters.JsonStringToDictionary</Product>
-		<Description>A formatting implementation for KM.MessageQueue that deserializes the json string to a Dictionary</Description>
-		<PackageReleaseNotes>
-			Removed .NET5 and added .NET7
-		</PackageReleaseNotes>
-		<Version>7.0.0</Version>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Authors>kdurkin77;reed-adams;</Authors>
+    <PackageId>KM.MessageQueue.Formatters.JsonStringToDictionary</PackageId>
+    <PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
+    <PackageTags>MessageQueue;Queue;MessageReader;Reader;Formatting;Json;Dictionary</PackageTags>
+    <Product>KM.MessageQueue.Formatters.JsonStringToDictionary</Product>
+    <Description>A formatting implementation for KM.MessageQueue that deserializes the json string to a Dictionary</Description>
+    <PackageReleaseNotes>
+      Removed .NET5 and added .NET7
+    </PackageReleaseNotes>
+    <Version>7.0.0</Version>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<RootNamespace>KM.MessageQueue.Formatters.JsonStringToDictionary</RootNamespace>
-		<AssemblyName>KM.MessageQueue.Formatters.JsonStringToDictionary</AssemblyName>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>KM.MessageQueue.Formatters.JsonStringToDictionary</RootNamespace>
+    <AssemblyName>KM.MessageQueue.Formatters.JsonStringToDictionary</AssemblyName>
+  </PropertyGroup>
 
 
-	<ItemGroup>
-		<PackageReference Include="KM.MessageQueue" Version="7.0.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-	</ItemGroup>
+  <ItemGroup>
+    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />-->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Include="..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
+  </ItemGroup>
 
 </Project>

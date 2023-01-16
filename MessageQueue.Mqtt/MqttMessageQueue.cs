@@ -3,7 +3,7 @@ using KM.MessageQueue.Formatters.StringToBytes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Client;
 using MQTTnet.Protocol;
 using System;
 using System.Threading;
@@ -13,51 +13,79 @@ namespace KM.MessageQueue.Mqtt
 {
     public sealed class MqttMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
-        private bool _disposed = false; 
+        private bool _disposed = false;
+        private readonly SemaphoreSlim _sync = new(1, 1);
+
         private readonly ILogger _logger;
-        internal readonly MqttMessageQueueOptions<TMessage> _options;
         internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
-        internal readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
-        internal readonly IManagedMqttClient _managedMqttClient;
+        private readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
+        internal readonly IMqttClient _mqttClient;
+        internal readonly MqttClientOptions _mqttClientOptions;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
         public MqttMessageQueue(ILogger<MqttMessageQueue<TMessage>> logger, IOptions<MqttMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _messageFormatter = _options.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
-            _messageBuilder = _options.MessageBuilder ??
-                ((payload, attributes) =>
-                new MqttApplicationMessageBuilder()
-                    .WithTopic(attributes.Label)
-                    .WithPayload(payload)
-                    .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
-                    .WithRetainFlag()
-                    .Build());
-            _managedMqttClient = new MqttFactory().CreateManagedMqttClient();
-            var clientOpts = _options.ManagedMqttClientOptions ?? throw new ArgumentException($"{nameof(options)}.{nameof(_options.ManagedMqttClientOptions)} cannot be null");
-            _managedMqttClient.StartAsync(clientOpts).ConfigureAwait(false).GetAwaiter().GetResult();
+
+            var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
+
+            _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToBytesFormatter());
+
+            _messageBuilder = opts.MessageBuilder
+                ?? ((payload, attributes) => new MqttApplicationMessageBuilder()
+                        .WithTopic(attributes.Label)
+                        .WithPayload(payload)
+                        .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
+                        .WithRetainFlag()
+                        .Build());
+
+            var factory = new MqttFactory();
+            _mqttClient = factory.CreateMqttClient();
+
+            var clientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
+            _mqttClientOptions = clientOptionsBuilder.Build();
+
+            Name = opts.Name ?? nameof(MqttMessageQueue<TMessage>);
         }
 
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(MqttMessageQueue<TMessage>));
-            }
-        }
+
+        public string Name { get; }
 
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
-            ThrowIfDisposed(); 
-            
+            ThrowIfDisposed();
+
             if (message is null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
             return PostMessageAsync(message, _emptyAttributes, cancellationToken);
+        }
+
+        internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
+        {
+            if (mqttClient.IsConnected)
+            {
+                return;
+            }
+
+            await sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (mqttClient.IsConnected)
+                {
+                    return;
+                }
+
+                // is this result needed?
+                var result = await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _ = sync.Release();
+            }
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
@@ -74,19 +102,35 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = await _messageFormatter.FormatMessage(message);
+            await EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, cancellationToken).ConfigureAwait(false);
 
-            _logger.LogTrace($"posting to {nameof(MqttMessageQueue<TMessage>)} - {attributes.Label}");
+            var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
+
+            //_logger.LogTrace($"posting to {Name} - {attributes.Label}");
 
             var mqttMessage = _messageBuilder(messageBytes, attributes);
-            await _managedMqttClient.EnqueueAsync(mqttMessage).ConfigureAwait(false);
+            await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(CancellationToken cancellationToken)
+        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
-            var reader = new MqttMessageQueueReader<TMessage>(this);
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var reader = new MqttMessageQueueReader<TMessage>(_logger, this, options);
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(Name);
+            }
+        }
+
 
         public void Dispose()
         {
@@ -95,7 +139,7 @@ namespace KM.MessageQueue.Mqtt
                 return;
             }
 
-            _managedMqttClient.StopAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            _mqttClient.Dispose();
 
             _disposed = true;
             GC.SuppressFinalize(this);
@@ -111,10 +155,12 @@ namespace KM.MessageQueue.Mqtt
                 return;
             }
 
-            await  _managedMqttClient.StopAsync().ConfigureAwait(false);
+            _mqttClient.Dispose();
 
             _disposed = true;
             GC.SuppressFinalize(this);
+
+            await Task.CompletedTask;
         }
 
 #endif
