@@ -13,17 +13,6 @@ namespace KM.MessageQueue.Mqtt
 {
     public sealed class MqttMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
-        private bool _disposed = false;
-        private readonly SemaphoreSlim _sync = new(1, 1);
-
-        private readonly ILogger _logger;
-        internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
-        private readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
-        internal readonly IMqttClient _mqttClient;
-        internal readonly MqttClientOptions _mqttClientOptions;
-
-        private static readonly MessageAttributes _emptyAttributes = new();
-
         public MqttMessageQueue(ILogger<MqttMessageQueue<TMessage>> logger, IOptions<MqttMessageQueueOptions<TMessage>> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -50,9 +39,21 @@ namespace KM.MessageQueue.Mqtt
         }
 
 
+        private bool _disposed = false;
+        private readonly SemaphoreSlim _sync = new(1, 1);
+
+        private readonly ILogger _logger;
+        internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
+        private readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
+        internal readonly IMqttClient _mqttClient;
+        internal readonly MqttClientOptions _mqttClientOptions;
+
+        private static readonly MessageAttributes _emptyAttributes = new();
+
+
         public string Name { get; }
 
-        public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
+        public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -61,7 +62,7 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(message));
             }
 
-            return PostMessageAsync(message, _emptyAttributes, cancellationToken);
+            await PostMessageAsync(message, _emptyAttributes, cancellationToken);
         }
 
         internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
@@ -105,10 +106,9 @@ namespace KM.MessageQueue.Mqtt
             await EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, cancellationToken).ConfigureAwait(false);
 
             var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
-
-            //_logger.LogTrace($"posting to {Name} - {attributes.Label}");
-
             var mqttMessage = _messageBuilder(messageBytes, attributes);
+
+            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to Label: {{Label}}", attributes.Label);
             await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
         }
 

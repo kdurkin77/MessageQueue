@@ -39,7 +39,7 @@ namespace KM.MessageQueue.Azure.Topic
 
         public string Name { get; }
 
-        public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
+        public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -48,7 +48,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(message));
             }
 
-            return PostMessageAsync(message, _emptyAttributes, cancellationToken);
+            await PostMessageAsync(message, _emptyAttributes, cancellationToken);
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
