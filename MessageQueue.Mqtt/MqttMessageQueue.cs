@@ -75,10 +75,10 @@ namespace KM.MessageQueue.Mqtt
             await sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (mqttClient.IsConnected)
-                {
-                    return;
-                }
+                //if (mqttClient.IsConnected)
+                //{
+                //    return;
+                //}
 
                 if (mqttClient.IsStarted)
                 {
