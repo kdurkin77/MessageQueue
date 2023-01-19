@@ -80,6 +80,11 @@ namespace KM.MessageQueue.Mqtt
                     return;
                 }
 
+                if (mqttClient.IsStarted)
+                {
+                    return;
+                }
+
                 // is this result needed?
                 //var result = await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
                 await mqttClient.StartAsync(mqttClientOptions);
