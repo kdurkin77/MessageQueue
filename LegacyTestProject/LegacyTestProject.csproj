@@ -43,14 +43,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Azure.Core, Version=1.26.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Core.1.26.0\lib\net461\Azure.Core.dll</HintPath>
+    <Reference Include="Azure.Core, Version=1.27.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Core.1.27.0\lib\net461\Azure.Core.dll</HintPath>
     </Reference>
     <Reference Include="Azure.Core.Amqp, Version=1.2.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
       <HintPath>..\packages\Azure.Core.Amqp.1.2.0\lib\netstandard2.0\Azure.Core.Amqp.dll</HintPath>
     </Reference>
-    <Reference Include="Azure.Messaging.ServiceBus, Version=7.11.1.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Messaging.ServiceBus.7.11.1\lib\netstandard2.0\Azure.Messaging.ServiceBus.dll</HintPath>
+    <Reference Include="Azure.Messaging.ServiceBus, Version=7.12.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Messaging.ServiceBus.7.12.0\lib\netstandard2.0\Azure.Messaging.ServiceBus.dll</HintPath>
     </Reference>
     <Reference Include="Elasticsearch.Net, Version=7.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
       <HintPath>..\packages\Elasticsearch.Net.7.17.5\lib\net461\Elasticsearch.Net.dll</HintPath>
@@ -64,8 +64,8 @@
     <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=7.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.7.0.1\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=7.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.7.0.3\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=7.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.7.0.4\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=7.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.7.0.0\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
@@ -85,11 +85,11 @@
     <Reference Include="KM.MessageQueue.Mqtt, Version=7.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Mqtt.7.0.0\lib\netstandard2.0\KM.MessageQueue.Mqtt.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=7.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.7.0.0\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=7.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.7.0.5\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Amqp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.Amqp.2.5.12\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Azure.Amqp.2.6.1\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.7.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -98,8 +98,8 @@
       <HintPath>..\packages\Microsoft.Bcl.HashCode.1.1.1\lib\net461\Microsoft.Bcl.HashCode.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Data.Sqlite, Version=7.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.7.0.1\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
+    <Reference Include="Microsoft.Data.Sqlite, Version=7.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.7.0.2\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.3.1.6\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>

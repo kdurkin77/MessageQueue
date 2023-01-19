@@ -3,7 +3,7 @@ using KM.MessageQueue.Formatters.StringToBytes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
-using MQTTnet.Client;
+using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Protocol;
 using System;
 using System.Threading;
@@ -30,7 +30,7 @@ namespace KM.MessageQueue.Mqtt
                         .Build());
 
             var factory = new MqttFactory();
-            _mqttClient = factory.CreateMqttClient();
+            _mqttClient = factory.CreateManagedMqttClient();
 
             var clientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
             _mqttClientOptions = clientOptionsBuilder.Build();
@@ -45,8 +45,8 @@ namespace KM.MessageQueue.Mqtt
         private readonly ILogger _logger;
         internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
         private readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
-        internal readonly IMqttClient _mqttClient;
-        internal readonly MqttClientOptions _mqttClientOptions;
+        internal readonly IManagedMqttClient _mqttClient;
+        internal readonly ManagedMqttClientOptions _mqttClientOptions;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
@@ -65,7 +65,7 @@ namespace KM.MessageQueue.Mqtt
             await PostMessageAsync(message, _emptyAttributes, cancellationToken);
         }
 
-        internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
+        internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IManagedMqttClient mqttClient, ManagedMqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
         {
             if (mqttClient.IsConnected)
             {
@@ -81,7 +81,8 @@ namespace KM.MessageQueue.Mqtt
                 }
 
                 // is this result needed?
-                var result = await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
+                //var result = await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
+                await mqttClient.StartAsync(mqttClientOptions);
             }
             finally
             {
@@ -109,7 +110,8 @@ namespace KM.MessageQueue.Mqtt
             var mqttMessage = _messageBuilder(messageBytes, attributes);
 
             _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to Label: {{Label}}", attributes.Label);
-            await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
+            //await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
+            await _mqttClient.EnqueueAsync(mqttMessage).ConfigureAwait(false);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)

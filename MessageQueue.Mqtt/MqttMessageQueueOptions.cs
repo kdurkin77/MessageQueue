@@ -1,5 +1,5 @@
 ﻿using MQTTnet;
-using MQTTnet.Client;
+using MQTTnet.Extensions.ManagedClient;
 using System;
 
 namespace KM.MessageQueue.Mqtt
@@ -10,7 +10,7 @@ namespace KM.MessageQueue.Mqtt
     /// <typeparam name="TMessage"></typeparam>
     public sealed class MqttMessageQueueOptions<TMessage>
     {
-        internal MqttClientOptionsBuilder? ClientOptionsBuilder { get; set; }
+        internal ManagedMqttClientOptionsBuilder? ClientOptionsBuilder { get; set; }
 
         internal Func<byte[], MessageAttributes, MqttApplicationMessage>? MessageBuilder { get; set; }
 
@@ -53,19 +53,19 @@ namespace KM.MessageQueue.Mqtt
         }
 
         /// <summary>
-        /// Congfigures the <see cref="MQTTnet.Client.MqttClientOptionsBuilder"/> using a <see cref="MqttClientOptionsBuilder"/>
+        /// Congfigures the <see cref="MQTTnet.Client.ManagedMqttClientOptionsBuilder"/> using a <see cref="ManagedMqttClientOptionsBuilder"/>
         /// </summary>
         /// <param name="configureSettings"></param>
         /// <returns>MqttMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public MqttMessageQueueOptions<TMessage> UseClientOptionsBuilder(Action<MqttClientOptionsBuilder> configureSettings)
+        public MqttMessageQueueOptions<TMessage> UseClientOptionsBuilder(Action<ManagedMqttClientOptionsBuilder> configureSettings)
         {
             if (configureSettings is null)
             {
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            var builder = new MqttClientOptionsBuilder();
+            var builder = new ManagedMqttClientOptionsBuilder();
             configureSettings(builder);
 
             ClientOptionsBuilder = builder;

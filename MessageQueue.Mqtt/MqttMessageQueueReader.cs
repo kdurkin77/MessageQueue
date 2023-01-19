@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
 using System;
@@ -13,20 +14,6 @@ namespace KM.MessageQueue.Mqtt
 {
     internal sealed class MqttMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
     {
-        private bool _disposed = false;
-        private bool _subscribed = false;
-        private readonly SemaphoreSlim _sync = new(1, 1);
-        private readonly SemaphoreSlim _syncWriter = new(1, 1);
-        private readonly CancellationTokenSource _cancellationSource = new();
-
-        private readonly ILogger _logger;
-        private readonly MqttMessageQueue<TMessage> _queue;
-        internal readonly IMqttClient _mqttReaderClient;
-        private readonly string? _subscriptionName;
-        private readonly object? _userData;
-
-        private readonly Channel<(TMessage, MessageAttributes, TaskCompletionSource<CancellationToken>, TaskCompletionSource<CompletionResult>)> _channel;
-
         public MqttMessageQueueReader(ILogger logger, MqttMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -38,7 +25,7 @@ namespace KM.MessageQueue.Mqtt
             }
 
             var factory = new MqttFactory();
-            _mqttReaderClient = factory.CreateMqttClient();
+            _mqttReaderClient = factory.CreateManagedMqttClient();
 
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
@@ -47,6 +34,21 @@ namespace KM.MessageQueue.Mqtt
 
             Name = options.Name ?? nameof(MqttMessageQueueReader<TMessage>);
         }
+
+
+        private bool _disposed = false;
+        private bool _subscribed = false;
+        private readonly SemaphoreSlim _sync = new(1, 1);
+        private readonly SemaphoreSlim _syncWriter = new(1, 1);
+        private readonly CancellationTokenSource _cancellationSource = new();
+
+        private readonly ILogger _logger;
+        private readonly MqttMessageQueue<TMessage> _queue;
+        internal readonly IManagedMqttClient _mqttReaderClient;
+        private readonly string? _subscriptionName;
+        private readonly object? _userData;
+
+        private readonly Channel<(TMessage, MessageAttributes, TaskCompletionSource<CancellationToken>, TaskCompletionSource<CompletionResult>)> _channel;
 
 
         public string Name { get; }
@@ -88,7 +90,8 @@ namespace KM.MessageQueue.Mqtt
                 }
 
                 // do something with this result?
-                var result = await _mqttReaderClient.SubscribeAsync(_subscriptionName, MqttQualityOfServiceLevel.ExactlyOnce, cancellationToken).ConfigureAwait(false);
+                //var result = await _mqttReaderClient.SubscribeAsync(_subscriptionName, MqttQualityOfServiceLevel.ExactlyOnce, cancellationToken).ConfigureAwait(false);
+                await _mqttReaderClient.SubscribeAsync(_subscriptionName).ConfigureAwait(false);
 
                 _mqttReaderClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
 

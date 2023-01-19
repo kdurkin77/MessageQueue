@@ -3,14 +3,14 @@
 namespace KM.MessageQueue
 {
     /// <summary>
-    /// An interface for a formatter for an <see cref="IMessageQueue{TMessage}"/>
+    /// A formatter interface for an <see cref="IMessageQueue{TMessage}"/>
     /// </summary>
     /// <typeparam name="TMessageIn"></typeparam>
     /// <typeparam name="TMessageOut"></typeparam>
     public interface IMessageFormatter<TMessageIn, TMessageOut>
     {
         /// <summary>
-        /// Converts a messages from <typeparamref name="TMessageOut"/> to <typeparamref name="TMessageIn"/>
+        /// Converts a message from <typeparamref name="TMessageOut"/> to <typeparamref name="TMessageIn"/>
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
