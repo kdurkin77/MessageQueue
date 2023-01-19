@@ -91,7 +91,12 @@ namespace KM.MessageQueue.Mqtt
 
                 // do something with this result?
                 //var result = await _mqttReaderClient.SubscribeAsync(_subscriptionName, MqttQualityOfServiceLevel.ExactlyOnce, cancellationToken).ConfigureAwait(false);
-                await _mqttReaderClient.SubscribeAsync(_subscriptionName, MqttQualityOfServiceLevel.ExactlyOnce).ConfigureAwait(false);
+                var filters = new[]
+                {
+                    new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build()
+                };
+
+                await _mqttReaderClient.SubscribeAsync(filters).ConfigureAwait(false);
 
                 _mqttReaderClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
 
