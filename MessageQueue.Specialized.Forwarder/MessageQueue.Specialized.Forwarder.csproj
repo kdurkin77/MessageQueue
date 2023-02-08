@@ -13,9 +13,10 @@
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
     <PackageReleaseNotes>
-      Added a new option to have a retry delay for if a message fails to post to the destination queue
+      ***BREAKING CHANGES***
+      IMessageQueueReader now has functions ReadAsync and TryReadAsync instead of StartAsync and StopAsync so that the caller can specify how they want to read from the queue instead of the reader itself having a read loop
     </PackageReleaseNotes>
-    <Version>7.0.5</Version>
+    <Version>7.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -29,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />-->
+    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
   </ItemGroup>
@@ -39,10 +40,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 
 </Project>

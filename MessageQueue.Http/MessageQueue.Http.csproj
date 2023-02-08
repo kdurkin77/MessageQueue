@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Http</Product>
     <Description>A queue implementation that calls an HTTP API endpoint from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      Adding hook to inspect/modify the HttpRequestMessage before being sent
+      Updated KM.MessageQueue library
     </PackageReleaseNotes>
-    <Version>7.0.2</Version>
+    <Version>7.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,11 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.JsonStringToDictionary" Version="7.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="7.0.0" />-->
+    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.1.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.1.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.JsonStringToDictionary" Version="7.1.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="7.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
@@ -40,14 +40,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.Formatters.JsonStringToDictionary\MessageQueue.Formatters.JsonStringToDictionary.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonObject\MessageQueue.Formatters.ObjectToJsonObject.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.StringToHttpContent\MessageQueue.Formatters.StringToHttpContent.csproj" />
   </ItemGroup>
 
 </Project>

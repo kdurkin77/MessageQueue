@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Formatters.ObjectToJsonString</Product>
     <Description>A formatting implementation for KM.MessageQueue that serializes the object to a json string</Description>
     <PackageReleaseNotes>
-      Removed .NET5 and added .NET7
+      Updated KM.MessageQueue library
     </PackageReleaseNotes>
-    <Version>7.0.0</Version>
+    <Version>7.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,7 +26,7 @@
 
 
   <ItemGroup>
-    <!--<PackageReference Include="KM.MessageQueue" Version="7.0.0" />-->
+    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
@@ -35,10 +35,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 
 </Project>

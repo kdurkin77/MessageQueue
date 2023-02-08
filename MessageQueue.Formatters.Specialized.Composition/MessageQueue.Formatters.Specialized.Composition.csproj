@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Formatters.Specialized.Composition</Product>
     <Description>A specialized formatting implementation for KM.MessageQueue that allows you to compose multiple formatters</Description>
     <PackageReleaseNotes>
-      Removed .NET5 and added .NET7
+      Updated KM.MessageQueue library
     </PackageReleaseNotes>
-    <Version>7.0.0</Version>
+    <Version>7.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,14 +25,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 
 </Project>
