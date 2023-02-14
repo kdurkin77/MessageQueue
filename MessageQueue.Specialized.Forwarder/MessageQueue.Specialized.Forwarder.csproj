@@ -12,11 +12,8 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Forwarder;</PackageTags>
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
-    <PackageReleaseNotes>
-      ***BREAKING CHANGES***
-      IMessageQueueReader now has functions ReadAsync and TryReadAsync instead of StartAsync and StopAsync so that the caller can specify how they want to read from the queue instead of the reader itself having a read loop
-    </PackageReleaseNotes>
-    <Version>7.1.0</Version>
+    <PackageReleaseNotes>Only logging trace on an error in pushing to the destination queue when there is an error handler provided</PackageReleaseNotes>
+    <Version>7.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>

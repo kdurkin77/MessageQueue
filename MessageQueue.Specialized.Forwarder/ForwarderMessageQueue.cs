@@ -111,7 +111,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
                     }
                     else
                     {
-                        _logger.LogError(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)} in {nameof(PushToDestinationQueue)}.  Invoking user error handler");
+                        _logger.LogTrace(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)} in {nameof(PushToDestinationQueue)}.  Invoking user error handler");
                         try
                         {
                             var completionResult = await errorHandler(ex);
