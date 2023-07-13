@@ -34,6 +34,7 @@ namespace KM.MessageQueue.Http
                         throw new ArgumentNullException(nameof(message));
                     }
                     message.EnsureSuccessStatusCode();
+                    return Task.CompletedTask;
                 });
             _beforeSendMessage = opts.BeforeSendMessage;
             _bodyMessageFormatter = opts.BodyMessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>().Compose(new StringToHttpContentFormatter());
@@ -62,7 +63,7 @@ namespace KM.MessageQueue.Http
         internal readonly HttpMethod _method;
         internal readonly bool _shouldUseBody;
         internal readonly bool _shouldUseQueryParameters;
-        internal readonly Action<HttpResponseMessage?> _checkHttpResponse;
+        internal readonly Func<HttpResponseMessage?, Task> _checkHttpResponse;
         internal readonly Func<HttpRequestMessage, Task>? _beforeSendMessage;
         internal readonly IMessageFormatter<TMessage, HttpContent> _bodyMessageFormatter;
         internal readonly IMessageFormatter<TMessage, IDictionary<string, string>> _queryMessageFormatter;
@@ -144,7 +145,7 @@ namespace KM.MessageQueue.Http
             _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Uri}}", _uri);
 
             var result = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            _checkHttpResponse(result);
+            await _checkHttpResponse(result);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)

@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Http</Product>
     <Description>A queue implementation that calls an HTTP API endpoint from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      Updated KM.MessageQueue library
+      *** BREAKING CHANGE *** Made the CheckHttpResponse option a function that returns a task
     </PackageReleaseNotes>
-    <Version>7.1.0</Version>
+    <Version>7.2.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
