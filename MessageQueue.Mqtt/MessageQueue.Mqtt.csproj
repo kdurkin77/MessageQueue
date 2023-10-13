@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Mqtt</Product>
     <Description>An MQTT implementation from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      Removed .NET5 and added .NET7
+      7.0.0 package was released incorrectly
     </PackageReleaseNotes>
-    <Version>7.0.0</Version>
+    <Version>7.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>
