@@ -41,7 +41,7 @@ namespace LegacyTestProject
             //mqtt setup example
             var mqttOptions = 
                 new MqttMessageQueueOptions<MyMessage>()
-                .UseManagedMqttClientOptionsBuilder(builder =>
+                .UseClientOptionsBuilder(builder =>
                 {
                     builder.WithClientOptions(options =>
                         options
@@ -50,7 +50,7 @@ namespace LegacyTestProject
                         .Build()
                     );
                 });
-
+            var mqttQueue = new MqttMessageQueue<MyMessage>(new Logger<MqttMessageQueue<MyMessage>>(), Options.Create(mqttOptions));
 
             //setup for disk queue forwarding to azure queue
             var diskOptions = new DiskMessageQueueOptions<MyMessage>()

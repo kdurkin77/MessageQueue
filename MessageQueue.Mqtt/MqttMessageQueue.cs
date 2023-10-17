@@ -35,6 +35,8 @@ namespace KM.MessageQueue.Mqtt
             var clientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
             _mqttClientOptions = clientOptionsBuilder.Build();
 
+            EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+
             Name = opts.Name ?? nameof(MqttMessageQueue<TMessage>);
         }
 
@@ -67,7 +69,7 @@ namespace KM.MessageQueue.Mqtt
 
         internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IManagedMqttClient mqttClient, ManagedMqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
         {
-            if (mqttClient.IsConnected)
+            if (mqttClient.IsStarted)
             {
                 return;
             }
@@ -75,19 +77,11 @@ namespace KM.MessageQueue.Mqtt
             await sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                //if (mqttClient.IsConnected)
-                //{
-                //    return;
-                //}
-
                 if (mqttClient.IsStarted)
                 {
                     return;
                 }
-
-                // is this result needed?
-                //var result = await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
-                await mqttClient.StartAsync(mqttClientOptions);
+                await mqttClient.StartAsync(mqttClientOptions).ConfigureAwait(false);
             }
             finally
             {

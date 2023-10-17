@@ -2,8 +2,6 @@
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
-using MQTTnet.Protocol;
-using MQTTnet.Server;
 using System;
 using System.Linq;
 using System.Threading;
@@ -25,7 +23,7 @@ namespace KM.MessageQueue.Mqtt
             }
 
             var factory = new MqttFactory();
-            _mqttReaderClient = factory.CreateManagedMqttClient();
+            _mqttReaderClient = factory.CreateManagedMqttClient(_queue._mqttClient.InternalClient);
 
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
@@ -33,6 +31,9 @@ namespace KM.MessageQueue.Mqtt
             _channel = Channel.CreateBounded<(TMessage, MessageAttributes, TaskCompletionSource<CancellationToken>, TaskCompletionSource<CompletionResult>)>(capacity: 1);
 
             Name = options.Name ?? nameof(MqttMessageQueueReader<TMessage>);
+
+            MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _queue._mqttClientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+            EnsureSubscribedAsync(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
 
@@ -156,7 +157,7 @@ namespace KM.MessageQueue.Mqtt
                     UserProperties = arg.ApplicationMessage.UserProperties?.ToDictionary(prop => prop.Name, prop => (object)prop.Value)
                 };
 
-                var message = await _queue._messageFormatter.RevertMessage(arg.ApplicationMessage.Payload).ConfigureAwait(false);
+                var message = await _queue._messageFormatter.RevertMessage(arg.ApplicationMessage.PayloadSegment.ToArray()).ConfigureAwait(false);
 
                 var cancellationCompletionSource = new TaskCompletionSource<CancellationToken>();
                 var resultCompletionSource = new TaskCompletionSource<CompletionResult>();

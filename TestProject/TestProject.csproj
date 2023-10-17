@@ -19,13 +19,13 @@
     <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.1.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.1.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Mqtt" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue.Mqtt" Version="7.2.1" />
     <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="7.1.1" />
     <PackageReference Include="KM.MessageQueue.Http" Version="7.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>
