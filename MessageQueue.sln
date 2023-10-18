@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Formatters.Obj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyTestProject", "LegacyTestProject\LegacyTestProject.csproj", "{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Mqtt", "MessageQueue.Mqtt\MessageQueue.Mqtt.csproj", "{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Database.Sqlite", "MessageQueue.Database.Sqlite\MessageQueue.Database.Sqlite.csproj", "{0182A7EE-0AF0-448A-B0DD-33C2B25BD56E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue.Database.ElasticSearch", "MessageQueue.Database.ElasticSearch\MessageQueue.Database.ElasticSearch.csproj", "{254BEA79-A378-4C3C-83E1-0DD64638881E}"
@@ -69,10 +67,6 @@ Global
 		{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E00034A5-64AB-472A-AB9B-B1CBBA97F1C4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD3FA7DF-10E6-472B-8C51-007F8B8C218C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0182A7EE-0AF0-448A-B0DD-33C2B25BD56E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0182A7EE-0AF0-448A-B0DD-33C2B25BD56E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0182A7EE-0AF0-448A-B0DD-33C2B25BD56E}.Release|Any CPU.ActiveCfg = Release|Any CPU

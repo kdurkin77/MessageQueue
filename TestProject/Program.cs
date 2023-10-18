@@ -129,30 +129,6 @@ namespace TestProject
                     })
 
 
-                    //MQTT
-                    //.AddMqttMessageQueue<MyMessage>(options =>
-                    //{
-                    //    options
-                    //        .UseClientOptionsBuilder(opts =>
-                    //            opts
-                    //            //.WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-                    //            //.WithClientOptions(opts =>
-                    //            //    opts
-                    //                .WithTcpServer("HOST HERE")
-                    //                .WithCredentials("USERNAME", "PASSWORD")
-                    //                .Build()
-                    //        );
-                    //    //to handle building messages differently
-                    //    //.UseMessageBuilder(builder =>
-                    //    //    builder
-                    //    //    .WithExactlyOnceQoS()
-                    //    //    .WithRetainFlag()
-                    //    //);
-                    //    //to use your own formatter
-                    //    //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
-                    //})
-
-
                     //Http
                     //.AddHttpMessageQueue<MyMessage>(options =>
                     //{
