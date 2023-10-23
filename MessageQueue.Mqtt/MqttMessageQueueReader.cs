@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Extensions.ManagedClient;
+//using MQTTnet.Extensions.ManagedClient;
 using System;
 using System.Linq;
 using System.Threading;
@@ -23,7 +23,8 @@ namespace KM.MessageQueue.Mqtt
             }
 
             var factory = new MqttFactory();
-            _mqttReaderClient = factory.CreateManagedMqttClient(_queue._mqttClient.InternalClient);
+            //_mqttReaderClient = factory.CreateManagedMqttClient();
+            _mqttReaderClient = factory.CreateMqttClient();
 
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
@@ -45,7 +46,8 @@ namespace KM.MessageQueue.Mqtt
 
         private readonly ILogger _logger;
         private readonly MqttMessageQueue<TMessage> _queue;
-        internal readonly IManagedMqttClient _mqttReaderClient;
+        //internal readonly IManagedMqttClient _mqttReaderClient;
+        internal readonly IMqttClient _mqttReaderClient;
         private readonly string? _subscriptionName;
         private readonly object? _userData;
 
@@ -91,13 +93,15 @@ namespace KM.MessageQueue.Mqtt
                 }
 
                 // do something with this result?
-                //var result = await _mqttReaderClient.SubscribeAsync(_subscriptionName, MqttQualityOfServiceLevel.ExactlyOnce, cancellationToken).ConfigureAwait(false);
-                var filters = new[]
-                {
-                    new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build()
-                };
+                var filter = new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build();
+                await _mqttReaderClient.SubscribeAsync(filter, cancellationToken).ConfigureAwait(false);
 
-                await _mqttReaderClient.SubscribeAsync(filters).ConfigureAwait(false);
+                //var filters = new[]
+                //{
+                //    new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build()
+                //};
+
+                //await _mqttReaderClient.SubscribeAsync(filters).ConfigureAwait(false);
 
                 _mqttReaderClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
 
@@ -120,7 +124,6 @@ namespace KM.MessageQueue.Mqtt
 
             // specific reader connection
             await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _queue._mqttClientOptions, cancellationToken).ConfigureAwait(false);
-
             await EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
 
             var (message, attributes, cancellationCompletionSource, resultCompletionSource) = await _channel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
