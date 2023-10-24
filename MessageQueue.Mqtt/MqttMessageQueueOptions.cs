@@ -1,5 +1,6 @@
 ﻿using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Client;
+//using MQTTnet.Extensions.ManagedClient;
 using System;
 
 namespace KM.MessageQueue.Mqtt
@@ -10,7 +11,8 @@ namespace KM.MessageQueue.Mqtt
     /// <typeparam name="TMessage"></typeparam>
     public sealed class MqttMessageQueueOptions<TMessage>
     {
-        internal ManagedMqttClientOptionsBuilder? ClientOptionsBuilder { get; set; }
+        //internal ManagedMqttClientOptionsBuilder? ClientOptionsBuilder { get; set; }
+        internal MqttClientOptionsBuilder? ClientOptionsBuilder { get; set; }
 
         internal Func<byte[], MessageAttributes, MqttApplicationMessage>? MessageBuilder { get; set; }
 
@@ -58,14 +60,14 @@ namespace KM.MessageQueue.Mqtt
         /// <param name="configureSettings"></param>
         /// <returns>MqttMessageQueueOptions</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public MqttMessageQueueOptions<TMessage> UseClientOptionsBuilder(Action<ManagedMqttClientOptionsBuilder> configureSettings)
+        public MqttMessageQueueOptions<TMessage> UseClientOptionsBuilder(Action<MqttClientOptionsBuilder> configureSettings)
         {
             if (configureSettings is null)
             {
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            var builder = new ManagedMqttClientOptionsBuilder();
+            var builder = new MqttClientOptionsBuilder();
             configureSettings(builder);
 
             ClientOptionsBuilder = builder;

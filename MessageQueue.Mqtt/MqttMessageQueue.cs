@@ -3,7 +3,8 @@ using KM.MessageQueue.Formatters.StringToBytes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Client;
+//using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Protocol;
 using System;
 using System.Threading;
@@ -30,9 +31,11 @@ namespace KM.MessageQueue.Mqtt
                         .Build());
 
             var factory = new MqttFactory();
-            _mqttClient = factory.CreateManagedMqttClient();
+            //_mqttClient = factory.CreateManagedMqttClient();
+            _mqttClient = factory.CreateMqttClient();
 
             var clientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
+            clientOptionsBuilder.WithClientId($"Writer_{Guid.NewGuid()}");
             _mqttClientOptions = clientOptionsBuilder.Build();
 
             EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -47,8 +50,10 @@ namespace KM.MessageQueue.Mqtt
         private readonly ILogger _logger;
         internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
         private readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
-        internal readonly IManagedMqttClient _mqttClient;
-        internal readonly ManagedMqttClientOptions _mqttClientOptions;
+        //internal readonly IManagedMqttClient _mqttClient;
+        internal readonly IMqttClient _mqttClient;
+        //internal readonly ManagedMqttClientOptions _mqttClientOptions;
+        internal readonly MqttClientOptions _mqttClientOptions;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
@@ -67,9 +72,10 @@ namespace KM.MessageQueue.Mqtt
             await PostMessageAsync(message, _emptyAttributes, cancellationToken);
         }
 
-        internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IManagedMqttClient mqttClient, ManagedMqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
+        internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
         {
-            if (mqttClient.IsStarted)
+            //IsStarted
+            if (mqttClient.IsConnected)
             {
                 return;
             }
@@ -77,11 +83,13 @@ namespace KM.MessageQueue.Mqtt
             await sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (mqttClient.IsStarted)
+                //IsStarted
+                if (mqttClient.IsConnected)
                 {
                     return;
                 }
-                await mqttClient.StartAsync(mqttClientOptions).ConfigureAwait(false);
+                //await mqttClient.StartAsync(mqttClientOptions).ConfigureAwait(false);
+                await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -108,9 +116,9 @@ namespace KM.MessageQueue.Mqtt
             var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
             var mqttMessage = _messageBuilder(messageBytes, attributes);
 
-            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to Label: {{Label}}", attributes.Label);
-            //await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
-            await _mqttClient.EnqueueAsync(mqttMessage).ConfigureAwait(false);
+            _logger.LogTrace($"{{Name}} {nameof(PostMessageAsync)} posting to Label: {{Label}}", Name, attributes.Label);
+            await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
+            //await _mqttClient.EnqueueAsync(mqttMessage).ConfigureAwait(false);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
