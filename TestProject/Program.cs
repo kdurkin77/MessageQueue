@@ -135,12 +135,9 @@ namespace TestProject
                     //    options
                     //        .UseClientOptionsBuilder(opts =>
                     //            opts
-                    //            //.WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-                    //            //.WithClientOptions(opts =>
-                    //            //    opts
-                    //                .WithTcpServer("HOST HERE")
-                    //                .WithCredentials("USERNAME", "PASSWORD")
-                    //                .Build()
+                    //            .WithTcpServer("HOST HERE")
+                    //            .WithCredentials("USERNAME", "PASSWORD")
+                    //            .Build()
                     //        );
                     //    //to handle building messages differently
                     //    //.UseMessageBuilder(builder =>

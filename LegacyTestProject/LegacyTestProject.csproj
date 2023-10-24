@@ -82,6 +82,9 @@
     <Reference Include="KM.MessageQueue.Formatters.StringToBytes, Version=7.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Formatters.StringToBytes.7.1.0\lib\netstandard2.0\KM.MessageQueue.Formatters.StringToBytes.dll</HintPath>
     </Reference>
+    <Reference Include="KM.MessageQueue.Mqtt, Version=7.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Mqtt.7.2.2\lib\netstandard2.0\KM.MessageQueue.Mqtt.dll</HintPath>
+    </Reference>
     <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=7.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.7.1.1\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>
     </Reference>
@@ -95,8 +98,8 @@
       <HintPath>..\packages\Microsoft.Bcl.HashCode.1.1.1\lib\net461\Microsoft.Bcl.HashCode.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Data.Sqlite, Version=7.0.12.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.7.0.12\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
+    <Reference Include="Microsoft.Data.Sqlite, Version=7.0.13.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.7.0.13\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.3.1.6\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
@@ -142,9 +145,6 @@
     </Reference>
     <Reference Include="MQTTnet, Version=4.3.1.873, Culture=neutral, PublicKeyToken=fdb7629f2e364a63, processorArchitecture=MSIL">
       <HintPath>..\packages\MQTTnet.4.3.1.873\lib\net461\MQTTnet.dll</HintPath>
-    </Reference>
-    <Reference Include="MQTTnet.Extensions.ManagedClient, Version=4.3.1.873, Culture=neutral, PublicKeyToken=fdb7629f2e364a63, processorArchitecture=MSIL">
-      <HintPath>..\packages\MQTTnet.Extensions.ManagedClient.4.3.1.873\lib\net461\MQTTnet.Extensions.ManagedClient.dll</HintPath>
     </Reference>
     <Reference Include="Nest, Version=7.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
       <HintPath>..\packages\NEST.7.17.5\lib\net461\Nest.dll</HintPath>
@@ -260,12 +260,6 @@
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.Mqtt\MessageQueue.Mqtt.csproj">
-      <Project>{cd3fa7df-10e6-472b-8c51-007f8b8c218c}</Project>
-      <Name>MessageQueue.Mqtt</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

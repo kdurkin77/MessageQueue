@@ -13,11 +13,12 @@
     <Product>KM.MessageQueue.Mqtt</Product>
     <Description>An MQTT implementation from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-        Ensuring connection on creation of queue and subscription on creation of reader
-        Using the original client from the queue to create a new manager in the reader
-        Updated packages and using packages instead of project references
-    </PackageReleaseNotes>
-    <Version>7.2.1</Version>
+		Using MQTTnet's regular client instead of the managed client, there are some problems with the managed client
+		https://github.com/dotnet/MQTTnet/issues/1849
+		https://github.com/dotnet/MQTTnet/issues/1862
+		Creating a completely new client when we start a new reader and ensuring each one has a unique ID so they each stay connected
+	</PackageReleaseNotes>
+    <Version>7.2.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -33,7 +34,7 @@
     <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.3.1.873" />
+    <PackageReference Include="MQTTnet" Version="4.3.1.873" />
     <PackageReference Include="System.Threading.Channels" Version="7.0.0" />
   </ItemGroup>
 
