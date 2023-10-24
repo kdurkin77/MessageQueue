@@ -33,7 +33,9 @@ namespace KM.MessageQueue.Mqtt
 
             Name = options.Name ?? nameof(MqttMessageQueueReader<TMessage>);
 
-            MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _queue._mqttClientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+            _clientOptions = _queue._mqttClientOptions;
+            _clientOptions.ClientId = $"Reader_{Guid.NewGuid()}";
+            MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
             EnsureSubscribedAsync(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
@@ -46,6 +48,7 @@ namespace KM.MessageQueue.Mqtt
 
         private readonly ILogger _logger;
         private readonly MqttMessageQueue<TMessage> _queue;
+        private readonly MqttClientOptions _clientOptions;
         //internal readonly IManagedMqttClient _mqttReaderClient;
         internal readonly IMqttClient _mqttReaderClient;
         private readonly string? _subscriptionName;
@@ -123,7 +126,7 @@ namespace KM.MessageQueue.Mqtt
             }
 
             // specific reader connection
-            await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _queue._mqttClientOptions, cancellationToken).ConfigureAwait(false);
+            await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, cancellationToken).ConfigureAwait(false);
             await EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
 
             var (message, attributes, cancellationCompletionSource, resultCompletionSource) = await _channel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);

@@ -35,6 +35,7 @@ namespace KM.MessageQueue.Mqtt
             _mqttClient = factory.CreateMqttClient();
 
             var clientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
+            clientOptionsBuilder.WithClientId($"Writer_{Guid.NewGuid()}");
             _mqttClientOptions = clientOptionsBuilder.Build();
 
             EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -115,7 +116,7 @@ namespace KM.MessageQueue.Mqtt
             var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
             var mqttMessage = _messageBuilder(messageBytes, attributes);
 
-            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to Label: {{Label}}", attributes.Label);
+            _logger.LogTrace($"{{Name}} {nameof(PostMessageAsync)} posting to Label: {{Label}}", Name, attributes.Label);
             await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
             //await _mqttClient.EnqueueAsync(mqttMessage).ConfigureAwait(false);
         }
