@@ -3,6 +3,7 @@ using KM.MessageQueue.Azure.Topic;
 using KM.MessageQueue.Database.ElasticSearch;
 using KM.MessageQueue.Database.Sqlite;
 using KM.MessageQueue.FileSystem.Disk;
+using KM.MessageQueue.Mqtt;
 using KM.MessageQueue.Specialized.Forwarder;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -36,6 +37,20 @@ namespace LegacyTestProject
                 //IdleDelay = TimeSpan.FromMilliseconds(200)
             };
             var sqliteQueue = new SqliteMessageQueue<MyMessage>(new Logger<SqliteMessageQueue<MyMessage>>(), Options.Create(sqliteOptions));
+
+            //mqtt setup example
+            var mqttOptions = 
+                new MqttMessageQueueOptions<MyMessage>()
+                .UseClientOptionsBuilder(builder =>
+                {
+                    builder.WithClientOptions(options =>
+                        options
+                        .WithTcpServer("HOST HERE")
+                        .WithCredentials("USERNAME", "PASSWORD")
+                        .Build()
+                    );
+                });
+            var mqttQueue = new MqttMessageQueue<MyMessage>(new Logger<MqttMessageQueue<MyMessage>>(), Options.Create(mqttOptions));
 
             //setup for disk queue forwarding to azure queue
             var diskOptions = new DiskMessageQueueOptions<MyMessage>()
