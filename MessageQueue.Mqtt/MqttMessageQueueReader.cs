@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
-//using MQTTnet.Extensions.ManagedClient;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Mqtt
@@ -23,13 +22,10 @@ namespace KM.MessageQueue.Mqtt
             }
 
             var factory = new MqttFactory();
-            //_mqttReaderClient = factory.CreateManagedMqttClient();
             _mqttReaderClient = factory.CreateMqttClient();
 
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
-
-            _channel = Channel.CreateBounded<(TMessage, MessageAttributes, TaskCompletionSource<CancellationToken>, TaskCompletionSource<CompletionResult>)>(capacity: 1);
 
             Name = options.Name ?? nameof(MqttMessageQueueReader<TMessage>);
 
@@ -43,18 +39,15 @@ namespace KM.MessageQueue.Mqtt
         private bool _disposed = false;
         private bool _subscribed = false;
         private readonly SemaphoreSlim _sync = new(1, 1);
-        private readonly SemaphoreSlim _syncWriter = new(1, 1);
         private readonly CancellationTokenSource _cancellationSource = new();
+        private readonly Queue<(TMessage Message, MessageAttributes Attributes)> _messages = new();
 
         private readonly ILogger _logger;
         private readonly MqttMessageQueue<TMessage> _queue;
         private readonly MqttClientOptions _clientOptions;
-        //internal readonly IManagedMqttClient _mqttReaderClient;
         internal readonly IMqttClient _mqttReaderClient;
         private readonly string? _subscriptionName;
         private readonly object? _userData;
-
-        private readonly Channel<(TMessage, MessageAttributes, TaskCompletionSource<CancellationToken>, TaskCompletionSource<CompletionResult>)> _channel;
 
 
         public string Name { get; }
@@ -125,35 +118,40 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(action));
             }
 
-            // specific reader connection
-            await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, cancellationToken).ConfigureAwait(false);
-            await EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
-
-            var (message, attributes, cancellationCompletionSource, resultCompletionSource) = await _channel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-
-            using var cancellationSource = new CancellationTokenSource();
-            cancellationCompletionSource.SetResult(cancellationSource.Token);
-
-            try
+            while (true)
             {
-                var (completionResult, result) = await action(message, attributes, _userData, cancellationToken).ConfigureAwait(false);
+                // specific reader connection
+                await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, cancellationToken).ConfigureAwait(false);
+                await EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
 
-                resultCompletionSource.SetResult(completionResult);
+                await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+#if NETSTANDARD2_0
+                    if (_messages.Any())
+                    {
+                        var (message, attributes) = _messages.Dequeue();
+                        return await action(message, attributes, _userData, cancellationToken).ConfigureAwait(false);
+                    }
+#else
+                    if (_messages.TryDequeue(out var info))
+                    {
+                        return await action(info.Message, info.Attributes, _userData, cancellationToken).ConfigureAwait(false);
+                    }
+#endif
+                }
+                finally
+                {
+                    _ = _sync.Release();
+                }
 
-                return (completionResult, result);
-            }
-            catch
-            {
-                cancellationSource.Cancel();
-                throw;
+                await Task.Delay(TimeSpan.FromMilliseconds(1));
             }
         }
 
         private async Task MqttClient_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
         {
-            arg.AutoAcknowledge = false;
-
-            await _syncWriter.WaitAsync(_cancellationSource.Token).ConfigureAwait(false);
+            await _sync.WaitAsync(_cancellationSource.Token).ConfigureAwait(false);
             try
             {
                 var attributes = new MessageAttributes()
@@ -165,22 +163,11 @@ namespace KM.MessageQueue.Mqtt
 
                 var message = await _queue._messageFormatter.RevertMessage(arg.ApplicationMessage.PayloadSegment.ToArray()).ConfigureAwait(false);
 
-                var cancellationCompletionSource = new TaskCompletionSource<CancellationToken>();
-                var resultCompletionSource = new TaskCompletionSource<CompletionResult>();
-
-                await _channel.Writer.WriteAsync((message, attributes, cancellationCompletionSource, resultCompletionSource), _cancellationSource.Token).ConfigureAwait(false);
-
-                var cancellationToken = await cancellationCompletionSource.Task.ConfigureAwait(false);
-
-                var completionResult = await Task.Run(async () => await resultCompletionSource.Task.ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
-                if (completionResult == CompletionResult.Complete)
-                {
-                    await arg.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
-                }
+                _messages.Enqueue((message, attributes));
             }
             finally
             {
-                _ = _syncWriter.Release();
+                _ = _sync.Release();
             }
         }
 
@@ -225,21 +212,6 @@ namespace KM.MessageQueue.Mqtt
         }
 
 
-        private async Task ShutdownAsync()
-        {
-            await _syncWriter.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-            try
-            {
-                _cancellationSource.Cancel();
-                _mqttReaderClient.Dispose();
-                //_channel.Writer.Complete();
-            }
-            finally
-            {
-                _ = _syncWriter.Release();
-            }
-        }
-
         private void ThrowIfDisposed()
         {
             if (_disposed)
@@ -255,7 +227,8 @@ namespace KM.MessageQueue.Mqtt
                 return;
             }
 
-            ShutdownAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            _cancellationSource.Cancel();
+            _mqttReaderClient.Dispose();
 
             _disposed = true;
             GC.SuppressFinalize(this);
@@ -265,19 +238,11 @@ namespace KM.MessageQueue.Mqtt
 
         public async ValueTask DisposeAsync()
         {
-            if (_disposed)
-            {
-                return;
-            }
-
-            await ShutdownAsync().ConfigureAwait(false);
-
-            _disposed = true;
-            GC.SuppressFinalize(this);
-
+            Dispose();
             await Task.CompletedTask;
         }
 
 #endif
+
     }
 }
