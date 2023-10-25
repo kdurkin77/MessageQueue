@@ -12,8 +12,10 @@
     <PackageTags>MessageQueue;Queue;MessageReader;Reader;Forwarder;</PackageTags>
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
-    <PackageReleaseNotes>Only logging trace on an error in pushing to the destination queue when there is an error handler provided</PackageReleaseNotes>
-    <Version>7.1.1</Version>
+    <PackageReleaseNotes>
+      Updated packages
+    </PackageReleaseNotes>
+    <Version>7.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,9 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -13,10 +13,9 @@
     <Product>KM.MessageQueue.FileSystem.Disk</Product>
     <Description>A queue implementation to write to the disk from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      ***BREAKING CHANGES***
-      IMessageQueueReader now has functions ReadAsync and TryReadAsync instead of StartAsync and StopAsync so that the caller can specify how they want to read from the queue instead of the reader itself having a read loop
+      Updated packages
     </PackageReleaseNotes>
-    <Version>7.1.0</Version>
+    <Version>7.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,11 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.2.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>

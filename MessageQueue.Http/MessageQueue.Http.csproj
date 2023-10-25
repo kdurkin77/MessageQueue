@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Http</Product>
     <Description>A queue implementation that calls an HTTP API endpoint from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      *** BREAKING CHANGE *** Made the CheckHttpResponse option a function that returns a task
+      Updated packages
     </PackageReleaseNotes>
-    <Version>7.2.0</Version>
+    <Version>7.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,14 +25,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.JsonStringToDictionary" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="7.1.0" />
+    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.JsonStringToDictionary" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="7.2.3" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>

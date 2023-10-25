@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Formatters.ObjectToJsonObject</Product>
     <Description>A formatting implementation for KM.MessageQueue that serializes the object to a JObject</Description>
     <PackageReleaseNotes>
-      Updated KM.MessageQueue library
+      Updated packages
     </PackageReleaseNotes>
-    <Version>7.1.0</Version>
+    <Version>7.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,8 +26,8 @@
 
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,8 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client;
-//using MQTTnet.Extensions.ManagedClient;
-using MQTTnet.Protocol;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,12 +24,11 @@ namespace KM.MessageQueue.Mqtt
                 ?? ((payload, attributes) => new MqttApplicationMessageBuilder()
                         .WithTopic(attributes.Label)
                         .WithPayload(payload)
-                        .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
-                        .WithRetainFlag()
+                        .WithQualityOfServiceLevel(attributes.QualityOfService())
+                        .WithRetainFlag(attributes.RetainMessage())
                         .Build());
 
             var factory = new MqttFactory();
-            //_mqttClient = factory.CreateManagedMqttClient();
             _mqttClient = factory.CreateMqttClient();
 
             var clientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
@@ -50,9 +47,7 @@ namespace KM.MessageQueue.Mqtt
         private readonly ILogger _logger;
         internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
         private readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
-        //internal readonly IManagedMqttClient _mqttClient;
         internal readonly IMqttClient _mqttClient;
-        //internal readonly ManagedMqttClientOptions _mqttClientOptions;
         internal readonly MqttClientOptions _mqttClientOptions;
 
         private static readonly MessageAttributes _emptyAttributes = new();
@@ -74,7 +69,6 @@ namespace KM.MessageQueue.Mqtt
 
         internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
         {
-            //IsStarted
             if (mqttClient.IsConnected)
             {
                 return;
@@ -83,12 +77,10 @@ namespace KM.MessageQueue.Mqtt
             await sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                //IsStarted
                 if (mqttClient.IsConnected)
                 {
                     return;
                 }
-                //await mqttClient.StartAsync(mqttClientOptions).ConfigureAwait(false);
                 await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -118,7 +110,6 @@ namespace KM.MessageQueue.Mqtt
 
             _logger.LogTrace($"{{Name}} {nameof(PostMessageAsync)} posting to Label: {{Label}}", Name, attributes.Label);
             await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
-            //await _mqttClient.EnqueueAsync(mqttMessage).ConfigureAwait(false);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)

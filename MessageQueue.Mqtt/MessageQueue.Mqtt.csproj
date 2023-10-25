@@ -13,12 +13,10 @@
     <Product>KM.MessageQueue.Mqtt</Product>
     <Description>An MQTT implementation from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		Using MQTTnet's regular client instead of the managed client, there are some problems with the managed client
-		https://github.com/dotnet/MQTTnet/issues/1849
-		https://github.com/dotnet/MQTTnet/issues/1862
-		Creating a completely new client when we start a new reader and ensuring each one has a unique ID so they each stay connected
+		Using an internal queue instead of a channel to retrieve the messages
+		Added extended attributes QualityOfService and RetainMessage so that they can be set per message
 	</PackageReleaseNotes>
-    <Version>7.2.2</Version>
+    <Version>7.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -28,10 +26,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.1.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.1.0" />
+    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.2.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageReference Include="MQTTnet" Version="4.3.1.873" />
