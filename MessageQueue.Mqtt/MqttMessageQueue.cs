@@ -31,9 +31,8 @@ namespace KM.MessageQueue.Mqtt
             var factory = new MqttFactory();
             _mqttClient = factory.CreateMqttClient();
 
-            var clientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
-            clientOptionsBuilder.WithClientId($"Writer_{Guid.NewGuid()}");
-            _mqttClientOptions = clientOptionsBuilder.Build();
+            _mqttClientOptionsBuilder = opts.ClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.ClientOptionsBuilder)} is required", nameof(options));
+            _mqttClientOptions = _mqttClientOptionsBuilder.Build();
 
             EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -47,8 +46,9 @@ namespace KM.MessageQueue.Mqtt
         private readonly ILogger _logger;
         internal readonly IMessageFormatter<TMessage, byte[]> _messageFormatter;
         private readonly Func<byte[], MessageAttributes, MqttApplicationMessage> _messageBuilder;
-        internal readonly IMqttClient _mqttClient;
-        internal readonly MqttClientOptions _mqttClientOptions;
+        private readonly IMqttClient _mqttClient;
+        internal readonly MqttClientOptionsBuilder _mqttClientOptionsBuilder;
+        private readonly MqttClientOptions _mqttClientOptions;
 
         private static readonly MessageAttributes _emptyAttributes = new();
 
