@@ -13,7 +13,7 @@
     <Product>KM.MessageQueue.Mqtt</Product>
     <Description>An MQTT implementation from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		Rebuilding the options for the readers so we can ensure they always get a different ID so the connections are handled separately and don't disconect each other
+		Re-creating the options builders for the readers so we can ensure they always get a different client ID so the connections are handled separately and don't disconnect each other
 		Removed hard waits in mqtt reader ctor by using a Create function when GetReader is called
 		Logging an error when the connect fails without throwing
 	</PackageReleaseNotes>
