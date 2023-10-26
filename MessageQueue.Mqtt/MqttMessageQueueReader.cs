@@ -23,6 +23,7 @@ namespace KM.MessageQueue.Mqtt
 
             var factory = new MqttFactory();
             _mqttReaderClient = factory.CreateMqttClient();
+            _mqttReaderClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
 
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
@@ -70,10 +71,19 @@ namespace KM.MessageQueue.Mqtt
 
             var reader = new MqttMessageQueueReader<TMessage>(logger, queue, options);
 
-            await MqttMessageQueue<TMessage>.EnsureConnectedAsync(reader._sync, reader._mqttReaderClient, reader._clientOptions, cancellationToken).ConfigureAwait(false);
+            await reader.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
             await reader.EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
 
             return reader;
+        }
+
+        private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
+        {
+            var reconnected = await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, cancellationToken).ConfigureAwait(false);
+            if (reconnected)
+            {
+                _subscribed = false;
+            }
         }
 
         public async Task<CompletionResult> ReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
@@ -114,7 +124,7 @@ namespace KM.MessageQueue.Mqtt
 
                 // do something with this result?
                 var filter = new MqttTopicFilterBuilder().WithTopic(_subscriptionName).Build();
-                await _mqttReaderClient.SubscribeAsync(filter, cancellationToken).ConfigureAwait(false);
+                _ = await _mqttReaderClient.SubscribeAsync(filter, cancellationToken).ConfigureAwait(false);
 
                 //var filters = new[]
                 //{
@@ -122,8 +132,6 @@ namespace KM.MessageQueue.Mqtt
                 //};
 
                 //await _mqttReaderClient.SubscribeAsync(filters).ConfigureAwait(false);
-
-                _mqttReaderClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
 
                 _subscribed = true;
             }
@@ -145,7 +153,7 @@ namespace KM.MessageQueue.Mqtt
             while (true)
             {
                 // specific reader connection
-                await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, cancellationToken).ConfigureAwait(false);
+                await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
                 await EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
 
                 await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);

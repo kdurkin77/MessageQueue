@@ -67,11 +67,11 @@ namespace KM.MessageQueue.Mqtt
             await PostMessageAsync(message, _emptyAttributes, cancellationToken);
         }
 
-        internal static async Task EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
+        internal static async Task<bool> EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
         {
             if (mqttClient.IsConnected)
             {
-                return;
+                return false;
             }
 
             await sync.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -79,9 +79,12 @@ namespace KM.MessageQueue.Mqtt
             {
                 if (mqttClient.IsConnected)
                 {
-                    return;
+                    return false;
                 }
+
                 await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
+
+                return true;
             }
             finally
             {
