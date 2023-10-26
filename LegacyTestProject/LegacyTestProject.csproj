@@ -82,8 +82,8 @@
     <Reference Include="KM.MessageQueue.Formatters.StringToBytes, Version=7.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Formatters.StringToBytes.7.2.3\lib\netstandard2.0\KM.MessageQueue.Formatters.StringToBytes.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Mqtt, Version=7.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Mqtt.7.2.3\lib\netstandard2.0\KM.MessageQueue.Mqtt.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Mqtt, Version=7.2.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Mqtt.7.2.4\lib\netstandard2.0\KM.MessageQueue.Mqtt.dll</HintPath>
     </Reference>
     <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=7.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.7.2.3\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>

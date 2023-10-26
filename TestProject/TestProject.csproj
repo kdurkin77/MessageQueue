@@ -19,7 +19,7 @@
     <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.2.3" />
     <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.2.3" />
     <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Mqtt" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue.Mqtt" Version="7.2.4" />
     <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="7.2.3" />
     <PackageReference Include="KM.MessageQueue.Http" Version="7.2.3" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
