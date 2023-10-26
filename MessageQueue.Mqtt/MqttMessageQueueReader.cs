@@ -78,7 +78,7 @@ namespace KM.MessageQueue.Mqtt
 
         private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
         {
-            var reconnected = await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, cancellationToken).ConfigureAwait(false);
+            var reconnected = await MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, _logger, cancellationToken).ConfigureAwait(false);
             if (reconnected)
             {
                 _subscribed = false;

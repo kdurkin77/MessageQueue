@@ -34,7 +34,7 @@ namespace KM.MessageQueue.Mqtt
             _mqttCreateClientOptionsBuilder = opts.CreateClientOptionsBuilder ?? throw new ArgumentException($"{nameof(opts.CreateClientOptionsBuilder)} is required", nameof(options));
             _mqttClientOptions = _mqttCreateClientOptionsBuilder().Build();
 
-            EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+            EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, _logger, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
 
             Name = opts.Name ?? nameof(MqttMessageQueue<TMessage>);
         }
@@ -67,7 +67,7 @@ namespace KM.MessageQueue.Mqtt
             await PostMessageAsync(message, _emptyAttributes, cancellationToken);
         }
 
-        internal static async Task<bool> EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, CancellationToken cancellationToken)
+        internal static async Task<bool> EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, ILogger logger, CancellationToken cancellationToken)
         {
             if (mqttClient.IsConnected)
             {
@@ -82,8 +82,11 @@ namespace KM.MessageQueue.Mqtt
                     return false;
                 }
 
-                await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
-
+                var result = await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken).ConfigureAwait(false);
+                if (result.ResultCode != MqttClientConnectResultCode.Success)
+                {
+                    logger.LogError($"{{clientId}} failed to connect: {{resultCode}}", mqttClient.Options.ClientId, result.ResultCode);
+                }
                 return true;
             }
             finally
@@ -106,7 +109,7 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            await EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, cancellationToken).ConfigureAwait(false);
+            await EnsureConnectedAsync(_sync, _mqttClient, _mqttClientOptions, _logger, cancellationToken).ConfigureAwait(false);
 
             var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
             var mqttMessage = _messageBuilder(messageBytes, attributes);
