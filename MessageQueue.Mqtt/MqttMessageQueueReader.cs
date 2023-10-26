@@ -30,7 +30,7 @@ namespace KM.MessageQueue.Mqtt
 
             Name = options.Name ?? nameof(MqttMessageQueueReader<TMessage>);
 
-            _clientOptions = _queue._mqttClientOptionsBuilder.Build();
+            _clientOptions = _queue._mqttCreateClientOptionsBuilder().Build();
         }
 
 

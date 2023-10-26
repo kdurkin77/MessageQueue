@@ -12,7 +12,7 @@ namespace KM.MessageQueue.Mqtt
     public sealed class MqttMessageQueueOptions<TMessage>
     {
         //internal ManagedMqttClientOptionsBuilder? ClientOptionsBuilder { get; set; }
-        internal MqttClientOptionsBuilder? ClientOptionsBuilder { get; set; }
+        internal Func<MqttClientOptionsBuilder>? CreateClientOptionsBuilder { get; set; }
 
         internal Func<byte[], MessageAttributes, MqttApplicationMessage>? MessageBuilder { get; set; }
 
@@ -67,10 +67,12 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            var builder = new MqttClientOptionsBuilder();
-            configureSettings(builder);
-
-            ClientOptionsBuilder = builder;
+            CreateClientOptionsBuilder = () =>
+            {
+                var builder = new MqttClientOptionsBuilder();
+                configureSettings(builder);
+                return builder;
+            };
 
             return this;
         }
