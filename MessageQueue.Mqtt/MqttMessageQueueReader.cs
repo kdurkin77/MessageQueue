@@ -11,7 +11,7 @@ namespace KM.MessageQueue.Mqtt
 {
     internal sealed class MqttMessageQueueReader<TMessage> : IMessageQueueReader<TMessage>
     {
-        public MqttMessageQueueReader(ILogger logger, MqttMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
+        private MqttMessageQueueReader(ILogger logger, MqttMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
@@ -31,8 +31,6 @@ namespace KM.MessageQueue.Mqtt
 
             _clientOptions = _queue._mqttClientOptions;
             _clientOptions.ClientId = $"Reader_{Guid.NewGuid()}";
-            MqttMessageQueue<TMessage>.EnsureConnectedAsync(_sync, _mqttReaderClient, _clientOptions, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
-            EnsureSubscribedAsync(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
 
@@ -45,12 +43,38 @@ namespace KM.MessageQueue.Mqtt
         private readonly ILogger _logger;
         private readonly MqttMessageQueue<TMessage> _queue;
         private readonly MqttClientOptions _clientOptions;
-        internal readonly IMqttClient _mqttReaderClient;
+        private readonly IMqttClient _mqttReaderClient;
         private readonly string? _subscriptionName;
         private readonly object? _userData;
 
 
         public string Name { get; }
+
+
+        internal static async Task<MqttMessageQueueReader<TMessage>> CreateAsync(ILogger logger, MqttMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
+        {
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (queue is null)
+            {
+                throw new ArgumentNullException(nameof(queue));
+            }
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var reader = new MqttMessageQueueReader<TMessage>(logger, queue, options);
+
+            await MqttMessageQueue<TMessage>.EnsureConnectedAsync(reader._sync, reader._mqttReaderClient, reader._clientOptions, cancellationToken).ConfigureAwait(false);
+            await reader.EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
+
+            return reader;
+        }
 
         public async Task<CompletionResult> ReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {

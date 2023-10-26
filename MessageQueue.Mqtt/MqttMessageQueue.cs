@@ -112,15 +112,15 @@ namespace KM.MessageQueue.Mqtt
             await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
+        public async Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
             if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var reader = new MqttMessageQueueReader<TMessage>(_logger, this, options);
-            return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
+            var reader = await MqttMessageQueueReader<TMessage>.CreateAsync(_logger, this, options, cancellationToken).ConfigureAwait(false);
+            return reader;
         }
 
         private void ThrowIfDisposed()
