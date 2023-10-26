@@ -13,10 +13,11 @@
     <Product>KM.MessageQueue.Mqtt</Product>
     <Description>An MQTT implementation from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		Using an internal queue instead of a channel to retrieve the messages
-		Added extended attributes QualityOfService and RetainMessage so that they can be set per message
+		Rebuilding the options for the readers so we can ensure they always get a different ID so the connections are handled separately and don't disconect each other
+		Removed hard waits in mqtt reader ctor by using a Create function when GetReader is called
+		Logging an error when the connect fails without throwing
 	</PackageReleaseNotes>
-    <Version>7.2.3</Version>
+    <Version>7.2.4</Version>
   </PropertyGroup>
 
   <PropertyGroup>
