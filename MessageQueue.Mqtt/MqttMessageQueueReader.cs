@@ -176,7 +176,7 @@ namespace KM.MessageQueue.Mqtt
                     _ = _sync.Release();
                 }
 
-                await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken).ConfigureAwait(false);
             }
         }
 

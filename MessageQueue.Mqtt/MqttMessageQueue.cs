@@ -64,7 +64,7 @@ namespace KM.MessageQueue.Mqtt
                 throw new ArgumentNullException(nameof(message));
             }
 
-            await PostMessageAsync(message, _emptyAttributes, cancellationToken);
+            await PostMessageAsync(message, _emptyAttributes, cancellationToken).ConfigureAwait(false);
         }
 
         internal static async Task<bool> EnsureConnectedAsync(SemaphoreSlim sync, IMqttClient mqttClient, MqttClientOptions mqttClientOptions, ILogger logger, CancellationToken cancellationToken)
@@ -87,6 +87,7 @@ namespace KM.MessageQueue.Mqtt
                 {
                     logger.LogError($"{{clientId}} failed to connect: {{resultCode}}", mqttClient.Options.ClientId, result.ResultCode);
                 }
+
                 return true;
             }
             finally
