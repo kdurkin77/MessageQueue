@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;net8;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
     <PackageReleaseNotes>
-      Updated packages
+      Added .NET8 support
     </PackageReleaseNotes>
-    <Version>7.2.3</Version>
+    <Version>8.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -29,9 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="KM.MessageQueue" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

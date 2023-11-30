@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;net8;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Formatters.JsonStringToDictionary</Product>
     <Description>A formatting implementation for KM.MessageQueue that deserializes the json string to a Dictionary</Description>
     <PackageReleaseNotes>
-      Updated packages
+      Added .NET8 support
     </PackageReleaseNotes>
-    <Version>7.2.3</Version>
+    <Version>8.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,7 +26,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
+    <PackageReference Include="KM.MessageQueue" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

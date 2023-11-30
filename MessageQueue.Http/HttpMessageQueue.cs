@@ -103,7 +103,7 @@ namespace KM.MessageQueue.Http
             if (_shouldUseQueryParameters)
             {
                 var queryDict = await _queryMessageFormatter.FormatMessage(message).ConfigureAwait(false);
-                url = QueryHelpers.AddQueryString(url, queryDict);
+                url = QueryHelpers.AddQueryString(url, (IDictionary<string, string?>)queryDict);
             }
 
             var request = new HttpRequestMessage(_method, url);

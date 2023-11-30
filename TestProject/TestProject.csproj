@@ -11,20 +11,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Mqtt" Version="7.2.4" />
-    <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Http" Version="7.2.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="KM.MessageQueue.Azure.Topic" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Mqtt" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Specialized.Forwarder" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

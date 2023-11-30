@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;net8;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -13,11 +13,9 @@
     <Product>KM.MessageQueue.Mqtt</Product>
     <Description>An MQTT implementation from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-		Re-creating the options builders for the readers so we can ensure they always get a different client ID so the connections are handled separately and don't disconnect each other
-		Removed hard waits in mqtt reader ctor by using a Create function when GetReader is called
-		Logging an error when the connect fails without throwing
-	</PackageReleaseNotes>
-    <Version>7.2.4</Version>
+      Added .NET8 support
+    </PackageReleaseNotes>
+    <Version>8.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,12 +25,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="7.2.3" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="7.2.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="KM.MessageQueue" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
     <PackageReference Include="MQTTnet" Version="4.3.1.873" />
   </ItemGroup>
 
