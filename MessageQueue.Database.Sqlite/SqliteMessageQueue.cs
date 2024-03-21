@@ -33,6 +33,11 @@ namespace KM.MessageQueue.Database.Sqlite
 
             _dbContext = new SqliteDatabaseContext(dbContextOptsBuilder.Options);
 
+            if (opts.OnDbContextCreated is { } onDbContextCreated)
+            {
+                onDbContextCreated(_dbContext);
+            }
+
             _messageQueue = new Queue<SqliteQueueMessage>(
                 _dbContext.SqliteQueueMessages
                     .OrderBy(item => item.SequenceNumber)

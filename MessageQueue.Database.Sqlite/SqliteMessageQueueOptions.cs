@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
@@ -32,5 +33,10 @@ namespace KM.MessageQueue.Database.Sqlite
         /// formatter which serializes the message to a json string />
         /// </summary>
         public IMessageFormatter<TMessage, string>? MessageFormatter { get; set; }
+
+        /// <summary>
+        /// Optional function to be called when the underlying DbContext is created
+        /// </summary>
+        public Action<DbContext>? OnDbContextCreated { get; set; }
     }
 }
