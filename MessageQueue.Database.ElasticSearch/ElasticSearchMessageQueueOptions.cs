@@ -1,5 +1,5 @@
-﻿using Elasticsearch.Net;
-using Nest;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
     /// </summary>
     public sealed class ElasticSearchMessageQueueOptions<TMessage>
     {
-        internal ConnectionSettings ConnectionSettings { get; private set; } = new ConnectionSettings();
+        internal ElasticsearchClientSettings ConnectionSettings { get; private set; } = new ElasticsearchClientSettings();
         internal string? Name { get; set; }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
         /// <param name="uri"></param>
         /// <param name="configureSettings"></param>
         /// <returns>ElasticSearchMessageQueueOptions</returns>
-        public ElasticSearchMessageQueueOptions<TMessage> UseConnectionUri(Uri uri, Action<ConnectionSettings> configureSettings)
+        public ElasticSearchMessageQueueOptions<TMessage> UseConnectionUri(Uri uri, Action<ElasticsearchClientSettings> configureSettings)
         {
             if (uri is null)
             {
@@ -62,12 +62,12 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            ConnectionSettings = new ConnectionSettings(uri);
+            ConnectionSettings = new ElasticsearchClientSettings(uri);
             configureSettings(ConnectionSettings);
             return this;
         }
 
-        public ElasticSearchMessageQueueOptions<TMessage> UseApiKey(string cloudId, string apiKey, Action<ConnectionSettings> configureSettings)
+        public ElasticSearchMessageQueueOptions<TMessage> UseApiKey(string cloudId, string apiKey, Action<ElasticsearchClientSettings> configureSettings)
         {
             if (string.IsNullOrWhiteSpace(cloudId))
             {
@@ -84,7 +84,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            ConnectionSettings = new ConnectionSettings(cloudId, new ApiKeyAuthenticationCredentials(apiKey));
+            ConnectionSettings = new ElasticsearchClientSettings(cloudId, new ApiKey(apiKey));
             configureSettings(ConnectionSettings);
             return this;
         }
@@ -95,7 +95,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
         /// <param name="uris"></param>
         /// <param name="configureSettings"></param>
         /// <returns>ElasticSearchMessageQueueOptions</returns>
-        public ElasticSearchMessageQueueOptions<TMessage> UseConnectionPool(IEnumerable<Uri> uris, Action<ConnectionSettings> configureSettings)
+        public ElasticSearchMessageQueueOptions<TMessage> UseConnectionPool(IEnumerable<Uri> uris, Action<ElasticsearchClientSettings> configureSettings)
         {
             if (uris is null)
             {
@@ -112,8 +112,8 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            var connPool = new SniffingConnectionPool(uris);
-            ConnectionSettings = new ConnectionSettings(connPool);
+            var connPool = new StaticNodePool(uris);
+            ConnectionSettings = new ElasticsearchClientSettings(connPool);
             configureSettings(ConnectionSettings);
             return this;
         }

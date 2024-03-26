@@ -1,8 +1,7 @@
-﻿using Elasticsearch.Net;
+﻿using Elastic.Clients.Elasticsearch;
 using KM.MessageQueue.Formatters.ObjectToJsonObject;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Nest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -23,7 +22,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentException($"{nameof(opts.ConnectionSettings)} is required", nameof(options));
             }
 
-            _client = new ElasticClient(opts.ConnectionSettings);
+            _client = new ElasticsearchClient(opts.ConnectionSettings);
             Name = opts.Name ?? nameof(ElasticSearchMessageQueue<TMessage>);
 
             _logger.LogTrace($"{Name} initialized");
@@ -33,7 +32,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
         private bool _disposed = false;
 
         private readonly ILogger _logger;
-        private readonly ElasticClient _client;
+        private readonly ElasticsearchClient _client;
         private readonly IMessageFormatter<TMessage, JObject> _messageFormatter;
 
         private static readonly MessageAttributes _emptyAttributes = new();
@@ -73,16 +72,16 @@ namespace KM.MessageQueue.Database.ElasticSearch
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
 
 
-            StringResponse? response;
+            IndexResponse? response;
             if (!string.IsNullOrWhiteSpace(attributes.Label))
             {
                 _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Label}}, Message: {{Message}}", attributes.Label, elasticSearchMessageJson);
-                response = await _client.LowLevel.IndexAsync<StringResponse>(attributes.Label, (PostData)elasticSearchMessageJson, null, cancellationToken).ConfigureAwait(false);
+                response = await _client.IndexAsync(elasticSearchMessage, attributes.Label!, cancellationToken).ConfigureAwait(false);
             }
-            else if (!string.IsNullOrWhiteSpace(_client.ConnectionSettings.DefaultIndex))
+            else if (!string.IsNullOrWhiteSpace(_client.ElasticsearchClientSettings.DefaultIndex))
             {
-                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Index}}, Label: {{Label}}, Message: {{Message}}", _client.ConnectionSettings.DefaultIndex, attributes.Label, elasticSearchMessageJson);
-                response = await _client.LowLevel.IndexAsync<StringResponse>(_client.ConnectionSettings.DefaultIndex, (PostData)elasticSearchMessageJson, null, cancellationToken).ConfigureAwait(false);
+                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Index}}, Label: {{Label}}, Message: {{Message}}", _client.ElasticsearchClientSettings.DefaultIndex, attributes.Label, elasticSearchMessageJson);
+                response = await _client.IndexAsync(elasticSearchMessage, _client.ElasticsearchClientSettings.DefaultIndex, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -90,13 +89,13 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new Exception("Label or default index is required");
             }
 
-            if (response.Success)
+            if (response.IsValidResponse)
             {
-                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} success response: {{Response}}", response.Body);
+                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} success response: {{Response}}", response.DebugInformation);
             }
             else
             {
-                _logger.LogError($"{Name} {nameof(PostMessageAsync)} error response: {{Response}}", response.Body);
+                _logger.LogError($"{Name} {nameof(PostMessageAsync)} error response: {{Response}}", response.DebugInformation);
             }
         }
 
