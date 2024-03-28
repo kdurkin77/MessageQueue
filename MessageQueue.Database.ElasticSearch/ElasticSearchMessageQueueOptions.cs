@@ -1,4 +1,5 @@
 ﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport;
 using Newtonsoft.Json.Linq;
 using System;
@@ -20,6 +21,18 @@ namespace KM.MessageQueue.Database.ElasticSearch
         /// formatter which converts the message to a <see cref="JObject"/>
         /// </summary>
         public IMessageFormatter<TMessage, JObject>? MessageFormatter { get; set; }
+
+        private static ElasticsearchClientSettings CreateClientSettings(NodePool nodePool)
+        {
+            return
+                new ElasticsearchClientSettings(nodePool, (serializer, settings) =>
+                {
+                    return new DefaultSourceSerializer(settings, options =>
+                    {
+                        options.Converters.Add(new JTokenConverter());
+                    });
+                });
+        }
 
         /// <summary>
         /// Give a name to this queue
@@ -62,7 +75,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            ConnectionSettings = new ElasticsearchClientSettings(uri);
+            ConnectionSettings = CreateClientSettings(new SingleNodePool(uri));
             configureSettings(ConnectionSettings);
             return this;
         }
@@ -84,7 +97,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            ConnectionSettings = new ElasticsearchClientSettings(cloudId, new ApiKey(apiKey));
+            ConnectionSettings = CreateClientSettings(new CloudNodePool(cloudId, new ApiKey(apiKey)));
             configureSettings(ConnectionSettings);
             return this;
         }
@@ -112,8 +125,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(configureSettings));
             }
 
-            var connPool = new StaticNodePool(uris);
-            ConnectionSettings = new ElasticsearchClientSettings(connPool);
+            ConnectionSettings = CreateClientSettings(new StaticNodePool(uris));
             configureSettings(ConnectionSettings);
             return this;
         }
