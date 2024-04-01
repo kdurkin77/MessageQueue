@@ -112,6 +112,12 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 //    }
                 //    break;
 
+                case JTokenType.Null:
+                    {
+                        writer.WriteNullValue();
+                    }
+                    break;
+
                 case JTokenType.Object:
                     {
                         var obj = (JObject)value;
