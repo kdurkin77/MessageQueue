@@ -7,15 +7,15 @@ namespace KM.MessageQueue.Database.ElasticSearch
 {
     internal class JTokenConverter : JsonConverter<JToken>
     {
-        private void WriteStringValueOrNull(Utf8JsonWriter writer, object? value)
+        private void WriteStringValueOrNull(Utf8JsonWriter writer, string? value)
         {
-            if (value == null)
+            if (value is null)
             {
                 writer.WriteNullValue();
             }
             else
             {
-                writer.WriteStringValue((string)value);
+                writer.WriteStringValue(value);
             }
         }
 
@@ -28,6 +28,35 @@ namespace KM.MessageQueue.Database.ElasticSearch
         {
             switch (value.Type)
             {
+                case JTokenType.Array:
+                    {
+                        var jarray = (JArray)value;
+                        writer.WriteStartArray();
+                        if (jarray.HasValues)
+                        {
+                            foreach (var item in jarray.Children())
+                            {
+                                Write(writer, item, options);
+                            }
+                        }
+                        writer.WriteEndArray();
+                    }
+                    break;
+
+                case JTokenType.Boolean:
+                    {
+                        var b = ((JValue)value).Value as bool?;
+                        if (b is null)
+                        {
+                            writer.WriteNullValue();
+                        }
+                        else
+                        {
+                            writer.WriteBooleanValue(b.Value);
+                        }
+                    }
+                    break;
+
                 case JTokenType.Bytes:
                     {
                         var bytes = ((JValue)value).Value as byte[];
@@ -38,30 +67,77 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 case JTokenType.Date:
                     {
                         var date = ((JValue)value).Value;
-                        switch (date)
+                        if (date is null)
                         {
-                            case DateTimeOffset dto:
-                                WriteStringValueOrNull(writer, dto.ToString("o"));
-                                break;
-                            case DateTime dt:
-                                WriteStringValueOrNull(writer, dt.ToString("o"));
-                                break;
-                            default:
-                                throw new NotSupportedException();
+                            writer.WriteNullValue();
                         }
+                        else
+                        {
+                            switch (date)
+                            {
+                                case DateTimeOffset dto:
+                                    WriteStringValueOrNull(writer, dto.ToString("o"));
+                                    break;
+                                case DateTime dt:
+                                    WriteStringValueOrNull(writer, dt.ToString("o"));
+                                    break;
+                                default:
+                                    throw new NotSupportedException($"Unknown underlying JTokenType.Date type {date.GetType().FullName}");
+                            }
+                        }
+                    }
+                    break;
+
+                case JTokenType.Float:
+                    {
+                        writer.WriteRawValue(value.ToString());
                     }
                     break;
 
                 case JTokenType.Guid:
                     {
-                        var guid = ((JValue)value).Value as Guid?;
-                        WriteStringValueOrNull(writer, guid?.ToString());
+                        WriteStringValueOrNull(writer, value.ToString());
                     }
                     break;
 
-                case JTokenType.Undefined:
+                case JTokenType.Integer:
                     {
-                        writer.WriteNullValue();
+                        writer.WriteRawValue(value.ToString());
+                    }
+                    break;
+
+                //case JTokenType.None:
+                //    {
+                //        throw new NotImplementedException();
+                //    }
+                //    break;
+
+                case JTokenType.Object:
+                    {
+                        var obj = (JObject)value;
+                        writer.WriteStartObject();
+                        if (obj.HasValues)
+                        {
+                            foreach (var item in obj.Children())
+                            {
+                                Write(writer, item, options);
+                            }
+                        }
+                        writer.WriteEndObject();
+                    }
+                    break;
+
+                case JTokenType.Property:
+                    {
+                        var property = (JProperty)value;
+                        writer.WritePropertyName(property.Name);
+                        Write(writer, property.Value, options);
+                    }
+                    break;
+
+                case JTokenType.Raw:
+                    {
+                        writer.WriteRawValue(value.ToString());
                     }
                     break;
 
@@ -74,8 +150,13 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
                 case JTokenType.TimeSpan:
                     {
-                        var timespan = ((JValue)value).Value as TimeSpan?;
-                        WriteStringValueOrNull(writer, timespan?.ToString());
+                        WriteStringValueOrNull(writer, value.ToString());
+                    }
+                    break;
+
+                case JTokenType.Undefined:
+                    {
+                        writer.WriteNullValue();
                     }
                     break;
 
@@ -87,8 +168,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                     break;
 
                 default:
-                    writer.WriteRawValue(value.ToString());
-                    break;
+                    throw new NotSupportedException($"Unknown JTokenType {value.Type}");
             };
         }
     }

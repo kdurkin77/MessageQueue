@@ -71,12 +71,11 @@ namespace KM.MessageQueue.Database.ElasticSearch
             elasticSearchMessage.Merge(messageObject);
             var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
 
-
             IndexResponse? response;
             if (!string.IsNullOrWhiteSpace(attributes.Label))
             {
                 _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Label}}, Message: {{Message}}", attributes.Label, elasticSearchMessageJson);
-                response = await _client.IndexAsync(elasticSearchMessage, attributes.Label!, cancellationToken).ConfigureAwait(false);
+                response = await _client.IndexAsync(elasticSearchMessage, attributes.Label, cancellationToken).ConfigureAwait(false);
             }
             else if (!string.IsNullOrWhiteSpace(_client.ElasticsearchClientSettings.DefaultIndex))
             {
