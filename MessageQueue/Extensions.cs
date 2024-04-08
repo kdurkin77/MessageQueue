@@ -34,5 +34,26 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddSingleton<IWriteOnlyMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
                 ;
         }
+
+        public static IServiceCollection AddBulkMessageQueue<TQueue, TMessage>(this IServiceCollection services, Func<IServiceProvider, TQueue> create)
+            where TQueue : class, IBulkMessageQueue<TMessage>
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (create is null)
+            {
+                throw new ArgumentNullException(nameof(create));
+            }
+
+            return services
+                .AddSingleton(create)
+                .AddSingleton<IBulkMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
+                .AddSingleton<IBulkReadOnlyMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
+                .AddSingleton<IBulkWriteOnlyMessageQueue<TMessage>, TQueue>(services => services.GetRequiredService<TQueue>())
+                ;
+        }
     }
 }

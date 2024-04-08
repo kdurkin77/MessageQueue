@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
-    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>, IBulkMessageQueue<TMessage>
     {
         public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions<TMessage>> options)
         {
@@ -38,7 +38,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 onDbContextCreated(_dbContext);
             }
 
-            _messageQueue = new Queue<SqliteQueueMessage>(
+            _messageQueue = new LinkedList<SqliteQueueMessage>(
                 _dbContext.SqliteQueueMessages
                     .OrderBy(item => item.SequenceNumber)
                 );
@@ -60,7 +60,7 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly TimeSpan _idleDelay;
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
-        private readonly Queue<SqliteQueueMessage> _messageQueue;
+        private readonly LinkedList<SqliteQueueMessage> _messageQueue;
         private readonly SqliteDatabaseContext _dbContext;
         private long? _sequenceNumber;
 
@@ -95,6 +95,40 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(attributes));
             }
 
+            await BulkPostMessageAsync([message], attributes, cancellationToken);
+        }
+
+        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            await BulkPostMessageAsync(messages, _emptyAttributes, cancellationToken);
+        }
+
+        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            if (!messages.Any())
+            {
+                throw new ArgumentOutOfRangeException(nameof(messages));
+            }
+
+            if (attributes is null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -107,23 +141,28 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
-                var messageString = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
+                var sqlMessages =
+                    await Task.WhenAll(
+                        messages.Select(async message =>
+                            new SqliteQueueMessage()
+                            {
+                                Id = Guid.NewGuid(),
+                                Attributes = JsonConvert.SerializeObject(attributes),
+                                SequenceNumber = ++_sequenceNumber,
+                                Body = await _messageFormatter.FormatMessage(message).ConfigureAwait(false)
+                            }).ToList()).ConfigureAwait(false);
 
-                var sqlMessage =
-                    new SqliteQueueMessage()
-                    {
-                        Id = Guid.NewGuid(),
-                        Attributes = JsonConvert.SerializeObject(attributes),
-                        SequenceNumber = ++_sequenceNumber,
-                        Body = messageString
-                    };
-
+                var messageCount = sqlMessages.Count();
+                var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
                 _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to store, Label: {{Label}}, Message: {{Message}}", attributes.Label, messageString);
 
-                _dbContext.SqliteQueueMessages.Add(sqlMessage);
+                _dbContext.SqliteQueueMessages.AddRange(sqlMessages);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-                _messageQueue.Enqueue(sqlMessage);
+                foreach (var message in sqlMessages)
+                {
+                    _messageQueue.AddLast(message);
+                }
             }
             finally
             {
@@ -142,7 +181,18 @@ namespace KM.MessageQueue.Database.Sqlite
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
-        internal async Task<(CompletionResult, TResult)> InternalReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, object? userData, CancellationToken cancellationToken)
+        public Task<IBulkMessageQueueReader<TMessage>> GetBulkReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellation)
+        {
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var reader = new SqliteMessageReader<TMessage>(_logger, this, options);
+            return Task.FromResult<IBulkMessageQueueReader<TMessage>>(reader);
+        }
+
+        internal async Task<(CompletionResult, TResult)> InternalReadMessageAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, int count, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {
@@ -160,34 +210,47 @@ namespace KM.MessageQueue.Database.Sqlite
                         continue;
                     }
 
-                    var item = _messageQueue.Peek();
+                    var items =
+                        await Task.WhenAll(
+                        _messageQueue
+                        .Take(count)
+                        .Select(async item =>
+                        {
+                            if (item.Attributes is null)
+                            {
+                                _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null attributes", item.Id);
+                                throw new Exception($"{item.Attributes} is required");
+                            }
 
-                    if (item.Attributes is null)
-                    {
-                        _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null attributes", item.Id);
-                        throw new Exception($"{item.Attributes} is required");
-                    }
+                            var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes);
+                            if (atts is null)
+                            {
+                                _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has invalid attributes: {{Attributes}}", item.Id, item.Attributes);
+                                throw new FormatException($"{nameof(item.Attributes)} is invalid");
+                            }
 
-                    var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes);
-                    if (atts is null)
-                    {
-                        _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has invalid attributes: {{Attributes}}", item.Id, item.Attributes);
-                        throw new FormatException($"{nameof(item.Attributes)} is invalid");
-                    }
+                            if (item.Body is null)
+                            {
+                                _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null body", item.Id);
+                                throw new Exception($"{nameof(item.Body)} is required");
+                            }
 
-                    if (item.Body is null)
-                    {
-                        _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null body", item.Id);
-                        throw new Exception($"{nameof(item.Body)} is required");
-                    }
+                            var message = await _messageFormatter.RevertMessage(item.Body).ConfigureAwait(false);
+                            return (item, message, atts);
+                        }).ToList()).ConfigureAwait(false);
 
-                    var message = await _messageFormatter.RevertMessage(item.Body).ConfigureAwait(false);
-                    var (completionResult, result) = await action(message, atts, userData, cancellationToken).ConfigureAwait(false);
+                    var messageAtts = items.Select(i => (i.message, i.atts)).ToList();
+                    var (completionResult, result) = await action(messageAtts, userData, cancellationToken).ConfigureAwait(false);
                     if (completionResult == CompletionResult.Complete)
                     {
-                        _dbContext.Remove(item);
+                        var itemsToRemove = items.Select(i => i.item).ToList();
+                        _dbContext.RemoveRange(itemsToRemove);
                         await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                        _messageQueue.Dequeue();
+
+                        for (var i = 0; i < itemsToRemove.Count(); i++)
+                        {
+                            _messageQueue.RemoveFirst();
+                        }
                     }
 
                     return (completionResult, result);

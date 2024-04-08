@@ -25,13 +25,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.0" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.4" />
     <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="8.0.0" />
     <PackageReference Include="KM.MessageQueue" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
   </ItemGroup>
 	
   <ItemGroup>

@@ -1,11 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
-    internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>
+    internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>, IBulkMessageQueueReader<TMessage>
     {
         public SqliteMessageReader(ILogger logger, SqliteMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
@@ -49,7 +52,6 @@ namespace KM.MessageQueue.Database.Sqlite
 
             return completionResult;
 
-
             async Task<(CompletionResult CompletionResult, int)> Wrapper(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
             {
                 var completionResult = await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
@@ -61,10 +63,49 @@ namespace KM.MessageQueue.Database.Sqlite
         {
             ThrowIfDisposed();
 
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            return await BulkReadMessageAsync(Wrapper, 1, cancellationToken).ConfigureAwait(false);
+
+            async Task<(CompletionResult, TResult)> Wrapper(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, object? userData, CancellationToken cancellationToken)
+            {
+                var (message, attributes) = messages.First();
+                return await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        public async Task<CompletionResult> BulkReadMessageAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, int count, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            var (completionResult, _) = await BulkReadMessageAsync(Wrapper, count, cancellationToken).ConfigureAwait(false);
+
+            return completionResult;
+
+
+            async Task<(CompletionResult CompletionResult, int)> Wrapper(IEnumerable<(TMessage, MessageAttributes)> messages, object? userData, CancellationToken cancellationToken)
+            {
+                var completionResult = await action(messages, userData, cancellationToken).ConfigureAwait(false);
+                return (completionResult, 0);
+            }
+        }
+
+        public async Task<(CompletionResult CompletionResult, TResult Result)> BulkReadMessageAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, int count, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                return await _queue.InternalReadMessageAsync(action, _userData, cancellationToken).ConfigureAwait(false);
+                return await _queue.InternalReadMessageAsync(action, count, _userData, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -109,6 +150,46 @@ namespace KM.MessageQueue.Database.Sqlite
             try
             {
                 var (completionResult, result) = await ReadMessageAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult, result);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default, default!);
+            }
+        }
+
+        public async Task<(bool, CompletionResult)> TryBulkReadMessageAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, int count, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var completionResult = await BulkReadMessageAsync(action, count, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default);
+            }
+        }
+
+        public async Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryBulkReadMessageAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, int count, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var (completionResult, result) = await BulkReadMessageAsync(action, count, cancellationToken).ConfigureAwait(false);
                 return (true, completionResult, result);
             }
             catch (OperationCanceledException)
