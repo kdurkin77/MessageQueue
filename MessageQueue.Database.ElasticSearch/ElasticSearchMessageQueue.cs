@@ -5,12 +5,14 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.ElasticSearch
 {
-    public sealed class ElasticSearchMessageQueue<TMessage> : IMessageQueue<TMessage>
+    public sealed class ElasticSearchMessageQueue<TMessage> : IMessageQueue<TMessage>, IBulkMessageQueue<TMessage>
     {
         public ElasticSearchMessageQueue(ILogger<ElasticSearchMessageQueue<TMessage>> logger, IOptions<ElasticSearchMessageQueueOptions<TMessage>> options)
         {
@@ -49,7 +51,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(message));
             }
 
-            await PostMessageAsync(message, _emptyAttributes, cancellationToken);
+            await BulkPostMessageAsync([message], cancellationToken);
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
@@ -66,21 +68,80 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageObject = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
-            var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
-            elasticSearchMessage.Merge(messageObject);
-            var elasticSearchMessageJson = JsonConvert.SerializeObject(elasticSearchMessage);
+            await BulkPostMessageAsync([message], attributes, cancellationToken);
+        }
 
-            IndexResponse? response;
+        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            await BulkPostMessageAsync(messages, _emptyAttributes, cancellationToken);
+        }
+
+        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            if (!messages.Any())
+            {
+                throw new ArgumentOutOfRangeException(nameof(messages));
+            }
+
+            if (attributes is null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
+            var esMessages =
+                await Task.WhenAll(messages
+                .Select(async message =>
+                {
+                    var messageObject = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
+                    var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
+                    elasticSearchMessage.Merge(messageObject);
+                    return elasticSearchMessage;
+                })).ConfigureAwait(false);
+
+            var messageCount = esMessages.Length;
+
+            BulkResponse? response;
             if (!string.IsNullOrWhiteSpace(attributes.Label))
             {
-                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Label}}, Message: {{Message}}", attributes.Label, elasticSearchMessageJson);
-                response = await _client.IndexAsync(elasticSearchMessage, attributes.Label!, cancellationToken).ConfigureAwait(false);
+                if (messageCount == 1)
+                {
+                    var elasticSearchMessageJson = JsonConvert.SerializeObject(esMessages[0]);
+                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Label}}, Message: {{Message}}", attributes.Label, elasticSearchMessageJson);
+                }
+                else
+                {
+                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting {{Count}} Messages to {{Label}}", messageCount, attributes.Label);
+                }
+
+                response = await _client.BulkAsync(b => b.Index(attributes.Label!).CreateMany(esMessages)).ConfigureAwait(false);
             }
             else if (!string.IsNullOrWhiteSpace(_client.ElasticsearchClientSettings.DefaultIndex))
             {
-                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Index}}, Label: {{Label}}, Message: {{Message}}", _client.ElasticsearchClientSettings.DefaultIndex, attributes.Label, elasticSearchMessageJson);
-                response = await _client.IndexAsync(elasticSearchMessage, _client.ElasticsearchClientSettings.DefaultIndex, cancellationToken).ConfigureAwait(false);
+                if (messageCount == 1)
+                {
+                    var elasticSearchMessageJson = JsonConvert.SerializeObject(esMessages[0]);
+                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Index}}, Label: {{Label}}, Message: {{Message}}", _client.ElasticsearchClientSettings.DefaultIndex, attributes.Label, elasticSearchMessageJson);
+                }
+                else
+                {
+                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting {{Count}} Messages to {{Label}}", messageCount, _client.ElasticsearchClientSettings.DefaultIndex);
+                }
+
+                response = await _client.BulkAsync(b => b.Index(_client.ElasticsearchClientSettings.DefaultIndex).CreateMany(esMessages)).ConfigureAwait(false);
             }
             else
             {
@@ -94,11 +155,21 @@ namespace KM.MessageQueue.Database.ElasticSearch
             }
             else
             {
-                _logger.LogError($"{Name} {nameof(PostMessageAsync)} error response: {{Response}}", response.DebugInformation);
+                var errors = response.DebugInformation;
+                if (response.Errors)
+                {
+                    errors = response.ItemsWithErrors.Select(i => $"{i.Id}: {i.Error?.Reason}").Aggregate((c, n) => $"{c}; {n}");
+                }
+                _logger.LogError($"{Name} {nameof(PostMessageAsync)} error response: {{Response}}", errors);
             }
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<IBulkMessageQueueReader<TMessage>> GetBulkReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }
