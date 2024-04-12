@@ -25,5 +25,10 @@
         /// Optional user data
         /// </summary>
         public object? UserData { get; set; }
+
+        /// <summary>
+        /// Optional read count
+        /// </summary>
+        public int? ReadCount { get; set; }
     }
 }

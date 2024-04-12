@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,7 +41,7 @@ namespace KM.MessageQueue
         /// <param name="action"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<(bool, CompletionResult)> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
+        Task<(bool Success, CompletionResult CompletionResult)> TryReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
 
         /// <summary>
         /// Attempt to read a message from the queue
@@ -49,5 +50,42 @@ namespace KM.MessageQueue
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Read many messages from the queue
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="count"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<CompletionResult> ReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Read many messages from the queue
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="count"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<(CompletionResult CompletionResult, TResult Result)> ReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Attempt to read many messages from the queue
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="count"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<(bool Success, CompletionResult CompletionResult)> TryReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Attempt to read many messages from the queue
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="count"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken);
     }
 }

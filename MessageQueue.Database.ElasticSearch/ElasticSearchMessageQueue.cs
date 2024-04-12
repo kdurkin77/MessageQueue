@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.ElasticSearch
 {
-    public sealed class ElasticSearchMessageQueue<TMessage> : IMessageQueue<TMessage>, IBulkMessageQueue<TMessage>
+    public sealed class ElasticSearchMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         public ElasticSearchMessageQueue(ILogger<ElasticSearchMessageQueue<TMessage>> logger, IOptions<ElasticSearchMessageQueueOptions<TMessage>> options)
         {
@@ -51,7 +51,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(message));
             }
 
-            await BulkPostMessageAsync([message], cancellationToken);
+            await PostManyMessagesAsync([message], cancellationToken);
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
@@ -68,10 +68,10 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            await BulkPostMessageAsync([message], attributes, cancellationToken);
+            await PostManyMessagesAsync([message], attributes, cancellationToken);
         }
 
-        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -80,10 +80,10 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(messages));
             }
 
-            await BulkPostMessageAsync(messages, _emptyAttributes, cancellationToken);
+            await PostManyMessagesAsync(messages, _emptyAttributes, cancellationToken);
         }
 
-        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -102,17 +102,21 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var esMessages =
-                await Task.WhenAll(messages
-                .Select(async message =>
+            var esMessages = new List<JObject?>();
+            foreach (var message in messages)
+            {
+                if (message is null)
                 {
-                    var messageObject = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
-                    var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
-                    elasticSearchMessage.Merge(messageObject);
-                    return elasticSearchMessage;
-                })).ConfigureAwait(false);
+                    throw new ArgumentNullException(nameof(messages));
+                }
 
-            var messageCount = esMessages.Length;
+                var messageObject = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
+                var elasticSearchMessage = JObject.FromObject(new ElasticSearchMessage(attributes));
+                elasticSearchMessage.Merge(messageObject);
+                esMessages.Add(elasticSearchMessage);
+            }
+
+            var messageCount = esMessages.Count();
 
             BulkResponse? response;
             if (!string.IsNullOrWhiteSpace(attributes.Label))
@@ -165,11 +169,6 @@ namespace KM.MessageQueue.Database.ElasticSearch
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task<IBulkMessageQueueReader<TMessage>> GetBulkReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }

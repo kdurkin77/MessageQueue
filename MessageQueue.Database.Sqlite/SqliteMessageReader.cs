@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
-    internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>, IBulkMessageQueueReader<TMessage>
+    internal sealed class SqliteMessageReader<TMessage> : IMessageQueueReader<TMessage>
     {
         public SqliteMessageReader(ILogger logger, SqliteMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
@@ -22,6 +21,11 @@ namespace KM.MessageQueue.Database.Sqlite
 
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
+            _readCount = options.ReadCount ?? 1;
+            if (_readCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(options.ReadCount));
+            }
 
             Name = options.Name ?? nameof(SqliteMessageReader<TMessage>);
 
@@ -35,6 +39,7 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly SqliteMessageQueue<TMessage> _queue;
         private readonly string? _subscriptionName;
         private readonly object? _userData;
+        private readonly int _readCount;
 
 
         public string Name { get; }
@@ -68,7 +73,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(action));
             }
 
-            return await BulkReadMessageAsync(Wrapper, 1, cancellationToken).ConfigureAwait(false);
+            return await ReadManyMessagesAsync(Wrapper, cancellationToken).ConfigureAwait(false);
 
             async Task<(CompletionResult, TResult)> Wrapper(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, object? userData, CancellationToken cancellationToken)
             {
@@ -77,7 +82,7 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        public async Task<CompletionResult> BulkReadMessageAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, int count, CancellationToken cancellationToken)
+        public async Task<CompletionResult> ReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -86,7 +91,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(action));
             }
 
-            var (completionResult, _) = await BulkReadMessageAsync(Wrapper, count, cancellationToken).ConfigureAwait(false);
+            var (completionResult, _) = await ReadManyMessagesAsync(Wrapper, cancellationToken).ConfigureAwait(false);
 
             return completionResult;
 
@@ -98,14 +103,14 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        public async Task<(CompletionResult CompletionResult, TResult Result)> BulkReadMessageAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, int count, CancellationToken cancellationToken)
+        public async Task<(CompletionResult CompletionResult, TResult Result)> ReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                return await _queue.InternalReadMessageAsync(action, count, _userData, cancellationToken).ConfigureAwait(false);
+                return await _queue.InternalReadMessageAsync(action, _readCount, _userData, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -158,7 +163,7 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        public async Task<(bool, CompletionResult)> TryBulkReadMessageAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, int count, CancellationToken cancellationToken)
+        public async Task<(bool, CompletionResult)> TryReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -169,7 +174,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
             try
             {
-                var completionResult = await BulkReadMessageAsync(action, count, cancellationToken).ConfigureAwait(false);
+                var completionResult = await ReadManyMessagesAsync(action, cancellationToken).ConfigureAwait(false);
                 return (true, completionResult);
             }
             catch (OperationCanceledException)
@@ -178,7 +183,7 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        public async Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryBulkReadMessageAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, int count, CancellationToken cancellationToken)
+        public async Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -189,7 +194,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
             try
             {
-                var (completionResult, result) = await BulkReadMessageAsync(action, count, cancellationToken).ConfigureAwait(false);
+                var (completionResult, result) = await ReadManyMessagesAsync(action, cancellationToken).ConfigureAwait(false);
                 return (true, completionResult, result);
             }
             catch (OperationCanceledException)

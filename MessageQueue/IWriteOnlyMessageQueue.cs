@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,5 +35,22 @@ namespace KM.MessageQueue
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Post many messages to the queue
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Post many messages to the queue with attributes
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="attributes"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task PostManyMessagesAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken);
     }
 }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Database.Sqlite
 {
-    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>, IBulkMessageQueue<TMessage>
+    public sealed class SqliteMessageQueue<TMessage> : IMessageQueue<TMessage>
     {
         public SqliteMessageQueue(ILogger<SqliteMessageQueue<TMessage>> logger, IOptions<SqliteMessageQueueOptions<TMessage>> options)
         {
@@ -78,7 +78,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(message));
             }
 
-            await PostMessageAsync(message, _emptyAttributes, cancellationToken);
+            await PostManyMessagesAsync([message], _emptyAttributes, cancellationToken);
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
@@ -95,10 +95,10 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            await BulkPostMessageAsync([message], attributes, cancellationToken);
+            await PostManyMessagesAsync([message], attributes, cancellationToken);
         }
 
-        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -107,10 +107,10 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(messages));
             }
 
-            await BulkPostMessageAsync(messages, _emptyAttributes, cancellationToken);
+            await PostManyMessagesAsync(messages, _emptyAttributes, cancellationToken);
         }
 
-        public async Task BulkPostMessageAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -141,16 +141,19 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
-                var sqlMessages =
-                    await Task.WhenAll(
-                        messages.Select(async message =>
-                            new SqliteQueueMessage()
-                            {
-                                Id = Guid.NewGuid(),
-                                Attributes = JsonConvert.SerializeObject(attributes),
-                                SequenceNumber = ++_sequenceNumber,
-                                Body = await _messageFormatter.FormatMessage(message).ConfigureAwait(false)
-                            }).ToList()).ConfigureAwait(false);
+                var sqlMessages = new List<SqliteQueueMessage>();
+                foreach (var message in messages)
+                {
+                    var sqlMessage =
+                        new SqliteQueueMessage()
+                        {
+                            Id = Guid.NewGuid(),
+                            Attributes = JsonConvert.SerializeObject(attributes),
+                            SequenceNumber = ++_sequenceNumber,
+                            Body = await _messageFormatter.FormatMessage(message).ConfigureAwait(false)
+                        };
+                    sqlMessages.Add(sqlMessage);
+                }
 
                 var messageCount = sqlMessages.Count();
                 var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
@@ -179,17 +182,6 @@ namespace KM.MessageQueue.Database.Sqlite
 
             var reader = new SqliteMessageReader<TMessage>(_logger, this, options);
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
-        }
-
-        public Task<IBulkMessageQueueReader<TMessage>> GetBulkReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellation)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            var reader = new SqliteMessageReader<TMessage>(_logger, this, options);
-            return Task.FromResult<IBulkMessageQueueReader<TMessage>>(reader);
         }
 
         internal async Task<(CompletionResult, TResult)> InternalReadMessageAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, int count, object? userData, CancellationToken cancellationToken)
