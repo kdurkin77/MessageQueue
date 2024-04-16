@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,7 +73,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
                     try
                     {
                         _logger.LogTrace($"{Name} {nameof(ReadSourceQueueLoop)} invoking {nameof(sourceReader.ReadMessageAsync)}");
-                        var result = await sourceReader.ReadMessageAsync(PushToDestinationQueue, _cancellationSource.Token).ConfigureAwait(false);
+                        var result = await sourceReader.ReadManyMessagesAsync(PushToDestinationQueue, _cancellationSource.Token).ConfigureAwait(false);
                     }
                     catch (TaskCanceledException) when (_cancellationSource.IsCancellationRequested)
                     {
@@ -95,11 +96,11 @@ namespace KM.MessageQueue.Specialized.Forwarder
 
             _logger.LogTrace($"{Name} {nameof(ReadSourceQueueLoop)} exiting");
 
-            async Task<CompletionResult> PushToDestinationQueue(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
+            async Task<CompletionResult> PushToDestinationQueue(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, object? userData, CancellationToken cancellationToken)
             {
                 try
                 {
-                    await _destinationQueue.PostMessageAsync(message, attributes, cancellationToken).ConfigureAwait(false);
+                    await _destinationQueue.PostManyMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
                     return CompletionResult.Complete;
                 }
                 catch (Exception ex)
@@ -146,6 +147,22 @@ namespace KM.MessageQueue.Specialized.Forwarder
 
             _logger.LogTrace($"{Name} invoking {nameof(PostMessageAsync)}(3)");
             await _sourceQueue.PostMessageAsync(message, attributes, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            _logger.LogTrace($"{Name} invoking {nameof(PostMessageAsync)}(3)");
+            await _sourceQueue.PostManyMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task PostManyMessagesAsync(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            _logger.LogTrace($"{Name} invoking {nameof(PostMessageAsync)}(3)");
+            await _sourceQueue.PostManyMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)

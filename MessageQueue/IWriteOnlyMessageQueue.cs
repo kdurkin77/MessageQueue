@@ -51,6 +51,6 @@ namespace KM.MessageQueue
         /// <param name="attributes"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task PostManyMessagesAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken);
+        Task PostManyMessagesAsync(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, CancellationToken cancellationToken);
     }
 }

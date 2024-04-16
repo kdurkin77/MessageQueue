@@ -68,7 +68,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            await PostManyMessagesAsync([message], attributes, cancellationToken);
+            await PostManyMessagesAsync([(message, attributes)], cancellationToken);
         }
 
         public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
@@ -80,10 +80,11 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentNullException(nameof(messages));
             }
 
-            await PostManyMessagesAsync(messages, _emptyAttributes, cancellationToken);
+            var messagesWithAtts = messages.Select(message => (message, _emptyAttributes));
+            await PostManyMessagesAsync(messagesWithAtts, cancellationToken);
         }
 
-        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
+        public async Task PostManyMessagesAsync(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -97,17 +98,23 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentOutOfRangeException(nameof(messages));
             }
 
-            if (attributes is null)
-            {
-                throw new ArgumentNullException(nameof(attributes));
-            }
-
-            var esMessages = new List<JObject?>();
-            foreach (var message in messages)
+            var esMessages = new List<JObject>();
+            foreach (var (message, attributes) in messages)
             {
                 if (message is null)
                 {
                     throw new ArgumentNullException(nameof(messages));
+                }
+
+                if (attributes is null)
+                {
+                    throw new ArgumentNullException(nameof(attributes));
+                }
+
+                if (string.IsNullOrWhiteSpace(_client.ElasticsearchClientSettings.DefaultIndex) && string.IsNullOrWhiteSpace(attributes.Label))
+                {
+                    _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} label or default index is required");
+                    throw new Exception("Label or default index is required");
                 }
 
                 var messageObject = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
@@ -117,45 +124,39 @@ namespace KM.MessageQueue.Database.ElasticSearch
             }
 
             var messageCount = esMessages.Count();
-
-            BulkResponse? response;
-            if (!string.IsNullOrWhiteSpace(attributes.Label))
+            if (messageCount == 1)
             {
-                if (messageCount == 1)
-                {
-                    var elasticSearchMessageJson = JsonConvert.SerializeObject(esMessages[0]);
-                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Label}}, Message: {{Message}}", attributes.Label, elasticSearchMessageJson);
-                }
-                else
-                {
-                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting {{Count}} Messages to {{Label}}", messageCount, attributes.Label);
-                }
-
-                response = await _client.BulkAsync(b => b.Index(attributes.Label!).CreateMany(esMessages)).ConfigureAwait(false);
-            }
-            else if (!string.IsNullOrWhiteSpace(_client.ElasticsearchClientSettings.DefaultIndex))
-            {
-                if (messageCount == 1)
-                {
-                    var elasticSearchMessageJson = JsonConvert.SerializeObject(esMessages[0]);
-                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Index}}, Label: {{Label}}, Message: {{Message}}", _client.ElasticsearchClientSettings.DefaultIndex, attributes.Label, elasticSearchMessageJson);
-                }
-                else
-                {
-                    _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting {{Count}} Messages to {{Label}}", messageCount, _client.ElasticsearchClientSettings.DefaultIndex);
-                }
-
-                response = await _client.BulkAsync(b => b.Index(_client.ElasticsearchClientSettings.DefaultIndex).CreateMany(esMessages)).ConfigureAwait(false);
+                var elasticSearchMessageJson = JsonConvert.SerializeObject(esMessages[0]);
+                _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to {{Label}}, Message: {{Message}}", _client.ElasticsearchClientSettings.DefaultIndex, elasticSearchMessageJson);
             }
             else
             {
-                _logger.LogError($"{Name} {nameof(PostMessageAsync)} label or default index is required");
-                throw new Exception("Label or default index is required");
+                _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting {{Count}} Messages to {{Label}}", messageCount, _client.ElasticsearchClientSettings.DefaultIndex);
             }
 
+            var response =
+                await _client
+                .BulkAsync(b =>
+                    b
+                    .Index(_client.ElasticsearchClientSettings.DefaultIndex)
+                    .CreateMany(esMessages,
+                        (descriptor, doc) =>
+                        {
+                            var attr = doc["MessageAttributes"]?.ToObject<MessageAttributes>();
+                            if (attr != null)
+                            {
+                                var labelObject = new ElasticSearchMessage(attr);
+                                if (!string.IsNullOrWhiteSpace(labelObject?.MessageAttributes?.Label))
+                                {
+                                    //standard 2.0 doesn't realize this is not null
+                                    descriptor.Index(labelObject!.MessageAttributes.Label!);
+                                }
+                            }
+                        })).ConfigureAwait(false);
+           
             if (response.IsValidResponse)
             {
-                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} success response: {{Response}}", response.DebugInformation);
+                _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} success response: {{Response}}", response.DebugInformation);
             }
             else
             {
@@ -164,7 +165,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 {
                     errors = response.ItemsWithErrors.Select(i => $"{i.Id}: {i.Error?.Reason}").Aggregate((c, n) => $"{c}; {n}");
                 }
-                _logger.LogError($"{Name} {nameof(PostMessageAsync)} error response: {{Response}}", errors);
+                _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} error response: {{Response}}", errors);
             }
         }
 

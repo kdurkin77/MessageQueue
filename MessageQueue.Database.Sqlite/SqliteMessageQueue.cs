@@ -78,7 +78,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(message));
             }
 
-            await PostManyMessagesAsync([message], _emptyAttributes, cancellationToken);
+            await PostManyMessagesAsync([message], cancellationToken);
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
@@ -95,7 +95,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            await PostManyMessagesAsync([message], attributes, cancellationToken);
+            await PostManyMessagesAsync([(message, attributes)], cancellationToken);
         }
 
         public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
@@ -107,10 +107,11 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(messages));
             }
 
-            await PostManyMessagesAsync(messages, _emptyAttributes, cancellationToken);
+            var messagesWithAtts = messages.Select(message => (message, _emptyAttributes));
+            await PostManyMessagesAsync(messagesWithAtts, cancellationToken);
         }
 
-        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, MessageAttributes attributes, CancellationToken cancellationToken)
+        public async Task PostManyMessagesAsync(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -122,11 +123,6 @@ namespace KM.MessageQueue.Database.Sqlite
             if (!messages.Any())
             {
                 throw new ArgumentOutOfRangeException(nameof(messages));
-            }
-
-            if (attributes is null)
-            {
-                throw new ArgumentNullException(nameof(attributes));
             }
 
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -142,8 +138,14 @@ namespace KM.MessageQueue.Database.Sqlite
                 }
 
                 var sqlMessages = new List<SqliteQueueMessage>();
-                foreach (var message in messages)
+                foreach (var (message, attributes) in messages)
                 {
+
+                    if (attributes is null)
+                    {
+                        throw new ArgumentNullException(nameof(attributes));
+                    }
+
                     var sqlMessage =
                         new SqliteQueueMessage()
                         {
@@ -157,7 +159,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
                 var messageCount = sqlMessages.Count();
                 var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
-                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to store, Label: {{Label}}, Message: {{Message}}", attributes.Label, messageString);
+                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to store, Message: {{Message}}", messageString);
 
                 _dbContext.SqliteQueueMessages.AddRange(sqlMessages);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
