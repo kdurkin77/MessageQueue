@@ -68,17 +68,25 @@ namespace KM.MessageQueue.Database.Sqlite
         {
             ThrowIfDisposed();
 
-            if (action is null)
+            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
-                throw new ArgumentNullException(nameof(action));
+                return await _queue.InternalReadMessageAsync(Wrapper, 1, _userData, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{Name} exception in {nameof(ReadMessageAsync)}");
+                throw;
+            }
+            finally
+            {
+                _ = _sync.Release();
             }
 
-            return await ReadManyMessagesAsync(Wrapper, cancellationToken).ConfigureAwait(false);
-
-            async Task<(CompletionResult, TResult)> Wrapper(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, object? userData, CancellationToken cancellationToken)
+            async Task<(CompletionResult CompletionResult, TResult)> Wrapper(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, object? userData, CancellationToken cancellationToken)
             {
-                var (message, attributes) = messages.First();
-                return await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
+                var (message, attr) = messages.Single();
+                return await action(message, attr, userData, cancellationToken).ConfigureAwait(false);
             }
         }
 
