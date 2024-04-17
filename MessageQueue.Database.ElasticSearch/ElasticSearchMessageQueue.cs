@@ -27,6 +27,13 @@ namespace KM.MessageQueue.Database.ElasticSearch
             _client = new ElasticsearchClient(opts.ConnectionSettings);
             Name = opts.Name ?? nameof(ElasticSearchMessageQueue<TMessage>);
 
+            MaxReadCount = 0;
+            MaxWriteCount = opts.MaxWriteCount ?? 1;
+            if (MaxWriteCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(opts.MaxWriteCount));
+            }
+
             _logger.LogTrace($"{Name} initialized");
         }
 
@@ -41,6 +48,9 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
 
         public string Name { get; }
+
+        public int MaxWriteCount { get; }
+        public int MaxReadCount { get; }
 
         public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -96,6 +106,12 @@ namespace KM.MessageQueue.Database.ElasticSearch
             if (!messages.Any())
             {
                 throw new ArgumentOutOfRangeException(nameof(messages));
+            }
+
+            if (messages.Count() > MaxWriteCount)
+            {
+                _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} message count exceeds max write count of {MaxWriteCount}");
+                throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
             }
 
             var esMessages = new List<JObject>();

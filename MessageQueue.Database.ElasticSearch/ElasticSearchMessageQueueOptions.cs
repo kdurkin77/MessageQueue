@@ -17,6 +17,11 @@ namespace KM.MessageQueue.Database.ElasticSearch
         internal string? Name { get; set; }
 
         /// <summary>
+        /// The max number of messages that can be written at once
+        /// </summary>
+        public int? MaxWriteCount { get; set; }
+
+        /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which converts the message to a <see cref="JObject"/>
         /// </summary>

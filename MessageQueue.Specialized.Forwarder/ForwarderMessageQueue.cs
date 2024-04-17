@@ -32,6 +32,11 @@ namespace KM.MessageQueue.Specialized.Forwarder
 
             Name = opts.Name ?? nameof(ForwarderMessageQueue<TMessage>);
 
+            //whichever is lesser is our limit since we write whatever we read from the source queue to the destination queue
+            var count = _sourceQueue.MaxReadCount < _destinationQueue.MaxWriteCount ? _sourceQueue.MaxReadCount : _destinationQueue.MaxWriteCount;
+            MaxReadCount = count;
+            MaxWriteCount = count;
+
             _readerLoopTask = Task.Run(ReadSourceQueueLoop);
 
             _logger.LogTrace($"{Name} initialized");
@@ -63,7 +68,8 @@ namespace KM.MessageQueue.Specialized.Forwarder
                 var readerOptions = new MessageQueueReaderOptions<TMessage>()
                 {
                     SubscriptionName = _subscriptionName,
-                    UserData = _userData
+                    UserData = _userData,
+                    ReadCount = MaxReadCount
                 };
 
                 var sourceReader = await _sourceQueue.GetReaderAsync(readerOptions, _cancellationSource.Token).ConfigureAwait(false);
@@ -132,6 +138,10 @@ namespace KM.MessageQueue.Specialized.Forwarder
 
 
         public string Name { get; }
+
+        public int MaxWriteCount { get; }
+        public int MaxReadCount { get; }
+
 
         public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {

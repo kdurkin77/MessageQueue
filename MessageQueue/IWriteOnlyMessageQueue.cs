@@ -20,6 +20,11 @@ namespace KM.MessageQueue
         string Name { get; }
 
         /// <summary>
+        /// Max number of messages that can be posted at once
+        /// </summary>
+        int MaxWriteCount { get; }
+
+        /// <summary>
         /// Post a message to the queue
         /// </summary>
         /// <param name="message"></param>

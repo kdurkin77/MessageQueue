@@ -19,6 +19,11 @@ namespace KM.MessageQueue
         string Name { get; }
 
         /// <summary>
+        /// Max number of messages that can be read at once
+        /// </summary>
+        int MaxReadCount { get; }
+
+        /// <summary>
         /// Gets the reader for the <see cref="IReadOnlyMessageQueue{TMessage}"/>
         /// </summary>
         /// <param name="options"></param>

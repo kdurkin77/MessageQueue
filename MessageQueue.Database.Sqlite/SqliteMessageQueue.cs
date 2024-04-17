@@ -23,6 +23,18 @@ namespace KM.MessageQueue.Database.Sqlite
             _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>();
             _maxQueueSize = opts.MaxQueueSize;
 
+            MaxWriteCount = opts.MaxWriteCount ?? 1;
+            if (MaxWriteCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(opts.MaxWriteCount));
+            }
+
+            MaxReadCount = opts.MaxReadCount ?? 1;
+            if (MaxReadCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(opts.MaxReadCount));
+            }
+
             if (string.IsNullOrWhiteSpace(opts.ConnectionString))
             {
                 throw new ArgumentException($"{nameof(opts.ConnectionString)} is required", nameof(options));
@@ -68,6 +80,9 @@ namespace KM.MessageQueue.Database.Sqlite
 
 
         public string Name { get; }
+
+        public int MaxWriteCount { get; }
+        public int MaxReadCount { get; }
 
         public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -137,6 +152,12 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
                 }
 
+                if (messages.Count() > MaxWriteCount)
+                {
+                    _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} message count exceeds max write count of {MaxWriteCount}");
+                    throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
+                }
+
                 var sqlMessages = new List<SqliteQueueMessage>();
                 foreach (var (message, attributes) in messages)
                 {
@@ -193,6 +214,12 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentNullException(nameof(action));
             }
 
+            if (count > MaxReadCount)
+            {
+                _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} read count exceeds max read count of {MaxReadCount}");
+                throw new InvalidOperationException($"Read count exceeds max read count of {MaxReadCount}");
+            }
+
             while (true)
             {
                 await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -204,34 +231,31 @@ namespace KM.MessageQueue.Database.Sqlite
                         continue;
                     }
 
-                    var items =
-                        await Task.WhenAll(
-                        _messageQueue
-                        .Take(count)
-                        .Select(async item =>
+                    var items = new List<(SqliteQueueMessage item, TMessage message, MessageAttributes atts)>();
+                    foreach (var item in _messageQueue.Take(count).ToList())
+                    {
+                        if (item.Attributes is null)
                         {
-                            if (item.Attributes is null)
-                            {
-                                _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null attributes", item.Id);
-                                throw new Exception($"{item.Attributes} is required");
-                            }
+                            _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null attributes", item.Id);
+                            throw new Exception($"{item.Attributes} is required");
+                        }
 
-                            var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes);
-                            if (atts is null)
-                            {
-                                _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has invalid attributes: {{Attributes}}", item.Id, item.Attributes);
-                                throw new FormatException($"{nameof(item.Attributes)} is invalid");
-                            }
+                        var atts = JsonConvert.DeserializeObject<MessageAttributes>(item.Attributes);
+                        if (atts is null)
+                        {
+                            _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has invalid attributes: {{Attributes}}", item.Id, item.Attributes);
+                            throw new FormatException($"{nameof(item.Attributes)} is invalid");
+                        }
 
-                            if (item.Body is null)
-                            {
-                                _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null body", item.Id);
-                                throw new Exception($"{nameof(item.Body)} is required");
-                            }
+                        if (item.Body is null)
+                        {
+                            _logger.LogError($"{Name} {nameof(InternalReadMessageAsync)} message {{Id}} has null body", item.Id);
+                            throw new Exception($"{nameof(item.Body)} is required");
+                        }
 
-                            var message = await _messageFormatter.RevertMessage(item.Body).ConfigureAwait(false);
-                            return (item, message, atts);
-                        }).ToList()).ConfigureAwait(false);
+                        var message = await _messageFormatter.RevertMessage(item.Body).ConfigureAwait(false);
+                        items.Add((item, message, atts));
+                    }
 
                     var messageAtts = items.Select(i => (i.message, i.atts)).ToList();
                     var (completionResult, result) = await action(messageAtts, userData, cancellationToken).ConfigureAwait(false);

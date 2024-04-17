@@ -29,6 +29,16 @@ namespace KM.MessageQueue.Database.Sqlite
         public TimeSpan? IdleDelay { get; set; }
 
         /// <summary>
+        /// The max number of messages that can be read at once
+        /// </summary>
+        public int? MaxReadCount { get; set; }
+
+        /// <summary>
+        /// The max number of messages that can be written at once
+        /// </summary>
+        public int? MaxWriteCount { get; set; }
+
+        /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which serializes the message to a json string />
         /// </summary>
