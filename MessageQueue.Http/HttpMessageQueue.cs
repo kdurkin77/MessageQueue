@@ -4,12 +4,15 @@ using KM.MessageQueue.Formatters.StringToHttpContent;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace KM.MessageQueue.Http
 {
@@ -73,6 +76,9 @@ namespace KM.MessageQueue.Http
 
         public string Name { get; }
 
+        public int MaxWriteCount { get; } = 1;
+        public int MaxReadCount { get; } = 0;
+
         public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -82,7 +88,7 @@ namespace KM.MessageQueue.Http
                 throw new ArgumentNullException(nameof(message));
             }
 
-            await PostMessageAsync(message, _emptyAttributes, cancellationToken);
+            await PostManyMessagesAsync([message], cancellationToken);
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
@@ -99,7 +105,44 @@ namespace KM.MessageQueue.Http
                 throw new ArgumentNullException(nameof(attributes));
             }
 
+            await PostManyMessagesAsync([(message, attributes)], cancellationToken);
+        }
+
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            var messagesWithAtts = messages.Select(message => (message, _emptyAttributes));
+            await PostManyMessagesAsync(messagesWithAtts, cancellationToken);
+        }
+
+        public async Task PostManyMessagesAsync(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            if (!messages.Any())
+            {
+                throw new ArgumentOutOfRangeException(nameof(messages));
+            }
+
+            if (messages.Count() > MaxWriteCount)
+            {
+                _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} message count exceeds max write count of {MaxWriteCount}");
+                throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
+            }
+
             var url = _uri.ToString();
+            var (message, attributes) = messages.Single();
             if (_shouldUseQueryParameters)
             {
                 var queryDict = await _queryMessageFormatter.FormatMessage(message).ConfigureAwait(false);

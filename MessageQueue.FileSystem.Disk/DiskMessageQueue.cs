@@ -85,6 +85,9 @@ namespace KM.MessageQueue.FileSystem.Disk
 
         public string Name { get; }
 
+        public int MaxWriteCount { get; } = 1;
+        public int MaxReadCount { get; } = 1;
+
         public Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -111,6 +114,42 @@ namespace KM.MessageQueue.FileSystem.Disk
                 throw new ArgumentNullException(nameof(attributes));
             }
 
+            await PostManyMessagesAsync([(message, attributes)], cancellationToken);
+        }
+
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            var messagesWithAtts = messages.Select(message => (message, _emptyAttributes));
+            await PostManyMessagesAsync(messagesWithAtts, cancellationToken);
+        }
+
+        public async Task PostManyMessagesAsync(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            if (!messages.Any())
+            {
+                throw new ArgumentOutOfRangeException(nameof(messages));
+            }
+
+            if (messages.Count() > MaxWriteCount)
+            {
+                _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} message count exceeds max write count of {MaxWriteCount}");
+                throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
+            }
+
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -124,6 +163,7 @@ namespace KM.MessageQueue.FileSystem.Disk
                     }
                 }
 
+                var (message, attributes) = messages.Single();
                 var formattedMessage = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
 
                 var diskMessage =
@@ -135,7 +175,6 @@ namespace KM.MessageQueue.FileSystem.Disk
                         );
 
                 var file = await PersistMessageAsync(diskMessage, cancellationToken).ConfigureAwait(false);
-
                 _messageQueue.Enqueue((file, diskMessage));
             }
             finally
@@ -222,7 +261,7 @@ namespace KM.MessageQueue.FileSystem.Disk
             return Task.FromResult<IMessageQueueReader<TMessage>>(reader);
         }
 
-        internal async Task<(CompletionResult, TResult)> InternalReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, object? userData, CancellationToken cancellationToken)
+        internal async Task<(CompletionResult, TResult)> InternalReadMessageAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, object? userData, CancellationToken cancellationToken)
         {
             if (action is null)
             {
@@ -242,7 +281,7 @@ namespace KM.MessageQueue.FileSystem.Disk
 
                     var item = _messageQueue.Peek();
                     var message = await _messageFormatter.RevertMessage(item.Message.Body).ConfigureAwait(false);
-                    var (completionResult, result) = await action(message, item.Message.Attributes, userData, cancellationToken).ConfigureAwait(false);
+                    var (completionResult, result) = await action([ (message, item.Message.Attributes)], userData, cancellationToken).ConfigureAwait(false);
                     if (completionResult == CompletionResult.Complete)
                     {
                         item.File.Delete();

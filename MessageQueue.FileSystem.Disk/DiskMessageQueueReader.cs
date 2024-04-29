@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +15,7 @@ namespace KM.MessageQueue.FileSystem.Disk
         private readonly ILogger _logger;
         private readonly DiskMessageQueue<TMessage> _queue;
         private readonly object? _userData;
+        private readonly int _readCount;
 
         public DiskMessageQueueReader(ILogger logger, DiskMessageQueue<TMessage> queue, MessageQueueReaderOptions<TMessage> options)
         {
@@ -25,6 +28,11 @@ namespace KM.MessageQueue.FileSystem.Disk
             }
 
             _userData = options.UserData;
+            _readCount = options.ReadCount ?? 1;
+            if (_readCount != 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(options.ReadCount));
+            }
 
 
             Name = options.Name ?? nameof(DiskMessageQueueReader<TMessage>);
@@ -46,7 +54,6 @@ namespace KM.MessageQueue.FileSystem.Disk
 
             return completionResult;
 
-
             async Task<(CompletionResult CompletionResult, int)> Wrapper(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
             {
                 var completionResult = await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
@@ -55,6 +62,40 @@ namespace KM.MessageQueue.FileSystem.Disk
         }
 
         public async Task<(CompletionResult CompletionResult, TResult Result)> ReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            return await ReadManyMessagesAsync(Wrapper, cancellationToken).ConfigureAwait(false);
+
+            async Task<(CompletionResult CompletionResult, TResult)> Wrapper(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, object? userData, CancellationToken cancellationToken)
+            {
+                var (message, attr) = messages.Single();
+                return await action(message, attr, userData, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        public async Task<CompletionResult> ReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            var (completionResult, _) = await ReadManyMessagesAsync(Wrapper, cancellationToken).ConfigureAwait(false);
+
+            return completionResult;
+
+
+            async Task<(CompletionResult CompletionResult, int)> Wrapper(IEnumerable<(TMessage, MessageAttributes)> messages, object? userData, CancellationToken cancellationToken)
+            {
+                var completionResult = await action(messages, userData, cancellationToken).ConfigureAwait(false);
+                return (completionResult, 0);
+            }
+        }
+
+        public async Task<(CompletionResult CompletionResult, TResult Result)> ReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -111,6 +152,46 @@ namespace KM.MessageQueue.FileSystem.Disk
             try
             {
                 var (completionResult, result) = await ReadMessageAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult, result);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default, default!);
+            }
+        }
+
+        public async Task<(bool, CompletionResult)> TryReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var completionResult = await ReadManyMessagesAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default);
+            }
+        }
+
+        public async Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var (completionResult, result) = await ReadManyMessagesAsync(action, cancellationToken).ConfigureAwait(false);
                 return (true, completionResult, result);
             }
             catch (OperationCanceledException)

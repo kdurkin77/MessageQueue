@@ -140,9 +140,17 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentOutOfRangeException(nameof(messages));
             }
 
+            if (messages.Count() > MaxWriteCount)
+            {
+                _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} message count exceeds max write count of {MaxWriteCount}");
+                throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
+            }
+
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                ThrowIfDisposed();
+
                 if (_maxQueueSize is { } maxQueueSize)
                 {
                     if (_messageQueue.Count >= maxQueueSize)
@@ -150,12 +158,6 @@ namespace KM.MessageQueue.Database.Sqlite
                         _logger.LogError($"{Name} {nameof(PostMessageAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
                         throw new InvalidOperationException($"{Name} {nameof(PostMessageAsync)} exceeded maximum queue size of {maxQueueSize}");
                     }
-                }
-
-                if (messages.Count() > MaxWriteCount)
-                {
-                    _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} message count exceeds max write count of {MaxWriteCount}");
-                    throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
                 }
 
                 var sqlMessages = new List<SqliteQueueMessage>();

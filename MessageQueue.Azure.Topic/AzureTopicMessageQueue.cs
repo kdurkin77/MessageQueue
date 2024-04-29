@@ -4,6 +4,8 @@ using KM.MessageQueue.Formatters.StringToBytes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,6 +25,18 @@ namespace KM.MessageQueue.Azure.Topic
 
             Name = opts.Name ?? nameof(AzureTopicMessageQueue<TMessage>);
 
+            MaxReadCount = opts.MaxReadCount ?? 1;
+            if (MaxReadCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(opts.MaxReadCount));
+            }
+
+            MaxWriteCount = opts.MaxWriteCount ?? 1;
+            if (MaxWriteCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(opts.MaxWriteCount));
+            }
+
             _logger.LogTrace($"{Name} initialized");
         }
 
@@ -39,6 +53,9 @@ namespace KM.MessageQueue.Azure.Topic
 
         public string Name { get; }
 
+        public int MaxWriteCount { get; }
+        public int MaxReadCount { get; }
+
         public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -48,7 +65,7 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(message));
             }
 
-            await PostMessageAsync(message, _emptyAttributes, cancellationToken);
+            await PostManyMessagesAsync([message], cancellationToken);
         }
 
         public async Task PostMessageAsync(TMessage message, MessageAttributes attributes, CancellationToken cancellationToken)
@@ -65,25 +82,67 @@ namespace KM.MessageQueue.Azure.Topic
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
-            await using var sender = _serviceBusClient.CreateSender(_entityPath);
-            var sbMessage = new ServiceBusMessage(messageBytes)
-            {
-                ContentType = attributes.ContentType,
-                Subject = attributes.Label
-            };
+            await PostManyMessagesAsync([(message, attributes)], cancellationToken);
+        }
 
-            if (attributes.UserProperties is { } userProperties)
+        public async Task PostManyMessagesAsync(IEnumerable<TMessage> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
             {
-                foreach (var userProperty in userProperties)
-                {
-                    sbMessage.ApplicationProperties.Add(userProperty.Key, userProperty.Value);
-                }
+                throw new ArgumentNullException(nameof(messages));
             }
 
-            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Path}}", $"{_serviceBusClient.FullyQualifiedNamespace}/{_entityPath}/{attributes.Label}");
+            var messagesWithAtts = messages.Select(message => (message, _emptyAttributes));
+            await PostManyMessagesAsync(messagesWithAtts, cancellationToken);
+        }
 
-            await sender.SendMessageAsync(sbMessage, cancellationToken).ConfigureAwait(false);
+        public async Task PostManyMessagesAsync(IEnumerable<(TMessage message, MessageAttributes attributes)> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            if (!messages.Any())
+            {
+                throw new ArgumentOutOfRangeException(nameof(messages));
+            }
+
+            if (messages.Count() > MaxWriteCount)
+            {
+                _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} message count exceeds max write count of {MaxWriteCount}");
+                throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
+            }
+
+            var azureMessages = new List<ServiceBusMessage>();
+            foreach (var (message, attributes) in messages)
+            {
+                var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
+                var sbMessage = new ServiceBusMessage(messageBytes)
+                {
+                    ContentType = attributes.ContentType,
+                    Subject = attributes.Label
+                };
+
+                if (attributes.UserProperties is { } userProperties)
+                {
+                    foreach (var userProperty in userProperties)
+                    {
+                        sbMessage.ApplicationProperties.Add(userProperty.Key, userProperty.Value);
+                    }
+                }
+
+                azureMessages.Add(sbMessage);
+            }
+
+            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting {{messageCount}} messages to {{Path}}", azureMessages.Count, $"{_serviceBusClient.FullyQualifiedNamespace}/{_entityPath}");
+
+            await using var sender = _serviceBusClient.CreateSender(_entityPath);
+            await sender.SendMessagesAsync(azureMessages, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)

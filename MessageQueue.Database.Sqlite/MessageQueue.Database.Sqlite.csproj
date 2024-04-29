@@ -34,7 +34,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
-      <Version>8.0.3</Version>
+      <Version>8.0.4</Version>
     </PackageReference>
   </ItemGroup>
 	

@@ -22,6 +22,11 @@ namespace KM.MessageQueue.Mqtt
         public string? Name { get; set; }
 
         /// <summary>
+        /// The max number of messages that can be read at once
+        /// </summary>
+        public int? MaxReadCount { get; set; }
+
+        /// <summary>
         /// The <see cref="IMessageFormatter{TMessageIn, TMessageOut}"/> to use. If not specified, it will use the default
         /// formatter which serializes the message to JSON and then converts it to bytes
         /// </summary>

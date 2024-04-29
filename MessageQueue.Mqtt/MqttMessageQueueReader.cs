@@ -27,6 +27,11 @@ namespace KM.MessageQueue.Mqtt
 
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
+            _readCount = options.ReadCount ?? 1;
+            if (_readCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(options.ReadCount));
+            }
 
             Name = options.Name ?? nameof(MqttMessageQueueReader<TMessage>);
 
@@ -38,7 +43,7 @@ namespace KM.MessageQueue.Mqtt
         private bool _subscribed = false;
         private readonly SemaphoreSlim _sync = new(1, 1);
         private readonly CancellationTokenSource _cancellationSource = new();
-        private readonly Queue<(TMessage Message, MessageAttributes Attributes)> _messages = new();
+        private readonly LinkedList<(TMessage Message, MessageAttributes Attributes)> _messages = new();
 
         private readonly ILogger _logger;
         private readonly MqttMessageQueue<TMessage> _queue;
@@ -46,6 +51,7 @@ namespace KM.MessageQueue.Mqtt
         private readonly IMqttClient _mqttReaderClient;
         private readonly string? _subscriptionName;
         private readonly object? _userData;
+        private readonly int _readCount;
 
 
         public string Name { get; }
@@ -85,27 +91,6 @@ namespace KM.MessageQueue.Mqtt
             }
         }
 
-        public async Task<CompletionResult> ReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            if (action is null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
-            var (completionResult, _) = await ReadMessageAsync(Wrapper, cancellationToken).ConfigureAwait(false);
-
-            return completionResult;
-
-
-            async Task<(CompletionResult CompletionResult, int)> Wrapper(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
-            {
-                var completionResult = await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
-                return (completionResult, 0);
-            }
-        }
-
         private async Task EnsureSubscribedAsync(CancellationToken cancellationToken)
         {
             if (_subscribed)
@@ -140,6 +125,48 @@ namespace KM.MessageQueue.Mqtt
             }
         }
 
+        private async Task MqttClient_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
+        {
+            await _sync.WaitAsync(_cancellationSource.Token).ConfigureAwait(false);
+            try
+            {
+                var attributes = new MessageAttributes()
+                {
+                    ContentType = arg.ApplicationMessage.ContentType,
+                    Label = arg.ApplicationMessage.Topic,
+                    UserProperties = arg.ApplicationMessage.UserProperties?.ToDictionary(prop => prop.Name, prop => (object)prop.Value)
+                };
+
+                var message = await _queue._messageFormatter.RevertMessage(arg.ApplicationMessage.PayloadSegment.ToArray()).ConfigureAwait(false);
+
+                _messages.AddLast((message, attributes));
+            }
+            finally
+            {
+                _ = _sync.Release();
+            }
+        }
+
+        public async Task<CompletionResult> ReadMessageAsync(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            var (completionResult, _) = await ReadMessageAsync(Wrapper, cancellationToken).ConfigureAwait(false);
+
+            return completionResult;
+
+            async Task<(CompletionResult CompletionResult, int)> Wrapper(TMessage message, MessageAttributes attributes, object? userData, CancellationToken cancellationToken)
+            {
+                var completionResult = await action(message, attributes, userData, cancellationToken).ConfigureAwait(false);
+                return (completionResult, 0);
+            }
+        }
+
         public async Task<(CompletionResult CompletionResult, TResult Result)> ReadMessageAsync<TResult>(Func<TMessage, MessageAttributes, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -158,18 +185,17 @@ namespace KM.MessageQueue.Mqtt
                 await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-#if NETSTANDARD2_0
                     if (_messages.Any())
                     {
-                        var (message, attributes) = _messages.Dequeue();
-                        return await action(message, attributes, _userData, cancellationToken).ConfigureAwait(false);
+                        var (message, attributes) = _messages.First();
+                        var (completionResult, result) = await action(message, attributes, _userData, cancellationToken).ConfigureAwait(false);
+                        if (completionResult == CompletionResult.Complete)
+                        {
+                            _messages.RemoveFirst();
+                        }
+
+                        return (completionResult, result);
                     }
-#else
-                    if (_messages.TryDequeue(out var info))
-                    {
-                        return await action(info.Message, info.Attributes, _userData, cancellationToken).ConfigureAwait(false);
-                    }
-#endif
                 }
                 finally
                 {
@@ -180,25 +206,66 @@ namespace KM.MessageQueue.Mqtt
             }
         }
 
-        private async Task MqttClient_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
+        public async Task<CompletionResult> ReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
         {
-            await _sync.WaitAsync(_cancellationSource.Token).ConfigureAwait(false);
-            try
+            ThrowIfDisposed();
+
+            if (action is null)
             {
-                var attributes = new MessageAttributes()
-                {
-                    ContentType = arg.ApplicationMessage.ContentType,
-                    Label = arg.ApplicationMessage.Topic,
-                    UserProperties = arg.ApplicationMessage.UserProperties?.ToDictionary(prop => prop.Name, prop => (object)prop.Value)
-                };
-
-                var message = await _queue._messageFormatter.RevertMessage(arg.ApplicationMessage.PayloadSegment.ToArray()).ConfigureAwait(false);
-
-                _messages.Enqueue((message, attributes));
+                throw new ArgumentNullException(nameof(action));
             }
-            finally
+
+            var (completionResult, _) = await ReadManyMessagesAsync(Wrapper, cancellationToken).ConfigureAwait(false);
+
+            return completionResult;
+
+
+            async Task<(CompletionResult CompletionResult, int)> Wrapper(IEnumerable<(TMessage, MessageAttributes)> messages, object? userData, CancellationToken cancellationToken)
             {
-                _ = _sync.Release();
+                var completionResult = await action(messages, userData, cancellationToken).ConfigureAwait(false);
+                return (completionResult, 0);
+            }
+        }
+
+        public async Task<(CompletionResult CompletionResult, TResult Result)> ReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            while (true)
+            {
+                // specific reader connection
+                await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+                await EnsureSubscribedAsync(cancellationToken).ConfigureAwait(false);
+
+                await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    if (_messages.Any())
+                    {
+                        var items = _messages.Take(_readCount).ToList();
+                        var (completionResult, result) = await action(items, _userData, cancellationToken).ConfigureAwait(false);
+                        if (completionResult == CompletionResult.Complete)
+                        {
+                            for (var i = 0; i < items.Count(); i++)
+                            {
+                                _messages.RemoveFirst();
+                            }
+                        }
+
+                        return (completionResult, result);
+                    }
+                }
+                finally
+                {
+                    _ = _sync.Release();
+                }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -242,6 +309,45 @@ namespace KM.MessageQueue.Mqtt
             }
         }
 
+        public async Task<(bool, CompletionResult)> TryReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var completionResult = await ReadManyMessagesAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default);
+            }
+        }
+
+        public async Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            try
+            {
+                var (completionResult, result) = await ReadManyMessagesAsync(action, cancellationToken).ConfigureAwait(false);
+                return (true, completionResult, result);
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, default, default!);
+            }
+        }
 
         private void ThrowIfDisposed()
         {
