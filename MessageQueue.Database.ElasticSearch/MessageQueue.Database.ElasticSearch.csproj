@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;net8;</TargetFrameworks>
+		<TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -25,9 +25,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Elastic.Clients.Elasticsearch" Version="8.13.11" />
+    <PackageReference Include="Elastic.Clients.Elasticsearch" Version="8.13.12" />
     <!--<PackageReference Include="KM.MessageQueue" Version="8.0.0" />-->
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="8.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="8.0.0" />-->
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -41,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonObject\MessageQueue.Formatters.ObjectToJsonObject.csproj" />
     <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 	

@@ -7,7 +7,7 @@ namespace KM.MessageQueue
     /// </summary>
     public sealed class MessageAttributes
     {
-        public readonly Dictionary<string, object?> _attributes = new();
+        public readonly Dictionary<string, object?> _attributes = [];
 
         /// <summary>
         /// The type of content

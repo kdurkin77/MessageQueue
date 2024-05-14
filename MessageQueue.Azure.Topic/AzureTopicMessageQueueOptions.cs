@@ -72,12 +72,7 @@ namespace KM.MessageQueue.Azure.Topic
             if (entityPath is null)
             {
                 //check the end of the endpoint for entity path
-                var endpoint = keyValuePairs.SingleOrDefault(k => string.Equals(k.Key, "Endpoint", StringComparison.OrdinalIgnoreCase)).Value;
-                if (endpoint is null)
-                {
-                    throw new ArgumentException($"{nameof(connectionString)} must include Endpoint", nameof(connectionString));
-                }
-
+                var endpoint = keyValuePairs.SingleOrDefault(k => string.Equals(k.Key, "Endpoint", StringComparison.OrdinalIgnoreCase)).Value ?? throw new ArgumentException($"{nameof(connectionString)} must include Endpoint", nameof(connectionString));
                 var index = endpoint.LastIndexOf("/");
                 if (index == -1)
                 {

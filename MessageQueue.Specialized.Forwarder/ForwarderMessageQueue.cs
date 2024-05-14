@@ -78,7 +78,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
                 {
                     try
                     {
-                        _logger.LogTrace($"{Name} {nameof(ReadSourceQueueLoop)} invoking {nameof(sourceReader.ReadMessageAsync)}");
+                        _logger.LogTrace($"{Name} {nameof(ReadSourceQueueLoop)} invoking {nameof(sourceReader.ReadManyMessagesAsync)}");
                         var result = await sourceReader.ReadManyMessagesAsync(PushToDestinationQueue, _cancellationSource.Token).ConfigureAwait(false);
                     }
                     catch (TaskCanceledException) when (_cancellationSource.IsCancellationRequested)
@@ -87,7 +87,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)} in {nameof(sourceReader.ReadMessageAsync)}.  Retry in {{RetryDelay}}", _retryDelay);
+                        _logger.LogError(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)} in {nameof(sourceReader.ReadManyMessagesAsync)}.  Retry in {{RetryDelay}}", _retryDelay);
                         await Task.Delay(_retryDelay).ConfigureAwait(false);
                     }
                 }
@@ -163,7 +163,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
         {
             ThrowIfDisposed();
 
-            _logger.LogTrace($"{Name} invoking {nameof(PostMessageAsync)}(3)");
+            _logger.LogTrace($"{Name} invoking {nameof(PostManyMessagesAsync)}");
             await _sourceQueue.PostManyMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
@@ -171,7 +171,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
         {
             ThrowIfDisposed();
 
-            _logger.LogTrace($"{Name} invoking {nameof(PostMessageAsync)}(3)");
+            _logger.LogTrace($"{Name} invoking {nameof(PostManyMessagesAsync)}");
             await _sourceQueue.PostManyMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 

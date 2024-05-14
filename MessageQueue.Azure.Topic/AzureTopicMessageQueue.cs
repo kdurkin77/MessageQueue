@@ -139,7 +139,7 @@ namespace KM.MessageQueue.Azure.Topic
                 azureMessages.Add(sbMessage);
             }
 
-            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting {{messageCount}} messages to {{Path}}", azureMessages.Count, $"{_serviceBusClient.FullyQualifiedNamespace}/{_entityPath}");
+            _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting {{messageCount}} messages to {{Path}}", azureMessages.Count, $"{_serviceBusClient.FullyQualifiedNamespace}/{_entityPath}");
 
             await using var sender = _serviceBusClient.CreateSender(_entityPath);
             await sender.SendMessagesAsync(azureMessages, cancellationToken).ConfigureAwait(false);

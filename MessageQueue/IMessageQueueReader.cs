@@ -55,7 +55,6 @@ namespace KM.MessageQueue
         /// Read many messages from the queue
         /// </summary>
         /// <param name="action"></param>
-        /// <param name="count"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<CompletionResult> ReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
@@ -65,7 +64,6 @@ namespace KM.MessageQueue
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="action"></param>
-        /// <param name="count"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<(CompletionResult CompletionResult, TResult Result)> ReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken);
@@ -74,7 +72,6 @@ namespace KM.MessageQueue
         /// Attempt to read many messages from the queue
         /// </summary>
         /// <param name="action"></param>
-        /// <param name="count"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<(bool Success, CompletionResult CompletionResult)> TryReadManyMessagesAsync(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<CompletionResult>> action, CancellationToken cancellationToken);
@@ -83,7 +80,6 @@ namespace KM.MessageQueue
         /// Attempt to read many messages from the queue
         /// </summary>
         /// <param name="action"></param>
-        /// <param name="count"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<(bool Success, CompletionResult CompletionResult, TResult Result)> TryReadManyMessagesAsync<TResult>(Func<IEnumerable<(TMessage, MessageAttributes)>, object?, CancellationToken, Task<(CompletionResult, TResult)>> action, CancellationToken cancellationToken);

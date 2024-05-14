@@ -22,9 +22,9 @@ namespace KM.MessageQueue.Database.Sqlite
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
             _readCount = options.ReadCount ?? 1;
-            if (_readCount <= 0)
+            if (_readCount <= 0 || _readCount > queue.MaxReadCount)
             {
-                throw new ArgumentOutOfRangeException(nameof(options.ReadCount));
+                throw new ArgumentOutOfRangeException(nameof(options.ReadCount), $"{options.ReadCount} must be greater than 0 and cannot be greater than {queue.MaxReadCount}");
             }
 
             Name = options.Name ?? nameof(SqliteMessageReader<TMessage>);

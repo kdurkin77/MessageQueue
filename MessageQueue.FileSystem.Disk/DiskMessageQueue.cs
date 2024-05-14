@@ -63,12 +63,9 @@ namespace KM.MessageQueue.FileSystem.Disk
                             var fileBytes = Decompress(compressedBytes);
                             var fileJson = Encoding.UTF8.GetString(fileBytes);
                             var diskMessage = JsonConvert.DeserializeObject<DiskMessage>(fileJson);
-                            if (diskMessage is null)
-                            {
-                                throw new Exception($"Improperly formatted disk message queue file: {file.FullName}");
-                            }
-
-                            return (file, diskMessage);
+                            return diskMessage is null
+                                ? throw new Exception($"Improperly formatted disk message queue file: {file.FullName}")
+                                : (file, diskMessage);
                         })
                         .OrderBy(item => item.diskMessage.SequenceNumber)
                     );
@@ -223,11 +220,8 @@ namespace KM.MessageQueue.FileSystem.Disk
             }
 
             using var compressed = new MemoryStream();
-
-            using (var gzip = new GZipStream(compressed, CompressionMode.Compress))
-            {
-                gzip.Write(data, 0, data.Length);
-            }
+            using var gzip = new GZipStream(compressed, CompressionMode.Compress);
+            gzip.Write(data, 0, data.Length);
 
             return compressed.ToArray();
         }
@@ -241,11 +235,8 @@ namespace KM.MessageQueue.FileSystem.Disk
 
             using var input = new MemoryStream(compressed);
             using var decompressed = new MemoryStream();
-
-            using (var gzip = new GZipStream(input, CompressionMode.Decompress))
-            {
-                gzip.CopyTo(decompressed);
-            }
+            using var gzip = new GZipStream(input, CompressionMode.Decompress);
+            gzip.CopyTo(decompressed);
 
             return decompressed.ToArray();
         }

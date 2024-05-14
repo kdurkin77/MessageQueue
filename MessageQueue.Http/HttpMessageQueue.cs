@@ -4,7 +4,6 @@ using KM.MessageQueue.Formatters.StringToHttpContent;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace KM.MessageQueue.Http
 {
@@ -163,7 +161,7 @@ namespace KM.MessageQueue.Http
             {
                 foreach (var property in userProperties)
                 {
-#if NET5_0_OR_GREATER
+#if NET
                     _ = request.Options.TryAdd(property.Key, property.Value);
 #else
                     request.Properties.Add(property);
@@ -173,7 +171,7 @@ namespace KM.MessageQueue.Http
 
             if (attributes.Label is { } label)
             {
-#if NET5_0_OR_GREATER
+#if NET
                 _ = request.Options.TryAdd("Label", label);
 #else
                 request.Properties.Add("Label", label);
@@ -185,7 +183,7 @@ namespace KM.MessageQueue.Http
                 await beforeSendMessage(request).ConfigureAwait(false);
             }
 
-            _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Uri}}", _uri);
+            _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to {{Uri}}", _uri);
 
             var result = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             await _checkHttpResponse(result);

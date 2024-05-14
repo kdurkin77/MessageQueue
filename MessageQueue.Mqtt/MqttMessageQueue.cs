@@ -163,7 +163,7 @@ namespace KM.MessageQueue.Mqtt
             var messageBytes = await _messageFormatter.FormatMessage(message).ConfigureAwait(false);
             var mqttMessage = _messageBuilder(messageBytes, attributes);
 
-            _logger.LogTrace($"{{Name}} {nameof(PostMessageAsync)} posting to Label: {{Label}}", Name, attributes.Label);
+            _logger.LogTrace($"{{Name}} {nameof(PostManyMessagesAsync)} posting to Label: {{Label}}", Name, attributes.Label);
             await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
         }
 

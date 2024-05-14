@@ -139,7 +139,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 esMessages.Add(elasticSearchMessage);
             }
 
-            var messageCount = esMessages.Count();
+            var messageCount = esMessages.Count;
             if (messageCount == 1)
             {
                 var elasticSearchMessageJson = JsonConvert.SerializeObject(esMessages[0]);

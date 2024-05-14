@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6;net7;net8;</TargetFrameworks>
+		<TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -26,12 +26,12 @@
 
   <ItemGroup>
     <!--<PackageReference Include="KM.MessageQueue" Version="8.0.0" />-->
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="8.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="8.0.0" />-->
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
-    <PackageReference Include="MQTTnet" Version="4.3.3.952" />
+    <PackageReference Include="MQTTnet" Version="4.3.4.1084" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.StringToBytes\MessageQueue.Formatters.StringToBytes.csproj" />
     <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 

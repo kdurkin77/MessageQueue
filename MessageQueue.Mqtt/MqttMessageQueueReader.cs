@@ -28,9 +28,9 @@ namespace KM.MessageQueue.Mqtt
             _subscriptionName = options.SubscriptionName;
             _userData = options.UserData;
             _readCount = options.ReadCount ?? 1;
-            if (_readCount <= 0)
+            if (_readCount <= 0 || _readCount > queue.MaxReadCount)
             {
-                throw new ArgumentOutOfRangeException(nameof(options.ReadCount));
+                throw new ArgumentOutOfRangeException(nameof(options.ReadCount), $"{options.ReadCount} must be greater than 0 and cannot be greater than {queue.MaxReadCount}");
             }
 
             Name = options.Name ?? nameof(MqttMessageQueueReader<TMessage>);
@@ -137,7 +137,7 @@ namespace KM.MessageQueue.Mqtt
                     UserProperties = arg.ApplicationMessage.UserProperties?.ToDictionary(prop => prop.Name, prop => (object)prop.Value)
                 };
 
-                var message = await _queue._messageFormatter.RevertMessage(arg.ApplicationMessage.PayloadSegment.ToArray()).ConfigureAwait(false);
+                var message = await _queue._messageFormatter.RevertMessage([.. arg.ApplicationMessage.PayloadSegment]).ConfigureAwait(false);
 
                 _messages.AddLast((message, attributes));
             }
@@ -251,7 +251,7 @@ namespace KM.MessageQueue.Mqtt
                         var (completionResult, result) = await action(items, _userData, cancellationToken).ConfigureAwait(false);
                         if (completionResult == CompletionResult.Complete)
                         {
-                            for (var i = 0; i < items.Count(); i++)
+                            for (var i = 0; i < items.Count; i++)
                             {
                                 _messages.RemoveFirst();
                             }

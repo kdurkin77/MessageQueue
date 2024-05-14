@@ -155,8 +155,8 @@ namespace KM.MessageQueue.Database.Sqlite
                 {
                     if (_messageQueue.Count >= maxQueueSize)
                     {
-                        _logger.LogError($"{Name} {nameof(PostMessageAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
-                        throw new InvalidOperationException($"{Name} {nameof(PostMessageAsync)} exceeded maximum queue size of {maxQueueSize}");
+                        _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
+                        throw new InvalidOperationException($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {maxQueueSize}");
                     }
                 }
 
@@ -180,9 +180,9 @@ namespace KM.MessageQueue.Database.Sqlite
                     sqlMessages.Add(sqlMessage);
                 }
 
-                var messageCount = sqlMessages.Count();
+                var messageCount = sqlMessages.Count;
                 var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
-                _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to store, Message: {{Message}}", messageString);
+                _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to store, Message: {{Message}}", messageString);
 
                 _dbContext.SqliteQueueMessages.AddRange(sqlMessages);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -267,7 +267,7 @@ namespace KM.MessageQueue.Database.Sqlite
                         _dbContext.RemoveRange(itemsToRemove);
                         await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-                        for (var i = 0; i < itemsToRemove.Count(); i++)
+                        for (var i = 0; i < itemsToRemove.Count; i++)
                         {
                             _messageQueue.RemoveFirst();
                         }

@@ -3,14 +3,9 @@ using System;
 
 namespace KM.MessageQueue.Database.ElasticSearch
 {
-    internal sealed class ElasticSearchMessage
+    [method: JsonConstructor]
+    internal sealed class ElasticSearchMessage(MessageAttributes attributes)
     {
-        [JsonConstructor]
-        public ElasticSearchMessage(MessageAttributes attributes)
-        {
-            MessageAttributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
-        }
-
-        public MessageAttributes MessageAttributes { get; }
+        public MessageAttributes MessageAttributes { get; } = attributes ?? throw new ArgumentNullException(nameof(attributes));
     }
 }
