@@ -33,9 +33,8 @@ namespace KM.MessageQueue.Specialized.Forwarder
             Name = opts.Name ?? nameof(ForwarderMessageQueue<TMessage>);
 
             //whichever is lesser is our limit since we write whatever we read from the source queue to the destination queue
-            var count = _sourceQueue.MaxReadCount < _destinationQueue.MaxWriteCount ? _sourceQueue.MaxReadCount : _destinationQueue.MaxWriteCount;
-            MaxReadCount = count;
-            MaxWriteCount = count;
+            MaxReadCount = _sourceQueue.MaxReadCount < _destinationQueue.MaxWriteCount ? _sourceQueue.MaxReadCount : _destinationQueue.MaxWriteCount;
+            MaxWriteCount = _sourceQueue.MaxWriteCount;
 
             _readerLoopTask = Task.Run(ReadSourceQueueLoop);
 
