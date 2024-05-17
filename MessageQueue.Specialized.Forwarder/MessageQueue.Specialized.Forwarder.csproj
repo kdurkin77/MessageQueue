@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Specialized.Forwarder</Product>
     <Description>A forwarder to handle forwarding messages from one queue to another</Description>
     <PackageReleaseNotes>
-      Added .NET8 support
+      Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
     </PackageReleaseNotes>
-    <Version>8.0.0</Version>
+    <Version>8.1.0-beta</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="KM.MessageQueue" Version="8.0.0" />-->
+    <PackageReference Include="KM.MessageQueue" Version="8.1.0-beta" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
   </ItemGroup>
@@ -39,10 +39,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 
 </Project>

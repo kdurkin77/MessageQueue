@@ -1,4 +1,5 @@
-﻿using KM.MessageQueue;
+﻿using Elastic.Transport;
+using KM.MessageQueue;
 using KM.MessageQueue.Azure.Topic;
 using KM.MessageQueue.FileSystem.Disk;
 //using KM.MessageQueue.Formatters.ObjectToJsonObject;
@@ -30,7 +31,6 @@ namespace TestProject
                             .SetMinimumLevel(LogLevel.Trace);
                     })
                     .AddSingleton<MyApplication>()
-                    //.AddSingleton<IMessageHandler<MyMessage>, MyMessageHandler>()
 
                     //Azure queue
                     //.AddAzureTopicMessageQueue<MyMessage>(options =>
@@ -49,6 +49,10 @@ namespace TestProject
                     //        );
                     //    //to use your own formatter
                     //    //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
+                    //    //in order to read more than 1 message at a time, set MaxReadCount to however many you want to read max. default is 1
+                    //    //options.MaxReadCount = 1;
+                    //    //in order to write more than 1 message at a time, set MaxWriteCount to however many you want to write max. default is 1
+                    //    //options.MaxWriteCount = 1;
                     //})
 
 
@@ -59,11 +63,13 @@ namespace TestProject
                     //        .UseConnectionUri(new Uri("YOUR URI HERE"), settings =>
                     //        {
                     //            settings
-                    //                .BasicAuthentication("USERNAME", "PASSWORD")
+                    //                .Authentication(new BasicAuthentication("USERNAME", "PASSWORD"))
                     //                .ThrowExceptions();
                     //        });
                     //    //to use your own formatter
                     //    //options.MessageFormatter = new ObjectToJsonObjectFormatter<MyMessage>();
+                    //    //in order to write more than 1 message at a time, set MaxWriteCount to however many you want to write max. default is 1
+                    //    //options.MaxWriteCount = 1;
                     //})
 
 
@@ -76,6 +82,10 @@ namespace TestProject
                     //    //options.IdleDelay = TimeSpan.FromSeconds(200);
                     //    //to use your own formatter
                     //    //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>();
+                    //    //in order to read more than 1 message at a time, set MaxReadCount to however many you want to read max. default is 1
+                    //    options.MaxReadCount = 1;
+                    //    //in order to write more than 1 message at a time, set MaxWriteCount to however many you want to write max. default is 1
+                    //    options.MaxWriteCount = 1;
                     //})
 
 
@@ -147,6 +157,8 @@ namespace TestProject
                     //    //);
                     //    //to use your own formatter
                     //    //options.MessageFormatter = new ObjectToJsonStringFormatter<MyMessage>().Compose(new StringToBytesFormatter());
+                    //    //in order to read more than 1 message at a time, set MaxReadCount to however many you want to read max. default is 1
+                    //    //options.MaxReadCount = 1;
                     //})
 
 
@@ -154,7 +166,7 @@ namespace TestProject
                     //.AddHttpMessageQueue<MyMessage>(options =>
                     //{
                     //    options.Uri = new Uri("https://raptordataapidev.ctdi.com/StbEngineering/InsertException");
-                    //    options.Method = HttpMethod.Post;
+                    //    options.Method = System.Net.Http.HttpMethod.Post;
                     //    //to put the message in the body of the request
                     //    //can also pass a formatter here to use your own
                     //    options.UseBody();

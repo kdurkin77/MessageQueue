@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Azure.Topic</Product>
     <Description>An Azure topic implementation from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      Added .NET8 support
+      Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
     </PackageReleaseNotes>
-    <Version>8.0.0</Version>
+    <Version>8.1.0-beta</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,10 +26,10 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.5" />
-    <!--<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="8.0.0" />-->
-    <!--<PackageReference Include="KM.MessageQueue" Version="8.0.0" />-->
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.1.0-beta" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.1.0-beta" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToBytes" Version="8.1.0-beta" />
+    <PackageReference Include="KM.MessageQueue" Version="8.1.0-beta" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
   </ItemGroup>
@@ -39,13 +39,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-	
-  <ItemGroup>
-    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj" />
-    <ProjectReference Include="..\MessageQueue.Formatters.StringToBytes\MessageQueue.Formatters.StringToBytes.csproj" />
-    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 	
 </Project>

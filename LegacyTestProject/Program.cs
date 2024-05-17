@@ -27,6 +27,9 @@ namespace LegacyTestProject
                         options.ThrowExceptions();
                     }
                 );
+
+            //in order to write more than 1 message at a time, set MaxWriteCount to however many you want to write max. default is 1
+            //elasticSearchOptions.MaxWriteCount = 1;
             var elasticSearchQueue = new ElasticSearchMessageQueue<MyMessage>(new Logger<ElasticSearchMessageQueue<MyMessage>>(), Options.Create(elasticSearchOptions));
 
             //sqlite setup example
@@ -35,6 +38,10 @@ namespace LegacyTestProject
                 ConnectionString = $"Data Source = {Path.Combine(AppContext.BaseDirectory, "Queue.db")}"
                 //to increase the delay between checking messages when idle
                 //IdleDelay = TimeSpan.FromMilliseconds(200)
+                //in order to read more than 1 message at a time, set MaxReadCount to however many you want to read max. default is 1
+                //MaxReadCount = 1,
+                //in order to write more than 1 message at a time, set MaxWriteCount to however many you want to write max. default is 1
+                //MaxWriteCount = 1
             };
             var sqliteQueue = new SqliteMessageQueue<MyMessage>(new Logger<SqliteMessageQueue<MyMessage>>(), Options.Create(sqliteOptions));
 
@@ -48,6 +55,9 @@ namespace LegacyTestProject
                     .WithCredentials("USERNAME", "PASSWORD")
                     .Build();
                 });
+
+            //in order to read more than 1 message at a time, set MaxReadCount to however many you want to read max. default is 1
+            //mqttOptions.MaxReadCount = 1;
             var mqttQueue = new MqttMessageQueue<MyMessage>(new Logger<MqttMessageQueue<MyMessage>>(), Options.Create(mqttOptions));
 
             //setup for disk queue forwarding to azure queue
@@ -67,6 +77,10 @@ namespace LegacyTestProject
                     sharedAccessKeyName: "YOUR SHARED ACCESS KEY NAME HERE",
                     sharedAccessKey: "YOUR SHARED ACCESS KEY HERE"
                 );
+            //in order to read more than 1 message at a time, set MaxReadCount to however many you want to read max. default is 1
+            //azureTopicOptions.MaxReadCount = 1;
+            //in order to write more than 1 message at a time, set MaxWriteCount to however many you want to write max. default is 1
+            //azureTopicOptions.MaxWriteCount = 1;
             var azureTopic = new AzureTopicMessageQueue<MyMessage>(new Logger<AzureTopicMessageQueue<MyMessage>>(), Options.Create(azureTopicOptions));
 
             var forwarderLogger = new Logger<ForwarderMessageQueue<MyMessage>>();
@@ -98,6 +112,9 @@ namespace LegacyTestProject
 
             //and post to whichever queue you'd like. this one posts to the forwarder queue which posts to the disk and then forwards to azure
             await forwarder.PostMessageAsync(msg, attributes, CancellationToken.None);
+            //to post multiple messages you can create a list of messages (make sure the count doesn't go over the max write count for that particular queue)
+            //var msgs = new List<MyMessage>() { msg };
+            //await forwarder.PostManyMessagesAsync(msgs, CancellationToken.None);
 
             Console.Write("press any key to exit");
             Console.ReadKey();

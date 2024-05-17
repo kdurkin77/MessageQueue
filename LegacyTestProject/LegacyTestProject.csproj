@@ -58,41 +58,41 @@
     <Reference Include="Elastic.Transport, Version=0.0.0.0, Culture=neutral, PublicKeyToken=069ca2728db333c1, processorArchitecture=MSIL">
       <HintPath>..\packages\Elastic.Transport.0.4.19\lib\net462\Elastic.Transport.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.8.0.0\lib\netstandard2.0\KM.MessageQueue.dll</HintPath>
+    <Reference Include="KM.MessageQueue, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Azure.Topic, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Azure.Topic.8.0.0\lib\netstandard2.0\KM.MessageQueue.Azure.Topic.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Azure.Topic, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Azure.Topic.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Azure.Topic.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=8.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.8.0.2\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=8.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.8.0.1\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.8.0.0\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
+    <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Formatters.ObjectToJsonObject, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Formatters.ObjectToJsonObject.8.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.ObjectToJsonObject.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Formatters.ObjectToJsonObject, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.ObjectToJsonObject.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Formatters.ObjectToJsonObject.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Formatters.ObjectToJsonString, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Formatters.ObjectToJsonString.8.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.ObjectToJsonString.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Formatters.ObjectToJsonString, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.ObjectToJsonString.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Formatters.ObjectToJsonString.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Formatters.Specialized.Composition, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Formatters.Specialized.Composition.8.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.Specialized.Composition.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Formatters.Specialized.Composition, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.Specialized.Composition.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Formatters.Specialized.Composition.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Formatters.StringToBytes, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Formatters.StringToBytes.8.0.0\lib\netstandard2.0\KM.MessageQueue.Formatters.StringToBytes.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Formatters.StringToBytes, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Formatters.StringToBytes.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Formatters.StringToBytes.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Mqtt, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Mqtt.8.0.0\lib\netstandard2.0\KM.MessageQueue.Mqtt.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Mqtt, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Mqtt.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Mqtt.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.8.0.0\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Specialized.Forwarder, Version=8.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Specialized.Forwarder.8.1.0-beta\lib\netstandard2.0\KM.MessageQueue.Specialized.Forwarder.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Amqp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.Amqp.2.6.6\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Azure.Amqp.2.6.7\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
