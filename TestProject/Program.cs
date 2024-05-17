@@ -165,7 +165,7 @@ namespace TestProject
                     //Http
                     //.AddHttpMessageQueue<MyMessage>(options =>
                     //{
-                    //    options.Uri = new Uri("https://raptordataapidev.ctdi.com/StbEngineering/InsertException");
+                    //    options.Uri = new Uri("");
                     //    options.Method = System.Net.Http.HttpMethod.Post;
                     //    //to put the message in the body of the request
                     //    //can also pass a formatter here to use your own
