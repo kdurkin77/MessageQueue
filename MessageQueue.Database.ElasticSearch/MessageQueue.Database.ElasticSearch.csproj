@@ -15,8 +15,9 @@
     <PackageReleaseNotes>
       Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
       Updated the JToken converter to be more complete
+      Updated packages
     </PackageReleaseNotes>
-    <Version>8.1.0-beta</Version>
+    <Version>8.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,9 +27,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Elastic.Clients.Elasticsearch" Version="8.13.12" />
-    <PackageReference Include="KM.MessageQueue" Version="8.1.0-beta" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="8.1.0-beta" />
+    <PackageReference Include="Elastic.Clients.Elasticsearch" Version="8.15.1" />
+    <PackageReference Include="KM.MessageQueue" Version="8.1.1" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="8.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

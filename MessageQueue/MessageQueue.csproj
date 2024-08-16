@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue</Product>
     <Description>A library to help with using different types of messsage queues. This package includes the interfaces required for the real queues</Description>
     <PackageReleaseNotes>
-		Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
-	</PackageReleaseNotes>
-    <Version>8.1.0-beta</Version>
+        Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
+    </PackageReleaseNotes>
+    <Version>8.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>

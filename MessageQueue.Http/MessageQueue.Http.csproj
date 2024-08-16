@@ -14,8 +14,9 @@
     <Description>A queue implementation that calls an HTTP API endpoint from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
       Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
+      Updated packages
     </PackageReleaseNotes>
-    <Version>8.1.0-beta</Version>
+    <Version>8.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,18 +26,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="8.1.0-beta" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.1.0-beta" />
-    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.1.0-beta" />
-    <PackageReference Include="KM.MessageQueue.Formatters.JsonStringToDictionary" Version="8.1.0-beta" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="8.1.0-beta" />
+    <PackageReference Include="KM.MessageQueue" Version="8.1.1" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.1.1" />
+    <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="8.1.1" />
+    <PackageReference Include="KM.MessageQueue.Formatters.JsonStringToDictionary" Version="8.1.1" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="8.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
   </ItemGroup>
 	
   <ItemGroup Condition="'$(TargetFramework)' == 'net8'">
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities">
-      <Version>8.0.4</Version>
+      <Version>8.0.8</Version>
     </PackageReference>
   </ItemGroup>
 	

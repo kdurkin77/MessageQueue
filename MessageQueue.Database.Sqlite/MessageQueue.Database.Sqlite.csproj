@@ -14,8 +14,9 @@
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
       Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
+      Updated packages
     </PackageReleaseNotes>
-    <Version>8.1.0-beta</Version>
+    <Version>8.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,8 +26,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="8.1.0-beta" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.1.0-beta" />
+    <PackageReference Include="KM.MessageQueue" Version="8.1.1" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -34,25 +35,25 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
-      <Version>8.0.5</Version>
+      <Version>8.0.8</Version>
     </PackageReference>
   </ItemGroup>
-	
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net6.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
-      <Version>7.0.13</Version>
+      <Version>7.0.20</Version>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
-      <Version>5.0.14</Version>
+      <Version>5.0.17</Version>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
-      <Version>3.1.22</Version>
+      <Version>3.1.32</Version>
     </PackageReference>
   </ItemGroup>
 
