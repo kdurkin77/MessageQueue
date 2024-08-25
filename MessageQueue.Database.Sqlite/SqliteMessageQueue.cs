@@ -296,7 +296,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
         private async Task InternalDispose()
         {
-            await _sync.WaitAsync();
+            await _sync.WaitAsync().ConfigureAwait(false);
             try
             {
                 _cancellationSource.Cancel();
