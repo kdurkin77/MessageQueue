@@ -76,6 +76,8 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly SqliteDatabaseContext _dbContext;
         private long? _sequenceNumber;
 
+        private readonly CancellationTokenSource _cancellationSource = new();
+
         private static readonly MessageAttributes _emptyAttributes = new();
 
 
@@ -227,6 +229,8 @@ namespace KM.MessageQueue.Database.Sqlite
                 await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
+                    _cancellationSource.Token.ThrowIfCancellationRequested();
+
                     if (!_messageQueue.Any())
                     {
                         await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
@@ -290,6 +294,21 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
+        private async Task InternalDispose()
+        {
+            await _sync.WaitAsync();
+            try
+            {
+                _cancellationSource.Cancel();
+                _dbContext.Dispose();
+            }
+            finally
+            {
+                _disposed = true;
+                _ = _sync.Release();
+            }
+        }
+
         public void Dispose()
         {
             if (_disposed)
@@ -297,9 +316,8 @@ namespace KM.MessageQueue.Database.Sqlite
                 return;
             }
 
-            _dbContext.Dispose();
+            InternalDispose().GetAwaiter().GetResult();
 
-            _disposed = true;
             GC.SuppressFinalize(this);
         }
 
@@ -312,12 +330,9 @@ namespace KM.MessageQueue.Database.Sqlite
                 return;
             }
 
-            _dbContext.Dispose();
+            await InternalDispose().ConfigureAwait(false);
 
-            _disposed = true;
             GC.SuppressFinalize(this);
-
-            await Task.CompletedTask;
         }
 
 #endif
