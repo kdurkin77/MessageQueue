@@ -13,10 +13,9 @@
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
-      Updated packages
+      Prevent the db context from getting disposed in the middle of a read
     </PackageReleaseNotes>
-    <Version>8.1.1</Version>
+    <Version>8.1.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>
