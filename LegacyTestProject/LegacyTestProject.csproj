@@ -67,8 +67,8 @@
     <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=8.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.8.1.1\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=8.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.8.1.2\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=8.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.8.1.3\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=8.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.8.1.1\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>
