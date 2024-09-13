@@ -148,45 +148,43 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
             }
 
-            ThrowIfDisposed();
-
-            if (_maxQueueSize is { } maxQueueSize)
-            {
-                if (_messageQueue.Count >= maxQueueSize)
-                {
-                    _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
-                    throw new InvalidOperationException($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {maxQueueSize}");
-                }
-            }
-
-            var sqlMessages = new List<SqliteQueueMessage>();
-            foreach (var (message, attributes) in messages)
-            {
-
-                if (attributes is null)
-                {
-                    throw new ArgumentNullException(nameof(attributes));
-                }
-
-                var sqlMessage =
-                    new SqliteQueueMessage()
-                    {
-                        Id = Guid.NewGuid(),
-                        Attributes = JsonConvert.SerializeObject(attributes),
-                        SequenceNumber = ++_sequenceNumber,
-                        Body = await _messageFormatter.FormatMessage(message).ConfigureAwait(false)
-                    };
-                sqlMessages.Add(sqlMessage);
-            }
-
-            var messageCount = sqlMessages.Count;
-            var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
-            _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to store, Message: {{Message}}", messageString);
-
             await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 ThrowIfDisposed();
+
+                if (_maxQueueSize is { } maxQueueSize)
+                {
+                    if (_messageQueue.Count >= maxQueueSize)
+                    {
+                        _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
+                        throw new InvalidOperationException($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {maxQueueSize}");
+                    }
+                }
+
+                var sqlMessages = new List<SqliteQueueMessage>();
+                foreach (var (message, attributes) in messages)
+                {
+
+                    if (attributes is null)
+                    {
+                        throw new ArgumentNullException(nameof(attributes));
+                    }
+
+                    var sqlMessage =
+                        new SqliteQueueMessage()
+                        {
+                            Id = Guid.NewGuid(),
+                            Attributes = JsonConvert.SerializeObject(attributes),
+                            SequenceNumber = ++_sequenceNumber,
+                            Body = await _messageFormatter.FormatMessage(message).ConfigureAwait(false)
+                        };
+                    sqlMessages.Add(sqlMessage);
+                }
+
+                var messageCount = sqlMessages.Count;
+                var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
+                _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to store, Message: {{Message}}", messageString);
 
                 _dbContext.SqliteQueueMessages.AddRange(sqlMessages);
                 await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
