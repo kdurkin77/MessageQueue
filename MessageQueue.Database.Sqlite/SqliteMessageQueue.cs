@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -50,7 +51,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 onDbContextCreated(_dbContext);
             }
 
-            _messageQueue = new LinkedList<SqliteQueueMessage>(
+            _messageQueue = new ConcurrentQueue<SqliteQueueMessage>(
                 _dbContext.SqliteQueueMessages
                     .OrderBy(item => item.SequenceNumber)
                 );
@@ -66,13 +67,14 @@ namespace KM.MessageQueue.Database.Sqlite
 
 
         private bool _disposed = false;
-        private readonly SemaphoreSlim _sync = new(1, 1);
+        private readonly SemaphoreSlim _readerSync = new(1, 1);
+        private readonly SemaphoreSlim _writerSync = new(1, 1);
 
         private readonly ILogger _logger;
         private readonly TimeSpan _idleDelay;
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
-        private readonly LinkedList<SqliteQueueMessage> _messageQueue;
+        private readonly ConcurrentQueue<SqliteQueueMessage> _messageQueue;
         private readonly SqliteDatabaseContext _dbContext;
         private long? _sequenceNumber;
 
@@ -182,7 +184,7 @@ namespace KM.MessageQueue.Database.Sqlite
             var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
             _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to store, Message: {{Message}}", messageString);
 
-            await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _writerSync.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 ThrowIfDisposed();
@@ -192,12 +194,12 @@ namespace KM.MessageQueue.Database.Sqlite
 
                 foreach (var message in sqlMessages)
                 {
-                    _messageQueue.AddLast(message);
+                    _messageQueue.Enqueue(message);
                 }
             }
             finally
             {
-                _ = _sync.Release();
+                _ = _writerSync.Release();
             }
         }
 
@@ -235,14 +237,13 @@ namespace KM.MessageQueue.Database.Sqlite
                     shouldWait = false;
                 }
 
-                await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
+                await _readerSync.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
                     _cancellationSource.Token.ThrowIfCancellationRequested();
 
                     if (!_messageQueue.Any())
                     {
-                        //await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
                         shouldWait = true;
                         continue;
                     }
@@ -283,7 +284,8 @@ namespace KM.MessageQueue.Database.Sqlite
 
                         for (var i = 0; i < itemsToRemove.Count; i++)
                         {
-                            _messageQueue.RemoveFirst();
+                            // should always succeed here
+                            _ = _messageQueue.TryDequeue(out var _);
                         }
                     }
 
@@ -291,7 +293,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 }
                 finally
                 {
-                    _ = _sync.Release();
+                    _ = _readerSync.Release();
                 }
             }
         }
@@ -306,16 +308,24 @@ namespace KM.MessageQueue.Database.Sqlite
 
         private async Task InternalDispose()
         {
-            await _sync.WaitAsync().ConfigureAwait(false);
+            await _readerSync.WaitAsync().ConfigureAwait(false);
             try
             {
-                _cancellationSource.Cancel();
-                _dbContext.Dispose();
+                await _writerSync.WaitAsync().ConfigureAwait(false);
+                try
+                {
+                    _cancellationSource.Cancel();
+                    _dbContext.Dispose();
+                }
+                finally
+                {
+                    _disposed = true;
+                    _ = _writerSync.Release();
+                }
             }
             finally
             {
-                _disposed = true;
-                _ = _sync.Release();
+                _ = _readerSync.Release();
             }
         }
 
