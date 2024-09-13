@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      Split sqlite reader/writer locks
+      No more writer locks
     </PackageReleaseNotes>
-    <Version>8.1.4</Version>
+    <Version>8.1.5</Version>
   </PropertyGroup>
 
   <PropertyGroup>
