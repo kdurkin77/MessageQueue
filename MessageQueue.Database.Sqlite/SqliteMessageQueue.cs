@@ -19,6 +19,7 @@ namespace KM.MessageQueue.Database.Sqlite
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             var opts = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _options = opts;
 
             _idleDelay = opts.IdleDelay ?? TimeSpan.FromMilliseconds(100);
             _messageFormatter = opts.MessageFormatter ?? new ObjectToJsonStringFormatter<TMessage>();
@@ -41,18 +42,9 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new ArgumentException($"{nameof(opts.ConnectionString)} is required", nameof(options));
             }
 
-            var dbContextOptsBuilder = new DbContextOptionsBuilder<SqliteDatabaseContext>();
-            dbContextOptsBuilder.UseSqlite(opts.ConnectionString);
-
-            _dbContext = new SqliteDatabaseContext(dbContextOptsBuilder.Options);
-
-            if (opts.OnDbContextCreated is { } onDbContextCreated)
-            {
-                onDbContextCreated(_dbContext);
-            }
-
+            using var dbContext = GetDatabaseContext();
             _messageQueue = new ConcurrentQueue<SqliteQueueMessage>(
-                _dbContext.SqliteQueueMessages
+                dbContext.SqliteQueueMessages
                     .OrderBy(item => item.SequenceNumber)
                 );
 
@@ -65,6 +57,7 @@ namespace KM.MessageQueue.Database.Sqlite
             _logger.LogTrace($"{Name} initialized with {_messageQueue.Count} stored messages");
         }
 
+        private readonly SqliteMessageQueueOptions<TMessage> _options;
 
         private bool _disposed = false;
         private readonly SemaphoreSlim _readerSync = new(1, 1);
@@ -75,7 +68,7 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
         private readonly ConcurrentQueue<SqliteQueueMessage> _messageQueue;
-        private readonly SqliteDatabaseContext _dbContext;
+        //private readonly SqliteDatabaseContext _dbContext;
         private long? _sequenceNumber;
 
         private readonly CancellationTokenSource _cancellationSource = new();
@@ -87,6 +80,23 @@ namespace KM.MessageQueue.Database.Sqlite
 
         public int MaxWriteCount { get; }
         public int MaxReadCount { get; }
+
+
+        private SqliteDatabaseContext GetDatabaseContext()
+        {
+            var dbContextOptsBuilder = new DbContextOptionsBuilder<SqliteDatabaseContext>();
+            dbContextOptsBuilder.UseSqlite(_options.ConnectionString);
+
+            var dbContext = new SqliteDatabaseContext(dbContextOptsBuilder.Options);
+
+            if (_options.OnDbContextCreated is { } onDbContextCreated)
+            {
+                onDbContextCreated(dbContext);
+            }
+
+            return dbContext;
+        }
+
 
         public async Task PostMessageAsync(TMessage message, CancellationToken cancellationToken)
         {
@@ -189,8 +199,11 @@ namespace KM.MessageQueue.Database.Sqlite
             {
                 ThrowIfDisposed();
 
-                _dbContext.SqliteQueueMessages.AddRange(sqlMessages);
-                await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                using (var dbContext = GetDatabaseContext())
+                {
+                    dbContext.SqliteQueueMessages.AddRange(sqlMessages);
+                    _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                }
 
                 foreach (var message in sqlMessages)
                 {
@@ -279,8 +292,12 @@ namespace KM.MessageQueue.Database.Sqlite
                     if (completionResult == CompletionResult.Complete)
                     {
                         var itemsToRemove = items.Select(i => i.item).ToList();
-                        _dbContext.RemoveRange(itemsToRemove);
-                        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+                        using (var dbContext = GetDatabaseContext())
+                        {
+                            dbContext.RemoveRange(itemsToRemove);
+                            _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                        }
 
                         for (var i = 0; i < itemsToRemove.Count; i++)
                         {
@@ -306,27 +323,10 @@ namespace KM.MessageQueue.Database.Sqlite
             }
         }
 
-        private async Task InternalDispose()
+        private void InternalDispose()
         {
-            await _readerSync.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                await _writerSync.WaitAsync().ConfigureAwait(false);
-                try
-                {
-                    _cancellationSource.Cancel();
-                    _dbContext.Dispose();
-                }
-                finally
-                {
-                    _disposed = true;
-                    _ = _writerSync.Release();
-                }
-            }
-            finally
-            {
-                _ = _readerSync.Release();
-            }
+            _cancellationSource.Cancel();
+            _disposed = true;
         }
 
         public void Dispose()
@@ -336,7 +336,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 return;
             }
 
-            InternalDispose().GetAwaiter().GetResult();
+            InternalDispose();
 
             GC.SuppressFinalize(this);
         }
@@ -350,9 +350,11 @@ namespace KM.MessageQueue.Database.Sqlite
                 return;
             }
 
-            await InternalDispose().ConfigureAwait(false);
+            InternalDispose();
 
             GC.SuppressFinalize(this);
+
+            await Task.CompletedTask;
         }
 
 #endif
