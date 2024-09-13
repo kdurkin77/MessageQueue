@@ -61,14 +61,12 @@ namespace KM.MessageQueue.Database.Sqlite
 
         private bool _disposed = false;
         private readonly SemaphoreSlim _readerSync = new(1, 1);
-        private readonly SemaphoreSlim _writerSync = new(1, 1);
 
         private readonly ILogger _logger;
         private readonly TimeSpan _idleDelay;
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
         private readonly ConcurrentQueue<SqliteQueueMessage> _messageQueue;
-        //private readonly SqliteDatabaseContext _dbContext;
         private long? _sequenceNumber;
 
         private readonly CancellationTokenSource _cancellationSource = new();
@@ -160,8 +158,6 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
             }
 
-            ThrowIfDisposed();
-
             if (_maxQueueSize is { } maxQueueSize)
             {
                 if (_messageQueue.Count >= maxQueueSize)
@@ -194,25 +190,15 @@ namespace KM.MessageQueue.Database.Sqlite
             var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
             _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to store, Message: {{Message}}", messageString);
 
-            await _writerSync.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
+            using (var dbContext = GetDatabaseContext())
             {
-                ThrowIfDisposed();
-
-                using (var dbContext = GetDatabaseContext())
-                {
-                    dbContext.SqliteQueueMessages.AddRange(sqlMessages);
-                    _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                }
-
-                foreach (var message in sqlMessages)
-                {
-                    _messageQueue.Enqueue(message);
-                }
+                dbContext.SqliteQueueMessages.AddRange(sqlMessages);
+                _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
-            finally
+
+            foreach (var message in sqlMessages)
             {
-                _ = _writerSync.Release();
+                _messageQueue.Enqueue(message);
             }
         }
 
