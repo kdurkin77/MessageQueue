@@ -224,8 +224,16 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new InvalidOperationException($"Read count exceeds max read count of {MaxReadCount}");
             }
 
+            var shouldWait = false;
+
             while (true)
             {
+                if (shouldWait)
+                {
+                    await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
+                    shouldWait = false;
+                }
+
                 await _sync.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
@@ -233,7 +241,8 @@ namespace KM.MessageQueue.Database.Sqlite
 
                     if (!_messageQueue.Any())
                     {
-                        await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
+                        //await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
+                        shouldWait = true;
                         continue;
                     }
 
