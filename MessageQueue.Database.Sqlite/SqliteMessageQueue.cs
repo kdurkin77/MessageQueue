@@ -74,10 +74,7 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly TimeSpan _idleDelay;
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
-
-        //private readonly LinkedList<SqliteQueueMessage> _messageQueue;
         private readonly ConcurrentQueue<SqliteQueueMessage> _messageQueue;
-
         private readonly SqliteDatabaseContext _dbContext;
         private long? _sequenceNumber;
 
