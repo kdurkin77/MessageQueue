@@ -49,7 +49,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 );
 
             _sequenceNumber = _messageQueue.Any()
-                ? _messageQueue.Select(item => item.SequenceNumber).Max()
+                ? _messageQueue.Select(item => item.SequenceNumber).Max() ?? 0L
                 : 0L;
 
             Name = opts.Name ?? nameof(SqliteMessageQueue<TMessage>);
@@ -67,7 +67,7 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
         private readonly ConcurrentQueue<SqliteQueueMessage> _messageQueue;
-        private long? _sequenceNumber;
+        private long _sequenceNumber;
 
         private readonly CancellationTokenSource _cancellationSource = new();
 
@@ -180,7 +180,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     {
                         Id = Guid.NewGuid(),
                         Attributes = JsonConvert.SerializeObject(attributes),
-                        SequenceNumber = ++_sequenceNumber,
+                        SequenceNumber = Interlocked.Add(ref _sequenceNumber, 1),
                         Body = await _messageFormatter.FormatMessage(message).ConfigureAwait(false)
                     };
                 sqlMessages.Add(sqlMessage);
