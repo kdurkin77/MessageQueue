@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      More correct seq increment
+        Added .NET9 support and removed .NET6 and .NET7 support. Upgraded packages and removed vulnerable packages
     </PackageReleaseNotes>
-    <Version>8.1.6</Version>
+    <Version>9.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,31 +25,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="8.1.1" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="8.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="KM.MessageQueue" Version="9.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="8.0.0" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net6.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.20" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="6.2.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.17" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.10.3" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.32" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.10.3" />
   </ItemGroup>
 
   <ItemGroup>
