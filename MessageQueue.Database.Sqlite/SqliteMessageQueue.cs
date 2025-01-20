@@ -228,18 +228,20 @@ namespace KM.MessageQueue.Database.Sqlite
 
             var shouldWait = false;
 
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationSource.Token, cancellationToken);
+
             while (true)
             {
                 if (shouldWait)
                 {
-                    await Task.Delay(_idleDelay, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(_idleDelay, linkedCancellation.Token).ConfigureAwait(false);
                     shouldWait = false;
                 }
 
-                await _readerSync.WaitAsync(cancellationToken).ConfigureAwait(false);
+                await _readerSync.WaitAsync(linkedCancellation.Token).ConfigureAwait(false);
                 try
                 {
-                    _cancellationSource.Token.ThrowIfCancellationRequested();
+                    linkedCancellation.Token.ThrowIfCancellationRequested();
 
                     if (!_messageQueue.Any())
                     {
@@ -274,7 +276,7 @@ namespace KM.MessageQueue.Database.Sqlite
                     }
 
                     var messageAtts = items.Select(i => (i.message, i.atts)).ToList();
-                    var (completionResult, result) = await action(messageAtts, userData, cancellationToken).ConfigureAwait(false);
+                    var (completionResult, result) = await action(messageAtts, userData, linkedCancellation.Token).ConfigureAwait(false);
                     if (completionResult == CompletionResult.Complete)
                     {
                         var itemsToRemove = items.Select(i => i.item).ToList();
@@ -282,7 +284,7 @@ namespace KM.MessageQueue.Database.Sqlite
                         using (var dbContext = GetDatabaseContext())
                         {
                             dbContext.RemoveRange(itemsToRemove);
-                            _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                            _ = await dbContext.SaveChangesAsync(linkedCancellation.Token).ConfigureAwait(false);
                         }
 
                         for (var i = 0; i < itemsToRemove.Count; i++)
