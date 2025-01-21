@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -43,18 +42,11 @@ namespace KM.MessageQueue.Database.Sqlite
             }
 
             using var dbContext = GetDatabaseContext();
-            _messageQueue = new ConcurrentQueue<SqliteQueueMessage>(
-                dbContext.SqliteQueueMessages
-                    .OrderBy(item => item.SequenceNumber)
-                );
-
-            _sequenceNumber = _messageQueue.Any()
-                ? _messageQueue.Select(item => item.SequenceNumber).Max() ?? 0L
-                : 0L;
+            (_currentQueueSize, _sequenceNumber) = GetCurrentStats(dbContext);
 
             Name = opts.Name ?? nameof(SqliteMessageQueue<TMessage>);
 
-            _logger.LogTrace($"{Name} initialized with {_messageQueue.Count} stored messages");
+            _logger.LogTrace($"{Name} initialized with {_currentQueueSize} stored messages");
         }
 
         private readonly SqliteMessageQueueOptions<TMessage> _options;
@@ -66,7 +58,8 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly TimeSpan _idleDelay;
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
-        private readonly ConcurrentQueue<SqliteQueueMessage> _messageQueue;
+
+        private int _currentQueueSize;
         private long _sequenceNumber;
 
         private readonly CancellationTokenSource _cancellationSource = new();
@@ -78,6 +71,19 @@ namespace KM.MessageQueue.Database.Sqlite
 
         public int MaxWriteCount { get; }
         public int MaxReadCount { get; }
+
+
+        private static (int QueueSize, long SequenceNumber) GetCurrentStats(SqliteDatabaseContext dbContext)
+        {
+            var queueSize = dbContext.SqliteQueueMessages.Count();
+
+            var sequenceNumber = dbContext.SqliteQueueMessages
+                .Select(x => x.SequenceNumber)
+                .Max()
+                ?? 0L;
+
+            return (queueSize, sequenceNumber);
+        }
 
 
         private SqliteDatabaseContext GetDatabaseContext()
@@ -160,7 +166,7 @@ namespace KM.MessageQueue.Database.Sqlite
 
             if (_maxQueueSize is { } maxQueueSize)
             {
-                if (_messageQueue.Count >= maxQueueSize)
+                if (_currentQueueSize >= maxQueueSize)
                 {
                     _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
                     throw new InvalidOperationException($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {maxQueueSize}");
@@ -196,10 +202,7 @@ namespace KM.MessageQueue.Database.Sqlite
                 _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            foreach (var message in sqlMessages)
-            {
-                _messageQueue.Enqueue(message);
-            }
+            _ = Interlocked.Add(ref _currentQueueSize, sqlMessages.Count);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
@@ -243,14 +246,27 @@ namespace KM.MessageQueue.Database.Sqlite
                 {
                     linkedCancellation.Token.ThrowIfCancellationRequested();
 
-                    if (!_messageQueue.Any())
+                    if (_currentQueueSize == 0)
+                    {
+                        shouldWait = true;
+                        continue;
+                    }
+
+                    using var dbContext = GetDatabaseContext();
+
+                    var dbMessages = await dbContext.SqliteQueueMessages
+                        .OrderBy(x => x.SequenceNumber)
+                        .Take(count)
+                        .ToListAsync(linkedCancellation.Token);
+
+                    if (!dbMessages.Any())
                     {
                         shouldWait = true;
                         continue;
                     }
 
                     var items = new List<(SqliteQueueMessage item, TMessage message, MessageAttributes atts)>();
-                    foreach (var item in _messageQueue.Take(count).ToList())
+                    foreach (var item in dbMessages)
                     {
                         if (item.Attributes is null)
                         {
@@ -281,17 +297,27 @@ namespace KM.MessageQueue.Database.Sqlite
                     {
                         var itemsToRemove = items.Select(i => i.item).ToList();
 
-                        using (var dbContext = GetDatabaseContext())
+                        dbContext.RemoveRange(itemsToRemove);
+
+                        try
                         {
-                            dbContext.RemoveRange(itemsToRemove);
                             _ = await dbContext.SaveChangesAsync(linkedCancellation.Token).ConfigureAwait(false);
                         }
-
-                        for (var i = 0; i < itemsToRemove.Count; i++)
+                        catch (Exception ex)
                         {
-                            // should always succeed here
-                            _ = _messageQueue.TryDequeue(out var _);
+                            try
+                            {
+                                (_currentQueueSize, _sequenceNumber) = GetCurrentStats(dbContext);
+                            }
+                            catch (Exception inner)
+                            {
+                                throw new AggregateException(ex, inner);
+                            }
+
+                            throw;
                         }
+
+                        _ = Interlocked.Add(ref _currentQueueSize, -itemsToRemove.Count);
                     }
 
                     return (completionResult, result);
