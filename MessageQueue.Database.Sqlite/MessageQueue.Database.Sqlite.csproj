@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Database.Sqlite</Product>
     <Description>A queue implementation to write to a Sqlite DB from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      More correct seq increment
+      Better cancellation and removed cached queue to use the DB directly
     </PackageReleaseNotes>
-    <Version>8.1.6</Version>
+    <Version>8.1.7</Version>
   </PropertyGroup>
 
   <PropertyGroup>
