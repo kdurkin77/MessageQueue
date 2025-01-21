@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.FileSystem.Disk</Product>
     <Description>A queue implementation to write to the disk from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-      Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
+        Added .NET9 support and removed .NET6 and .NET7 support. Upgraded packages and removed vulnerable packages
     </PackageReleaseNotes>
-    <Version>8.1.1</Version>
+    <Version>9.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,10 +25,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="8.1.1" />
-    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="8.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="KM.MessageQueue" Version="9.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue</Product>
     <Description>A library to help with using different types of messsage queues. This package includes the interfaces required for the real queues</Description>
     <PackageReleaseNotes>
-        Added the ability to post/read many messages at once with a max read count and max write count and a reader option for read count
+        Added .NET9 support and removed .NET6 and .NET7 support. Upgraded packages and removed vulnerable packages
     </PackageReleaseNotes>
-    <Version>8.1.1</Version>
+    <Version>9.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
