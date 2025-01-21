@@ -173,6 +173,9 @@ namespace KM.MessageQueue.Database.Sqlite
                 }
             }
 
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationSource.Token, cancellationToken);
+            linkedCancellation.Token.ThrowIfCancellationRequested();
+
             var sqlMessages = new List<SqliteQueueMessage>();
             foreach (var (message, attributes) in messages)
             {
@@ -199,7 +202,7 @@ namespace KM.MessageQueue.Database.Sqlite
             using (var dbContext = GetDatabaseContext())
             {
                 dbContext.SqliteQueueMessages.AddRange(sqlMessages);
-                _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                _ = await dbContext.SaveChangesAsync(linkedCancellation.Token).ConfigureAwait(false);
             }
 
             _ = Interlocked.Add(ref _currentQueueSize, sqlMessages.Count);
