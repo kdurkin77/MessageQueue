@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net8.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Authors>kdurkin77;reed-adams;</Authors>
+    <Nullable>enable</Nullable>
+    <PackageId>KM.MessageQueue.Specialized.MultiTarget</PackageId>
+    <PackageProjectUrl>https://github.com/kdurkin77/MessageQueue</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/kdurkin77/MessageQueue</RepositoryUrl>
+    <PackageTags>MessageQueue;Queue;MessageReader;Reader;Azure;Topic;</PackageTags>
+    <Product>KM.MessageQueue.Specialized.MultiTarget</Product>
+    <Description>A queue implementation from the interfaces in KM.MessageQueue that allows for conditional pushing to multiple queues</Description>
+    <PackageReleaseNotes>
+        Initial Release
+    </PackageReleaseNotes>
+    <Version>9.0.2</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>KM.MessageQueue.Specialized.MultiTarget</RootNamespace>
+    <AssemblyName>KM.MessageQueue.Specialized.MultiTarget</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="KM.MessageQueue" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
