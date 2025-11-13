@@ -28,7 +28,7 @@ namespace KM.MessageQueue.Http
             _shouldUseBody = opts.ShouldUseBody ?? false;
             _shouldUseQueryParameters = opts.ShouldUseQueryParameters ?? !_shouldUseBody;
             _checkHttpResponse = opts.CheckHttpResponse ??
-                (message =>
+                ((message, ct) =>
                 {
                     if (message is null)
                     {
@@ -64,8 +64,8 @@ namespace KM.MessageQueue.Http
         internal readonly HttpMethod _method;
         internal readonly bool _shouldUseBody;
         internal readonly bool _shouldUseQueryParameters;
-        internal readonly Func<HttpResponseMessage?, Task> _checkHttpResponse;
-        internal readonly Func<HttpRequestMessage, Task>? _beforeSendMessage;
+        internal readonly Func<HttpResponseMessage?, CancellationToken, Task> _checkHttpResponse;
+        internal readonly Func<HttpRequestMessage, CancellationToken, Task>? _beforeSendMessage;
         internal readonly IMessageFormatter<TMessage, HttpContent> _bodyMessageFormatter;
         internal readonly IMessageFormatter<TMessage, IDictionary<string, string>> _queryMessageFormatter;
 
@@ -180,13 +180,13 @@ namespace KM.MessageQueue.Http
 
             if (_beforeSendMessage is { } beforeSendMessage)
             {
-                await beforeSendMessage(request).ConfigureAwait(false);
+                await beforeSendMessage(request, cancellationToken).ConfigureAwait(false);
             }
 
             _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to {{Uri}}", _uri);
 
             var result = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            await _checkHttpResponse(result);
+            await _checkHttpResponse(result, cancellationToken);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)

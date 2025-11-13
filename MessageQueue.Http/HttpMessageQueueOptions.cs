@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Http
@@ -40,12 +41,12 @@ namespace KM.MessageQueue.Http
         /// Function to check to see if we get a successful response from the HTTP request. By default, this function
         /// simply checks that there is successful status code response
         /// </summary>
-        public Func<HttpResponseMessage?, Task>? CheckHttpResponse { get; set; }
+        public Func<HttpResponseMessage?, CancellationToken, Task>? CheckHttpResponse { get; set; }
 
         /// <summary>
         /// A callback function to be run before the HTTP message is sent
         /// </summary>
-        public Func<HttpRequestMessage, Task>? BeforeSendMessage { get; set; }
+        public Func<HttpRequestMessage, CancellationToken, Task>? BeforeSendMessage { get; set; }
 
         /// <summary>
         /// Use the default formatter to add the message to the body of the request

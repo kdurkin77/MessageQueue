@@ -51,7 +51,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
         private readonly TimeSpan _retryDelay;
         private readonly string? _subscriptionName;
         private readonly object? _userData;
-        private readonly Func<Exception, Task<CompletionResult>>? _forwardingErrorHandler;
+        private readonly Func<Exception, CancellationToken, Task<CompletionResult>>? _forwardingErrorHandler;
         private readonly bool _disposeSourceQueue;
         private readonly bool _disposeDestinationQueue;
 
@@ -120,7 +120,7 @@ namespace KM.MessageQueue.Specialized.Forwarder
                         _logger.LogTrace(ex, $"{Name} exception in {nameof(ReadSourceQueueLoop)} in {nameof(PushToDestinationQueue)}.  Invoking user error handler");
                         try
                         {
-                            var completionResult = await errorHandler(ex);
+                            var completionResult = await errorHandler(ex, cancellationToken);
 
                             _logger.LogTrace($"{Name} {nameof(ReadSourceQueueLoop)} in {nameof(PushToDestinationQueue)} user error handler returned {{CompletionResult}}", completionResult);
                             return completionResult;

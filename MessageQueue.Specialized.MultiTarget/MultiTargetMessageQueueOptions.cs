@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KM.MessageQueue.Specialized.MultiTarget
@@ -10,7 +11,7 @@ namespace KM.MessageQueue.Specialized.MultiTarget
     /// <typeparam name="TMessage"></typeparam>
     public sealed class MultiTargetMessageQueueOptions<TMessage>
     {
-        internal List<(IMessageQueue<TMessage> MessageQueue, Func<IMessageQueue<TMessage>, TMessage, Task<bool>> Predicate)> _targets = new();
+        internal List<(IMessageQueue<TMessage> MessageQueue, Func<IMessageQueue<TMessage>, TMessage, CancellationToken, Task<bool>> Predicate)> _targets = [];
         internal string? Name { get; set; }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace KM.MessageQueue.Specialized.MultiTarget
                 throw new ArgumentNullException(nameof(predicate));
             }
 
-            _targets.Add((messageQueue, (messageQueue, message) =>
+            _targets.Add((messageQueue, (messageQueue, message, ct) =>
             {
                 var result = predicate(messageQueue, message);
                 return Task.FromResult(result);
@@ -54,7 +55,7 @@ namespace KM.MessageQueue.Specialized.MultiTarget
         /// <param name="predicate"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public MultiTargetMessageQueueOptions<TMessage> AddTarget(IMessageQueue<TMessage> messageQueue, Func<IMessageQueue<TMessage>, TMessage, Task<bool>> predicate)
+        public MultiTargetMessageQueueOptions<TMessage> AddTarget(IMessageQueue<TMessage> messageQueue, Func<IMessageQueue<TMessage>, TMessage, CancellationToken, Task<bool>> predicate)
         {
             if (messageQueue is null)
             {

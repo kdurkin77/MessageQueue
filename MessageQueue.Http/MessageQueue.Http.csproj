@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net8.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0;netstandard2.1;netstandard2.0;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>kdurkin77;reed-adams;</Authors>
@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Http</Product>
     <Description>A queue implementation that calls an HTTP API endpoint from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-        Added .NET9 support and removed .NET6 and .NET7 support. Upgraded packages and removed vulnerable packages
-    </PackageReleaseNotes>
-    <Version>9.0.0</Version>
+			Added .NET10 support and removed .NET9 support and upgraded packages. ***BREAKING CHANGE: CheckHttpResponse and BeforeSendMessage take a CancellationToken now.***
+		</PackageReleaseNotes>
+    <Version>10.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,26 +25,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KM.MessageQueue" Version="9.0.0" />
+    <!--<PackageReference Include="KM.MessageQueue" Version="9.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="9.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="9.0.0" />
     <PackageReference Include="KM.MessageQueue.Formatters.JsonStringToDictionary" Version="9.0.0" />
-    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+    <PackageReference Include="KM.MessageQueue.Formatters.StringToHttpContent" Version="9.0.0" />-->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9'">
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10'">
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8'">
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.22" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net8' and '$(TargetFramework)' != 'net9'">
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
+  <ItemGroup Condition="'$(TargetFramework)' != 'net8' and '$(TargetFramework)' != 'net10'">
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +52,14 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessageQueue.Formatters.JsonStringToDictionary\MessageQueue.Formatters.JsonStringToDictionary.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.ObjectToJsonString\MessageQueue.Formatters.ObjectToJsonString.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.Specialized.Composition\MessageQueue.Formatters.Specialized.Composition.csproj" />
+    <ProjectReference Include="..\MessageQueue.Formatters.StringToHttpContent\MessageQueue.Formatters.StringToHttpContent.csproj" />
+    <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
   </ItemGroup>
 
 </Project>

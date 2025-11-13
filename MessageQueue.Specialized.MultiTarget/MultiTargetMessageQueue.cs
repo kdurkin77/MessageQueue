@@ -33,7 +33,7 @@ namespace KM.MessageQueue.Specialized.MultiTarget
 
         private bool _disposed = false;
         private readonly ILogger _logger;
-        private readonly IEnumerable<(IMessageQueue<TMessage> MessageQueue, Func<IMessageQueue<TMessage>, TMessage, Task<bool>> Predicate)> _targets;
+        private readonly IEnumerable<(IMessageQueue<TMessage> MessageQueue, Func<IMessageQueue<TMessage>, TMessage, CancellationToken, Task<bool>> Predicate)> _targets;
         private readonly Action<TMessage> _onUnhandledMessage;
 
         private static readonly MessageAttributes _emptyAttributes = new();
@@ -104,7 +104,7 @@ namespace KM.MessageQueue.Specialized.MultiTarget
             var (message, attributes) = messages.First();
             foreach (var (messageQueue, predicate) in _targets)
             {
-                if (await predicate(messageQueue, message))
+                if (await predicate(messageQueue, message, cancellationToken))
                 {
                     _logger.LogTrace($"{Name} {nameof(PostMessageAsync)} posting to {{Label}}, Message: {{Message}}", attributes.Label, message);
                     await messageQueue.PostManyMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
