@@ -169,7 +169,7 @@ namespace KM.MessageQueue.Database.ElasticSearch
                                 }
                             }
                         })).ConfigureAwait(false);
-           
+
             if (response.IsValidResponse)
             {
                 _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} success response: {{Response}}", response.DebugInformation);
