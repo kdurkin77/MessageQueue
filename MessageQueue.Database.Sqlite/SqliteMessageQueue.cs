@@ -42,11 +42,12 @@ namespace KM.MessageQueue.Database.Sqlite
             }
 
             using var dbContext = GetDatabaseContext();
-            (_currentQueueSize, _sequenceNumber) = GetCurrentStats(dbContext);
+            var currentQueueSize = GetCurrentQueueSize(dbContext);
+            _sequenceNumber = GetCurrentSequenceNumber(dbContext);
 
             Name = opts.Name ?? nameof(SqliteMessageQueue<TMessage>);
 
-            _logger.LogTrace($"{Name} initialized with {_currentQueueSize} stored messages");
+            _logger.LogTrace($"{Name} initialized with {currentQueueSize} stored messages");
         }
 
         private readonly SqliteMessageQueueOptions<TMessage> _options;
@@ -59,7 +60,6 @@ namespace KM.MessageQueue.Database.Sqlite
         private readonly IMessageFormatter<TMessage, string> _messageFormatter;
         private readonly int? _maxQueueSize;
 
-        private int _currentQueueSize;
         private long _sequenceNumber;
 
         private readonly CancellationTokenSource _cancellationSource = new();
@@ -73,16 +73,20 @@ namespace KM.MessageQueue.Database.Sqlite
         public int MaxReadCount { get; }
 
 
-        private static (int QueueSize, long SequenceNumber) GetCurrentStats(SqliteDatabaseContext dbContext)
+        private static int GetCurrentQueueSize(SqliteDatabaseContext dbContext)
         {
             var queueSize = dbContext.SqliteQueueMessages.Count();
+            return queueSize;
+        }
 
+        private static long GetCurrentSequenceNumber(SqliteDatabaseContext dbContext)
+        {
             var sequenceNumber = dbContext.SqliteQueueMessages
                 .Select(x => x.SequenceNumber)
                 .Max()
                 ?? 0L;
 
-            return (queueSize, sequenceNumber);
+            return sequenceNumber;
         }
 
 
@@ -164,9 +168,11 @@ namespace KM.MessageQueue.Database.Sqlite
                 throw new InvalidOperationException($"Message count exceeds max write count of {MaxWriteCount}");
             }
 
+            using var dbContext = GetDatabaseContext();
             if (_maxQueueSize is { } maxQueueSize)
             {
-                if (_currentQueueSize >= maxQueueSize)
+
+                if (GetCurrentQueueSize(dbContext) >= maxQueueSize)
                 {
                     _logger.LogError($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {{MaxQueueSize}}", maxQueueSize);
                     throw new InvalidOperationException($"{Name} {nameof(PostManyMessagesAsync)} exceeded maximum queue size of {maxQueueSize}");
@@ -199,13 +205,8 @@ namespace KM.MessageQueue.Database.Sqlite
             var messageString = messageCount == 1 ? sqlMessages[0].Body : $"{messageCount} messages";
             _logger.LogTrace($"{Name} {nameof(PostManyMessagesAsync)} posting to store, Message: {{Message}}", messageString);
 
-            using (var dbContext = GetDatabaseContext())
-            {
-                dbContext.SqliteQueueMessages.AddRange(sqlMessages);
-                _ = await dbContext.SaveChangesAsync(linkedCancellation.Token).ConfigureAwait(false);
-            }
-
-            _ = Interlocked.Add(ref _currentQueueSize, sqlMessages.Count);
+            dbContext.SqliteQueueMessages.AddRange(sqlMessages);
+            _ = await dbContext.SaveChangesAsync(linkedCancellation.Token).ConfigureAwait(false);
         }
 
         public Task<IMessageQueueReader<TMessage>> GetReaderAsync(MessageQueueReaderOptions<TMessage> options, CancellationToken cancellationToken)
@@ -248,12 +249,6 @@ namespace KM.MessageQueue.Database.Sqlite
                 try
                 {
                     linkedCancellation.Token.ThrowIfCancellationRequested();
-
-                    if (_currentQueueSize == 0)
-                    {
-                        shouldWait = true;
-                        continue;
-                    }
 
                     using var dbContext = GetDatabaseContext();
 
@@ -310,7 +305,9 @@ namespace KM.MessageQueue.Database.Sqlite
                         {
                             try
                             {
-                                (_currentQueueSize, _sequenceNumber) = GetCurrentStats(dbContext);
+                                using var recoveryDbContext = GetDatabaseContext();
+                                var recoverySequenceNumber = GetCurrentSequenceNumber(recoveryDbContext);
+                                _ = Interlocked.Exchange(ref _sequenceNumber, recoverySequenceNumber);
                             }
                             catch (Exception inner)
                             {
@@ -319,8 +316,6 @@ namespace KM.MessageQueue.Database.Sqlite
 
                             throw;
                         }
-
-                        _ = Interlocked.Add(ref _currentQueueSize, -itemsToRemove.Count);
                     }
 
                     return (completionResult, result);
