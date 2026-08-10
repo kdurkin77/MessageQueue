@@ -13,8 +13,8 @@
 	<ItemGroup>
 		<PackageReference Include="KM.MessageQueue.Azure.Topic" Version="10.0.0" />
 		<PackageReference Include="KM.MessageQueue.FileSystem.Disk" Version="10.0.0" />
-		<PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="10.0.1" />
-		<PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="10.0.0" />
+		<PackageReference Include="KM.MessageQueue.Database.Sqlite" Version="10.0.2" />
+		<PackageReference Include="KM.MessageQueue.Database.ElasticSearch" Version="10.0.2" />
 		<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonString" Version="10.0.0" />
 		<PackageReference Include="KM.MessageQueue.Formatters.ObjectToJsonObject" Version="10.0.0" />
 		<PackageReference Include="KM.MessageQueue.Formatters.Specialized.Composition" Version="10.0.0" />

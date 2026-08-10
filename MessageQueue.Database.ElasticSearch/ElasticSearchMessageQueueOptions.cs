@@ -15,6 +15,8 @@ namespace KM.MessageQueue.Database.ElasticSearch
     {
         internal ElasticsearchClientSettings ConnectionSettings { get; private set; } = new ElasticsearchClientSettings();
         internal string? Name { get; set; }
+        internal bool? AllowUpserts { get; set; }
+        internal Func<JObject, Id>? GetCustomId { get; set; }
 
         /// <summary>
         /// The max number of messages that can be written at once
@@ -59,6 +61,18 @@ namespace KM.MessageQueue.Database.ElasticSearch
 
             Name = name;
 
+            return this;
+        }
+
+        public ElasticSearchMessageQueueOptions<TMessage> ShouldAllowUpserts(bool allow)
+        {
+            AllowUpserts = allow;
+            return this;
+        }
+
+        public ElasticSearchMessageQueueOptions<TMessage> UseCustomId(Func<JObject, Id> getCustomId)
+        {
+            GetCustomId = getCustomId;
             return this;
         }
 

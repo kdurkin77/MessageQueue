@@ -64,11 +64,11 @@
     <Reference Include="KM.MessageQueue.Azure.Topic, Version=10.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.Azure.Topic.10.0.0\lib\netstandard2.0\KM.MessageQueue.Azure.Topic.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=10.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.10.0.0\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.ElasticSearch, Version=10.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.ElasticSearch.10.0.2\lib\netstandard2.0\KM.MessageQueue.Database.ElasticSearch.dll</HintPath>
     </Reference>
-    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=10.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.10.0.1\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
+    <Reference Include="KM.MessageQueue.Database.Sqlite, Version=10.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KM.MessageQueue.Database.Sqlite.10.0.2\lib\netstandard2.0\KM.MessageQueue.Database.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="KM.MessageQueue.FileSystem.Disk, Version=10.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\KM.MessageQueue.FileSystem.Disk.10.0.0\lib\netstandard2.0\KM.MessageQueue.FileSystem.Disk.dll</HintPath>

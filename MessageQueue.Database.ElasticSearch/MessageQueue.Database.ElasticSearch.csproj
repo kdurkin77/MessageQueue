@@ -13,9 +13,9 @@
     <Product>KM.MessageQueue.Database.ElasticSearch</Product>
     <Description>A queue implementation to write to an ElasticSearch database from the interfaces in KM.MessageQueue</Description>
     <PackageReleaseNotes>
-        Added .NET10 support. Upgraded packages and removed vulnerable packages
+        Added options to allow upserts (IndexMany instead of forcing CreateMany) and to set a custom ElasticSearchID
     </PackageReleaseNotes>
-    <Version>10.0.0</Version>
+    <Version>10.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>

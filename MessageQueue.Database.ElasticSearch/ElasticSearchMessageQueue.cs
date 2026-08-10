@@ -34,11 +34,24 @@ namespace KM.MessageQueue.Database.ElasticSearch
                 throw new ArgumentOutOfRangeException(nameof(opts.MaxWriteCount));
             }
 
+            if (opts.AllowUpserts.HasValue)
+            {
+                _allowUpserts = opts.AllowUpserts.Value;
+            }
+
+            if (opts.GetCustomId is not null)
+            {
+                _getCustomId = opts.GetCustomId;
+            }
+
             _logger.LogTrace($"{Name} initialized");
         }
 
 
         private bool _disposed = false;
+
+        private Func<JObject, Id>? _getCustomId = null;
+        private bool _allowUpserts = false;
 
         private readonly ILogger _logger;
         private readonly ElasticsearchClient _client;
@@ -151,24 +164,53 @@ namespace KM.MessageQueue.Database.ElasticSearch
             }
 
             var response =
-                await _client
-                .BulkAsync(b =>
-                    b
-                    .Index(_client.ElasticsearchClientSettings.DefaultIndex)
-                    .CreateMany(esMessages,
-                        (descriptor, doc) =>
-                        {
-                            var attr = doc["MessageAttributes"]?.ToObject<MessageAttributes>();
-                            if (attr != null)
+                _allowUpserts
+                ? await _client
+                    .BulkAsync(b =>
+                        b
+                        .Index(_client.ElasticsearchClientSettings.DefaultIndex)
+                        .IndexMany(esMessages,
+                            (descriptor, doc) =>
                             {
-                                var labelObject = new ElasticSearchMessage(attr);
-                                if (!string.IsNullOrWhiteSpace(labelObject?.MessageAttributes?.Label))
+                                if (_getCustomId is not null)
                                 {
-                                    //standard 2.0 doesn't realize this is not null
-                                    descriptor.Index(labelObject!.MessageAttributes.Label!);
+                                    descriptor.Id(_getCustomId(doc));
                                 }
-                            }
-                        })).ConfigureAwait(false);
+
+                                var attr = doc["MessageAttributes"]?.ToObject<MessageAttributes>();
+                                if (attr != null)
+                                {
+                                    var labelObject = new ElasticSearchMessage(attr);
+                                    if (!string.IsNullOrWhiteSpace(labelObject?.MessageAttributes?.Label))
+                                    {
+                                        //standard 2.0 doesn't realize this is not null
+                                        descriptor.Index(labelObject!.MessageAttributes.Label!);
+                                    }
+                                }
+                            })).ConfigureAwait(false)
+                : await _client
+                    .BulkAsync(b =>
+                        b
+                        .Index(_client.ElasticsearchClientSettings.DefaultIndex)
+                        .CreateMany(esMessages,
+                            (descriptor, doc) =>
+                            {
+                                if (_getCustomId is not null)
+                                {
+                                    descriptor.Id(_getCustomId(doc));
+                                }
+
+                                var attr = doc["MessageAttributes"]?.ToObject<MessageAttributes>();
+                                if (attr != null)
+                                {
+                                    var labelObject = new ElasticSearchMessage(attr);
+                                    if (!string.IsNullOrWhiteSpace(labelObject?.MessageAttributes?.Label))
+                                    {
+                                        //standard 2.0 doesn't realize this is not null
+                                        descriptor.Index(labelObject!.MessageAttributes.Label!);
+                                    }
+                                }
+                            })).ConfigureAwait(false);
 
             if (response.IsValidResponse)
             {
